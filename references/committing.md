@@ -1,0 +1,80 @@
+---
+applies_to: "hb-* skills"
+enforcement: "MUST follow these rules exactly when executing any skill that starts with hb-"
+---
+
+# Committing
+
+To generate a commit message, use `scripts/hb-sdk`.
+
+## Rules
+
+- a single commit should be done at the end of the execution of any skill that starts with `hb-`
+- skills that operate on a single task step (any that start with `hb-step`) should include step number
+  - examples:
+    - hb-step-create
+    - hb-step-remove
+    - hb-step-plan
+    - hb-step-execute
+    - hb-step-address-review
+  - all other skills should NOT include step number
+- some skills may require intemediate commits; defer to instructions in those skills
+
+## Process
+
+### 1. Generate commit message
+
+Invoke `scripts/hb-sdk` as follows to generate a commit message:
+
+```bash
+scripts/hb-sdk commit write-message-file --task <task> --step <step> --short <short_description> --long <long_description>
+```
+
+- args:
+  - required:
+    - `--task <task>`: fully qualified name of task eg `author/abc-123-some-flavor`
+    - `--short <short_desccription>`: one-line description of what the commit does; should complete the sentence: "This commit will..."
+      - should be wrapped in `""` to avoid shell issues
+  - optional:
+    - `--step <step>`: step number, e.g. 1, 2; only include if operating on a step
+    - `--long <long_description>`: longer explanation of why change was made; only use when the why isn't obvious
+      - should be wrapped in `""` to avoid shell issues
+- returns path to file that contains commit message on stdout
+- returns error messages on stderr
+- if any error occurs, present verbatim to the user or fix automatically if possible
+
+### 2. Stage relevant files ONLY
+
+1. [IDENTIFY] identify currently staged and changed files:
+   `git status --short -b`
+   - first line reports branch; if master, notify user
+   - following lines show file statuses; first 2 characters indicate file status:
+     - left character is staged status
+     - right character is unstaged status
+     - common statuses:
+       - `??`: untracked file
+       - `A `: staged new file
+       - `M `: staged file modification to committed file
+       - `D `: staged file deletion of committed file
+       - ` M`: unstaged modifications to committed file
+       - ` D`: unstaged deletion of committed file
+     - less common status combinations:
+       - one of `A`, `M`, `D` as first character, `M` as second character:
+         staged new file or modifications to committed file then unstaged modifications added
+       - one of `A`, `M`, `D` as first character, `D` as second character:
+         staged new file or modifications to committed file then unstaged file deletion
+     - for any other status, see: `references/git-status-short-format.adoc`
+
+2. [CHECK] if any unrelated file is already staged: STOP TO ASK USER if the file should be added to the commit
+   - if so, proceed
+   - if not:
+     - prompt user to unstage, commit, or allow "staged but unrelated" files to be added to commit
+     - await user prompt
+     - try again starting at `2. [CHECK]`
+
+3. [ADD] add modifications to relevant files to stage:
+   - for each relevant file:
+     `git add <file_or_directory>`
+
+4. [COMMIT] commit staged changes: `git commit -F <commit_message_file>`
+   - `<commit_message_file>` should be path returned from `scripts/hb-sdk commit write-message-file`
