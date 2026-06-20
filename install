@@ -1,0 +1,238 @@
+#!/usr/bin/env python3
+"""Hashbuild skill installer / uninstaller."""
+
+import argparse
+import os
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+
+# Base dir that must already exist (signals harness is installed).
+# Skills subdir is created if absent.
+HARNESSES: dict[str, dict[str, Path]] = {
+    "claude": {
+        "base": Path.home() / ".claude",
+        "skills_dir": Path.home() / ".claude" / "skills",
+    },
+    "opencode": {
+        "base": Path.home() / ".config" / "opencode",
+        "skills_dir": Path.home() / ".config" / "opencode" / "skills",
+    },
+}
+
+
+# ── helpers ───────────────────────────────────────────────────────────────────
+
+
+def die(msg: str) -> None:
+    print(f"error: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def info(msg: str) -> None:
+    print(msg)
+
+
+def _detect_harnesses() -> list[str]:
+    return [name for name, cfg in HARNESSES.items() if cfg["base"].is_dir()]
+
+
+def _prompt_harnesses(found: list[str]) -> list[str]:
+    info(f"Detected harnesses: {', '.join(found)}")
+    try:
+        resp = input("Target all? [Y/n] ").strip().lower()
+    except EOFError:
+        return found
+    if resp in ("", "y", "yes"):
+        return found
+    try:
+        raw = input(f"Enter comma-separated subset ({', '.join(found)}): ")
+    except EOFError:
+        return found
+    picks = [p.strip() for p in raw.split(",") if p.strip()]
+    unknown = [p for p in picks if p not in HARNESSES]
+    if unknown:
+        die(f"unknown harness(es): {', '.join(unknown)}")
+    not_found = [p for p in picks if p not in found]
+    if not_found:
+        die(
+            f"harness base dir not found for: {', '.join(not_found)}\n"
+            f"  ensure the harness is installed before running this script"
+        )
+    if not picks:
+        die("no harnesses selected")
+    return picks
+
+
+def _skill_files() -> list[Path]:
+    skills_dir = PROJECT_ROOT / "skills"
+    if not skills_dir.is_dir():
+        die(f"skills/ directory not found at {skills_dir}")
+    files = sorted(skills_dir.glob("*.md"))
+    if not files:
+        die(f"no .md files found in {skills_dir}")
+    return files
+
+
+def _check_symlink(link: Path, expected_target: Path, label: str) -> None:
+    """
+    Ensure link is a symlink pointing to expected_target.
+    Raises SystemExit with remediation steps on conflict.
+    """
+    if link.is_symlink():
+        actual = Path(os.readlink(link))
+        if actual == expected_target:
+            return  # already correct — idempotent
+        print(
+            f"\nerror: symlink conflict\n"
+            f"  path:             {link}\n"
+            f"  expected target:  {expected_target}\n"
+            f"  actual target:    {actual}\n"
+            f"  remediation:      remove {link} then re-run install",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if link.exists():
+        print(
+            f"\nerror: path conflict — not a symlink\n"
+            f"  path:             {link}\n"
+            f"  expected:         symlink → {expected_target}\n"
+            f"  actual:           existing {'directory' if link.is_dir() else 'file'}\n"
+            f"  remediation:      remove {link} then re-run install",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    link.symlink_to(expected_target)
+
+
+# ── install / uninstall ───────────────────────────────────────────────────────
+
+
+def _install_skill(skill_file: Path, skills_dir: Path) -> None:
+    skill_name = skill_file.stem
+    skill_dir = skills_dir / skill_name
+    skill_dir.mkdir(parents=True, exist_ok=True)
+
+    _check_symlink(skill_dir / "SKILL.md", skill_file.resolve(), "SKILL.md")
+    _check_symlink(skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/")
+    _check_symlink(skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/")
+
+    info(f"    [ok] {skill_name}")
+
+
+def _uninstall_skill(skill_file: Path, skills_dir: Path) -> None:
+    skill_name = skill_file.stem
+    skill_dir = skills_dir / skill_name
+
+    if not skill_dir.exists() and not skill_dir.is_symlink():
+        info(f"    [skip] {skill_name} — not installed")
+        return
+
+    for entry_name in ("SKILL.md", "references", "scripts"):
+        entry = skill_dir / entry_name
+        if entry.is_symlink():
+            entry.unlink()
+        elif entry.exists():
+            print(
+                f"\nerror: unexpected non-symlink during uninstall\n"
+                f"  path:        {entry}\n"
+                f"  expected:    symlink (created by install)\n"
+                f"  remediation: manually inspect and remove {entry}",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    remaining = list(skill_dir.iterdir())
+    if remaining:
+        info(
+            f"    [warn] {skill_name} — extra files remain, leaving directory:\n"
+            + "\n".join(f"      {p}" for p in remaining)
+        )
+    else:
+        skill_dir.rmdir()
+        info(f"    [ok] removed {skill_name}")
+
+
+def run_install(harnesses: list[str]) -> None:
+    skill_files = _skill_files()
+    for harness in harnesses:
+        cfg = HARNESSES[harness]
+        base: Path = cfg["base"]
+        skills_dir: Path = cfg["skills_dir"]
+
+        if not base.is_dir():
+            die(
+                f"harness base directory not found: {base}\n"
+                f"  ensure {harness} is installed before running this script"
+            )
+
+        skills_dir.mkdir(parents=True, exist_ok=True)
+        info(f"  harness: {harness} ({skills_dir})")
+
+        for skill_file in skill_files:
+            _install_skill(skill_file, skills_dir)
+
+
+def run_uninstall(harnesses: list[str]) -> None:
+    skill_files = _skill_files()
+    for harness in harnesses:
+        cfg = HARNESSES[harness]
+        skills_dir: Path = cfg["skills_dir"]
+        info(f"  harness: {harness} ({skills_dir})")
+        if not skills_dir.exists():
+            info(f"    [skip] skills dir does not exist")
+            continue
+        for skill_file in skill_files:
+            _uninstall_skill(skill_file, skills_dir)
+
+
+# ── main ──────────────────────────────────────────────────────────────────────
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Install or uninstall Hashbuild skills into LLM harnesses."
+    )
+    parser.add_argument(
+        "--harness",
+        metavar="NAME",
+        choices=list(HARNESSES),
+        action="append",
+        dest="harnesses",
+        help=f"target harness ({', '.join(HARNESSES)}); repeat for multiple; default: auto-detect",
+    )
+    parser.add_argument(
+        "--uninstall",
+        action="store_true",
+        help="remove installed skills instead of installing",
+    )
+    args = parser.parse_args()
+
+    harnesses: list[str] = args.harnesses or []
+
+    if not harnesses:
+        found = _detect_harnesses()
+        if not found:
+            die(
+                "no supported harnesses detected\n"
+                + "\n".join(
+                    f"  {name}: {cfg['base']} (not found)"
+                    for name, cfg in HARNESSES.items()
+                )
+            )
+        harnesses = _prompt_harnesses(found)
+
+    action = "Uninstalling" if args.uninstall else "Installing"
+    info(f"{action} skills from {PROJECT_ROOT / 'skills'}")
+
+    if args.uninstall:
+        run_uninstall(harnesses)
+    else:
+        run_install(harnesses)
+
+    info("Done.")
+
+
+if __name__ == "__main__":
+    main()
