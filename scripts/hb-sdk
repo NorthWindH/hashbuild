@@ -5,8 +5,9 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timezone
+import tempfile
 from pathlib import Path
+from datetime import datetime, timezone
 
 # <author>/<task_id>[<task_extra>]
 # task_id:    <prefix>-<num>   e.g. abc-123, PROJSLUG-456
@@ -95,14 +96,11 @@ def cmd_commit_write_message_file(args: argparse.Namespace) -> None:
 
     message = '\n'.join(lines) + '\n'
 
-    hb_tmp = Path.cwd() / '.hb' / 'tmp'
-    hb_tmp.mkdir(parents=True, exist_ok=True)
+    fd, path = tempfile.mkstemp(prefix='hb-commit-', suffix='.txt')
+    with open(fd, 'w') as f:
+        f.write(message)
 
-    ts       = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
-    msg_file = hb_tmp / f'commit-{ts}.txt'
-    msg_file.write_text(message)
-
-    print(str(msg_file))
+    print(path)
 
 
 # ── CLI wiring ────────────────────────────────────────────────────────────────
