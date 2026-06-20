@@ -28,22 +28,10 @@ scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 - capture the task path returned from stdout for use in the next step
 - if an error occurs, present error message on stderr verbatim
 
-### 2. Commit skeleton
+### 2. Commit
 
--
-
-Stage and commit the new task files:
-
-```bash
-git add <task_path>
-git commit -m "<task_id>: create task skeleton."
-```
-
-- `<task_path>` is the path printed by `hb-sdk` in step 1.
-- `<task_id>` is the ticket ID extracted from `name` (e.g. `abc-123`).
-- Follow commit message format in `references/commit-message-format.md`.
-- Skip commit if `hb-sdk` indicated the skeleton already existed (idempotent no-op).
+- create a non-step commit by following `references/committing.md` and including any new or changed files related to this task
 
 ## Output
 
-Report the task path. If any command fails, surface the error verbatim to the caller.
+Report the task path and changed/created files. If any command fails, surface the error verbatim to the caller.
