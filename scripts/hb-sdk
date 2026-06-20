@@ -6,6 +6,7 @@ import json
 import re
 import sys
 import tempfile
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -26,7 +27,14 @@ def _die(msg: str) -> None:
     sys.exit(1)
 
 
-def _validate_task_name(name: str) -> re.Match:
+@dataclass
+class TaskName:
+    author: str
+    task_id: str
+    task_extra: str  # empty string if absent, otherwise without leading '-'
+
+
+def _parse_task_name(name: str) -> TaskName:
     m = TASK_NAME_RE.match(name)
     if not m:
         _die(
@@ -35,21 +43,22 @@ def _validate_task_name(name: str) -> re.Match:
             f"  task_id:    <prefix>-<num>  (e.g. abc-123)\n"
             f"  task_extra: -<slug>         slug chars [a-z-]"
         )
-    return m
+    return TaskName(
+        author=m.group("author"),
+        task_id=m.group("task_id"),
+        task_extra=(m.group("task_extra") or "").lstrip("-"),
+    )
 
 
 # ── task create ───────────────────────────────────────────────────────────────
 
 
 def cmd_task_create(args: argparse.Namespace) -> None:
-    m = _validate_task_name(args.name)
+    tn = _parse_task_name(args.name)
 
-    author = m.group("author")
-    task_id = m.group("task_id")
-    task_extra = m.group("task_extra") or ""
-    folder = task_id + task_extra
+    folder = tn.task_id + (f"-{tn.task_extra}" if tn.task_extra else "")
 
-    task_path = Path.cwd() / ".hb" / "task" / "active" / author / folder
+    task_path = Path.cwd() / ".hb" / "task" / "active" / tn.author / folder
     task_json = task_path / ".hb-task.json"
 
     task_path.mkdir(parents=True, exist_ok=True)
@@ -60,9 +69,9 @@ def cmd_task_create(args: argparse.Namespace) -> None:
     else:
         data = {
             "name": args.name,
-            "author": author,
-            "task_id": task_id,
-            "task_extra": task_extra.lstrip("-") or None,
+            "author": tn.author,
+            "task_id": tn.task_id,
+            "task_extra": tn.task_extra or None,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "ticket": None,
         }
@@ -85,8 +94,8 @@ def cmd_task_create(args: argparse.Namespace) -> None:
 
 
 def cmd_commit_write_message_file(args: argparse.Namespace) -> None:
-    m = _validate_task_name(args.task)
-    task_id = m.group("task_id")
+    tn = _parse_task_name(args.task)
+    task_id = tn.task_id
 
     prefix = task_id
     if args.step is not None:
