@@ -9,12 +9,17 @@ Atomic: call `scripts/hb-sdk` to create or verify the task skeleton for one task
 
 ## Inputs
 
-| Parameter | Required | Description                                                                                          |
-| --------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `name`    | yes      | Fully-qualified task name in `author/abc-123-optional-flavor` format. See `references/structure.md`. |
-| `ticket`  | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.         |
+| Parameter          | Required | Description                                                                                          |
+| ------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
+| `name`             | yes*     | Fully-qualified task name in `author/abc-123-optional-flavor` format. See `references/structure.md`. |
+| `--ticket <path>`  | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.         |
+| `help`, `--help`, `-h` | no   | Print help and exit. *Not required when help is requested.                                           |
 
 ## Steps
+
+### 0. Help check
+
+If the first argument is `help`, `--help`, or `-h`: follow `references/skill-help.md`. Stop.
 
 ### 1. Create task skeleton
 
