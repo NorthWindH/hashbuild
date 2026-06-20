@@ -115,8 +115,12 @@ def _install_skill(skill_file: Path, skills_dir: Path) -> None:
     skill_dir.mkdir(parents=True, exist_ok=True)
 
     _check_symlink(skill_dir / "SKILL.md", skill_file.resolve(), "SKILL.md")
-    _check_symlink(skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/")
-    _check_symlink(skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/")
+    _check_symlink(
+        skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/"
+    )
+    _check_symlink(
+        skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/"
+    )
 
     info(f"    [ok] {skill_name}")
 
@@ -181,7 +185,7 @@ def run_uninstall(harnesses: list[str]) -> None:
         skills_dir: Path = cfg["skills_dir"]
         info(f"  harness: {harness} ({skills_dir})")
         if not skills_dir.exists():
-            info(f"    [skip] skills dir does not exist")
+            info("    [skip] skills dir does not exist")
             continue
         for skill_file in skill_files:
             _uninstall_skill(skill_file, skills_dir)
