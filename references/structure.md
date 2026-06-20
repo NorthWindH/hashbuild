@@ -14,6 +14,54 @@
         - steps are numbered in ascending order starting at `0`
         - examples: `step-0`, `step-1`, `step-2`, ..., `step-99999`
 
+## Structure Examples
+
+```
+.hb/
+└── task/
+    ├── active/
+    │   └── hasan/
+    │       └── projslug-42-add-login-page/
+    │           ├── .hb-task.json
+    │           ├── step-0/
+    │           ├── step-1/
+    │           └── step-2/
+    └── archive/
+        └── hasan/
+            └── projslug-17/
+                ├── .hb-task.json
+                ├── step-0/
+                └── step-1/
+```
+
+Multi-author, multiple active tasks:
+
+```
+.hb/
+└── task/
+    ├── active/
+    │   ├── hasan/
+    │   │   ├── abc-100-fix-auth-token/
+    │   │   │   ├── .hb-task.json
+    │   │   │   ├── step-0/
+    │   │   │   └── step-1/
+    │   │   └── abc-101/
+    │   │       ├── .hb-task.json
+    │   │       └── step-0/
+    │   └── northwind/
+    │       └── abc-200-update-schema/
+    │           ├── .hb-task.json
+    │           ├── step-0/
+    │           ├── step-1/
+    │           └── step-2/
+    └── archive/
+        └── hasan/
+            └── abc-99-initial-setup/
+                ├── .hb-task.json
+                ├── step-0/
+                └── step-1/
+```
+
 # Name Format
 
 ## Task Name Format
