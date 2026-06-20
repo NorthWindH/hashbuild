@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+"""hb-sdk — Hashbuild SDK CLI"""
+
+import argparse
+import json
+import re
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+# <author>/<task_id>[<task_extra>]
+# task_id:    <prefix>-<num>   e.g. abc-123, PROJSLUG-456
+# task_extra: -<slug>          slug chars: [a-z-]
+TASK_NAME_RE = re.compile(
+    r'^(?P<author>[^/]+)/(?P<task_id>[A-Za-z]+-\d+)(?P<task_extra>-[a-z][a-z-]*)?$'
+)
+
+
+def _err(msg: str) -> None:
+    print(msg, file=sys.stderr)
+
+
+def _die(msg: str) -> None:
+    _err(msg)
+    sys.exit(1)
+
+
+def _validate_task_name(name: str) -> re.Match:
+    m = TASK_NAME_RE.match(name)
+    if not m:
+        _die(
+            f"error: invalid task name '{name}'\n"
+            f"  expected: <author>/<task_id>[<task_extra>]\n"
+            f"  task_id:    <prefix>-<num>  (e.g. abc-123)\n"
+            f"  task_extra: -<slug>         slug chars [a-z-]"
+        )
+    return m
+
+
+# ── task create ───────────────────────────────────────────────────────────────
+
+def cmd_task_create(args: argparse.Namespace) -> None:
+    m = _validate_task_name(args.name)
+
+    author     = m.group('author')
+    task_id    = m.group('task_id')
+    task_extra = m.group('task_extra') or ''
+    folder     = task_id + task_extra
+
+    task_path = Path.cwd() / '.hb' / 'task' / 'active' / author / folder
+    task_json = task_path / '.hb-task.json'
+
+    task_path.mkdir(parents=True, exist_ok=True)
+
+    if task_json.exists():
+        with open(task_json) as f:
+            data = json.load(f)
+    else:
+        data = {
+            'name':       args.name,
+            'author':     author,
+            'task_id':    task_id,
+            'task_extra': task_extra.lstrip('-') or None,
+            'created_at': datetime.now(timezone.utc).isoformat(),
+            'ticket':     None,
+        }
+
+    if args.ticket:
+        ticket_path = Path(args.ticket)
+        if not ticket_path.exists():
+            _die(f"error: ticket file not found: {args.ticket}")
+        data['ticket']        = ticket_path.read_text()
+        data['ticket_source'] = str(ticket_path.resolve())
+
+    with open(task_json, 'w') as f:
+        json.dump(data, f, indent=2)
+        f.write('\n')
+
+    print(str(task_path))
+
+
+# ── commit write-message-file ─────────────────────────────────────────────────
+
+def cmd_commit_write_message_file(args: argparse.Namespace) -> None:
+    _validate_task_name(args.task)
+
+    lines = [args.short, '']
+
+    if args.long:
+        lines += [args.long, '']
+
+    lines.append(f'task: {args.task}')
+    if args.step is not None:
+        lines.append(f'step: {args.step}')
+
+    message = '\n'.join(lines) + '\n'
+
+    hb_tmp = Path.cwd() / '.hb' / 'tmp'
+    hb_tmp.mkdir(parents=True, exist_ok=True)
+
+    ts       = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+    msg_file = hb_tmp / f'commit-{ts}.txt'
+    msg_file.write_text(message)
+
+    print(str(msg_file))
+
+
+# ── CLI wiring ────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    parser = argparse.ArgumentParser(prog='hb-sdk', description='Hashbuild SDK CLI')
+    subs   = parser.add_subparsers(dest='command', metavar='<command>')
+    subs.required = True
+
+    # task
+    p_task      = subs.add_parser('task', help='Task operations')
+    task_subs   = p_task.add_subparsers(dest='task_command', metavar='<action>')
+    task_subs.required = True
+
+    p_tc = task_subs.add_parser('create', help='Create or verify task skeleton (idempotent)')
+    p_tc.add_argument('--ticket', metavar='<path>', help='Seed task from this ticket file')
+    p_tc.add_argument('name', help='Fully-qualified task name (author/task-id[-extra])')
+    p_tc.set_defaults(func=cmd_task_create)
+
+    # commit
+    p_commit    = subs.add_parser('commit', help='Commit operations')
+    commit_subs = p_commit.add_subparsers(dest='commit_command', metavar='<action>')
+    commit_subs.required = True
+
+    p_wmf = commit_subs.add_parser('write-message-file', help='Write commit message to a temp file; prints path')
+    p_wmf.add_argument('--task',  required=True, metavar='<task>', help='Fully-qualified task name')
+    p_wmf.add_argument('--step',  type=int,      metavar='<n>',    help='Step number (omit for non-step commits)')
+    p_wmf.add_argument('--short', required=True, metavar='<desc>', help='One-line description (completes "This commit will...")')
+    p_wmf.add_argument('--long',  metavar='<desc>', help='Longer explanation of why (omit when obvious)')
+    p_wmf.set_defaults(func=cmd_commit_write_message_file)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
