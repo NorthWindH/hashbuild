@@ -124,3 +124,14 @@ Multi-author, multiple active tasks:
   - example: `-some-stuff-that-helps-explain-step`
   - format: `-<slug>`
   - slug allowed character class: `[a-z-]`
+
+### Step Name Examples
+
+| Name                        | Valid                      |
+| --------------------------- | -------------------------- |
+| `step-0`                    | yes                        |
+| `step-1-add-form`           | yes                        |
+| `step-99999-final-cleanup`  | yes                        |
+| `step-`                     | no — missing `<n>`         |
+| `step-0-AddForm`            | no — uppercase in slug     |
+| `0-add-form`                | no — missing `step-` prefix |
