@@ -23,15 +23,30 @@
     │   └── hasan/
     │       └── projslug-42-add-login-page/
     │           ├── .hb-task.json
-    │           ├── step-0/
-    │           ├── step-1/
-    │           └── step-2/
+    │           ├── step-0-scaffold-routes/
+    │           ├── step-1-add-form/
+    │           └── step-2-wire-auth/
     └── archive/
         └── hasan/
             └── projslug-17/
                 ├── .hb-task.json
-                ├── step-0/
-                └── step-1/
+                ├── step-0-init-db/
+                └── step-1-seed-data/
+```
+
+Mixed — some steps with `step_extra`, some without:
+
+```
+.hb/
+└── task/
+    ├── active/
+    │   └── hasan/
+    │       └── abc-55-refactor-api/
+    │           ├── .hb-task.json
+    │           ├── step-0/
+    │           ├── step-1-extract-handler/
+    │           └── step-2/
+    └── archive/
 ```
 
 Multi-author, multiple active tasks:
@@ -43,23 +58,23 @@ Multi-author, multiple active tasks:
     │   ├── hasan/
     │   │   ├── abc-100-fix-auth-token/
     │   │   │   ├── .hb-task.json
-    │   │   │   ├── step-0/
-    │   │   │   └── step-1/
+    │   │   │   ├── step-0-repro/
+    │   │   │   └── step-1-patch-expiry/
     │   │   └── abc-101/
     │   │       ├── .hb-task.json
     │   │       └── step-0/
     │   └── northwind/
     │       └── abc-200-update-schema/
     │           ├── .hb-task.json
-    │           ├── step-0/
-    │           ├── step-1/
-    │           └── step-2/
+    │           ├── step-0-audit-tables/
+    │           ├── step-1-migrate/
+    │           └── step-2-backfill/
     └── archive/
         └── hasan/
             └── abc-99-initial-setup/
                 ├── .hb-task.json
-                ├── step-0/
-                └── step-1/
+                ├── step-0-bootstrap/
+                └── step-1-config/
 ```
 
 # Name Format
@@ -77,8 +92,9 @@ Multi-author, multiple active tasks:
     - `projslug-123456789`
     - `PROJSLUG-123456789`
 - `<task_extra>`: optional. Extra flavor to help identify a ticket
-  - format: `-some-stuff-that-helps-explain-ticket`
-  - allowed character class: `[a-z-]`
+  - example: `-some-stuff-that-helps-explain-ticket`
+  - format: `-<slug>`
+  - slug allowed character class: `[a-z-]`
 
 ### Task Name Examples
 
@@ -104,5 +120,7 @@ Multi-author, multiple active tasks:
   - `<n>`:
     - numeric step identifier
     - steps are numbered in ascending order starting at `0`
-
-- TODO continue with step description, talk about extra, generate some full .hb structure examples
+- `<step_extra>`: optional. Extra flavor to help identify a step
+  - example: `-some-stuff-that-helps-explain-step`
+  - format: `-<slug>`
+  - slug allowed character class: `[a-z-]`
