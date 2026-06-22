@@ -2,6 +2,7 @@
 """Hashbuild skill installer / uninstaller."""
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -19,6 +20,12 @@ HARNESSES: dict[str, dict[str, Path]] = {
         "base": Path.home() / ".config" / "opencode",
         "skills_dir": Path.home() / ".config" / "opencode" / "skills",
     },
+}
+
+# settings.json path per harness; None = no permission patching for that harness
+HARNESS_SETTINGS: dict[str, Path | None] = {
+    "claude": Path.home() / ".claude" / "settings.json",
+    "opencode": None,
 }
 
 
@@ -106,6 +113,55 @@ def _check_symlink(link: Path, expected_target: Path, label: str) -> None:
     link.symlink_to(expected_target)
 
 
+# ── settings permission patching ─────────────────────────────────────────────
+
+
+def _permission_entries(skills_dir: Path, skill_names: list[str]) -> list[str]:
+    return [f"Read({skills_dir}/{name}/**)" for name in skill_names]
+
+
+def _pending_add(settings_path: Path, entries: list[str]) -> list[str]:
+    if not settings_path.exists():
+        return list(entries)
+    data = json.loads(settings_path.read_text())
+    existing = set(data.get("permissions", {}).get("allow", []))
+    return [e for e in entries if e not in existing]
+
+
+def _pending_remove(settings_path: Path, entries: list[str]) -> list[str]:
+    if not settings_path.exists():
+        return []
+    data = json.loads(settings_path.read_text())
+    existing = set(data.get("permissions", {}).get("allow", []))
+    return [e for e in entries if e in existing]
+
+
+def _patch_settings(settings_path: Path, entries: list[str]) -> None:
+    data = json.loads(settings_path.read_text()) if settings_path.exists() else {}
+    allow: list = data.setdefault("permissions", {}).setdefault("allow", [])
+    existing = set(allow)
+    allow.extend(e for e in entries if e not in existing)
+    settings_path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def _unpatch_settings(settings_path: Path, entries: list[str]) -> None:
+    if not settings_path.exists():
+        return
+    data = json.loads(settings_path.read_text())
+    to_remove = set(entries)
+    allow = data.get("permissions", {}).get("allow", [])
+    data["permissions"]["allow"] = [e for e in allow if e not in to_remove]
+    settings_path.write_text(json.dumps(data, indent=2) + "\n")
+
+
+def _confirm(prompt: str) -> bool:
+    try:
+        resp = input(prompt).strip().lower()
+    except EOFError:
+        return True
+    return resp in ("", "y", "yes")
+
+
 # ── install / uninstall ───────────────────────────────────────────────────────
 
 
@@ -164,6 +220,7 @@ def run_install(harnesses: list[str]) -> None:
         cfg = HARNESSES[harness]
         base: Path = cfg["base"]
         skills_dir: Path = cfg["skills_dir"]
+        settings_path: Path | None = HARNESS_SETTINGS.get(harness)
 
         if not base.is_dir():
             die(
@@ -177,18 +234,52 @@ def run_install(harnesses: list[str]) -> None:
         for skill_file in skill_files:
             _install_skill(skill_file, skills_dir)
 
+        if settings_path is not None:
+            names = [f.stem for f in skill_files]
+            entries = _permission_entries(skills_dir, names)
+            to_add = _pending_add(settings_path, entries)
+            if not to_add:
+                info(f"  [skip] read permissions already present in {settings_path}")
+            else:
+                info(f"\n  The following read permissions will be added to {settings_path}:")
+                for e in to_add:
+                    info(f"    {e}")
+                if _confirm("  Apply? [Y/n] "):
+                    _patch_settings(settings_path, to_add)
+                    info(f"  [ok] patched {settings_path}")
+                else:
+                    info("  [skip] skipped settings patch")
+
 
 def run_uninstall(harnesses: list[str]) -> None:
     skill_files = _skill_files()
     for harness in harnesses:
         cfg = HARNESSES[harness]
         skills_dir: Path = cfg["skills_dir"]
+        settings_path: Path | None = HARNESS_SETTINGS.get(harness)
         info(f"  harness: {harness} ({skills_dir})")
+
         if not skills_dir.exists():
             info("    [skip] skills dir does not exist")
-            continue
-        for skill_file in skill_files:
-            _uninstall_skill(skill_file, skills_dir)
+        else:
+            for skill_file in skill_files:
+                _uninstall_skill(skill_file, skills_dir)
+
+        if settings_path is not None:
+            names = [f.stem for f in skill_files]
+            entries = _permission_entries(skills_dir, names)
+            to_remove = _pending_remove(settings_path, entries)
+            if not to_remove:
+                info(f"  [skip] no matching permissions found in {settings_path}")
+            else:
+                info(f"\n  The following read permissions will be removed from {settings_path}:")
+                for e in to_remove:
+                    info(f"    {e}")
+                if _confirm("  Remove? [Y/n] "):
+                    _unpatch_settings(settings_path, to_remove)
+                    info(f"  [ok] cleaned {settings_path}")
+                else:
+                    info("  [skip] skipped settings cleanup")
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
