@@ -6,6 +6,8 @@ import json
 import re
 import sys
 import tempfile
+import typing
+from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,25 +15,84 @@ from pathlib import Path
 # <author>/<task_id>[<task_extra>]
 # task_id:    <prefix>-<num>   e.g. abc-123, PROJSLUG-456
 # task_extra: -<slug>          slug chars: [a-z-]
-TASK_NAME_RE = re.compile(
-    r"^(?P<author>[^/]+)/(?P<task_id>[A-Za-z]+-\d+)(?P<task_extra>-[a-z][a-z-]*)?$"
-)
+TASK_NAME_RE = re.compile(r"^(?P<author>[^/]+)/(?P<task_id>[A-Za-z]+-\d+)(?P<task_extra>-[a-z][a-z-]*)?$")
+TASK_FOLDER_ACTIVE = "active"
+TASK_FOLDER_ARCHIVE = "archive"
 
 
 def _err(msg: str) -> None:
     print(msg, file=sys.stderr)
 
 
-def _die(msg: str) -> None:
+def _progress(msg: str) -> None:
+    _err(msg)
+
+
+def _die(msg: str) -> typing.NoReturn:
     _err(msg)
     sys.exit(1)
 
 
-@dataclass
+def _progress_already_exists(p: Path) -> None:
+    _progress(f"{p.absolute()} already exists")
+
+
+def _exists_or_do(p: Path, f: Callable[[Path], None]) -> Path:
+    if p.exists():
+        _progress_already_exists(p)
+    else:
+        _progress(f"creating {p.absolute()} ...")
+        f(p)
+
+        if not p.exists():
+            _die(f"error: failed to create {p.absolute()}")
+
+    return p
+
+
+def _path_hb() -> Path:
+    return Path.cwd() / ".hb"
+
+
+def _path_hb_git_keep() -> Path:
+    return _path_hb() / ".gitkeep"
+
+
+def _path_hb_asserted() -> Path:
+    p = _path_hb()
+    if not p.exists():
+        _die(
+            "error: .hb/ directory not found"
+            f"; expected to find .hb/ directory at {p.absolute()}"
+            f"; current working directory is {Path.cwd().absolute()}"
+            "; use /hb-init if first time or change directory to project directory where .hb/ directory exists"
+        )
+
+    return p
+
+
+def _path_task_ticket(task_path: Path) -> Path:
+    return task_path / "ticket"
+
+
+def report_paths(paths: Iterable[Path]) -> None:
+    print("=== affected paths: ===")
+    for p in paths:
+        print(p.absolute())
+
+
+@dataclass(eq=True)
 class TaskName:
     author: str
     task_id: str
     task_extra: str  # empty string if absent, otherwise without leading '-'
+
+    def __str__(self) -> str:
+        if self.task_extra:
+            ex = f"-{self.task_extra}"
+        else:
+            ex = ""
+        return f"{self.author}/{self.task_id}{ex}"
 
 
 def _parse_task_name(name: str) -> TaskName:
@@ -43,6 +104,7 @@ def _parse_task_name(name: str) -> TaskName:
             f"  task_id:    <prefix>-<num>  (e.g. abc-123)\n"
             f"  task_extra: -<slug>         slug chars [a-z-]"
         )
+
     return TaskName(
         author=m.group("author"),
         task_id=m.group("task_id"),
@@ -50,19 +112,72 @@ def _parse_task_name(name: str) -> TaskName:
     )
 
 
+def _find_matching_task_folders(tn: TaskName) -> Sequence[tuple[Path, TaskName]]:
+    """Collect list of matching paths by task author and task_id"""
+
+    out = list[tuple[Path, TaskName]]()
+    for a in (TASK_FOLDER_ACTIVE, TASK_FOLDER_ARCHIVE):
+        path_base = _path_hb_asserted() / "task" / a
+        if not path_base.exists():
+            continue
+
+        for p_author in path_base.iterdir():
+            for p_task in p_author.iterdir():
+                tn_other = _parse_task_name(p_author.name + "/" + p_task.name)
+                if tn_other.author == tn.author and tn_other.task_id == tn.task_id:
+                    out.append((p_task, tn_other))
+
+    return sorted(out)
+
+
+# ── initialize ────────────────────────────────────────────────────────────────
+
+
+def cmd_init(args: argparse.Namespace) -> None:
+    _progress(f"initializing hashbuild (hb) framework directory at {_path_hb().absolute()}")
+    paths = list[Path]()
+    paths.append(_exists_or_do(_path_hb(), lambda p: p.mkdir(parents=True, exist_ok=True)))
+    paths.append(_exists_or_do(_path_hb_git_keep(), lambda p: p.touch(exist_ok=True)))
+
+    _progress("init done; created hashbuild (hb) framework directory")
+    report_paths(paths)
+
+
+def _def_cli_init(subs: typing.Any) -> None:
+    p_init = subs.add_parser("init", help="Initialize hashbuild in project directory (idempotent)")
+    p_init.set_defaults(func=cmd_init)
+
+
 # ── task create ───────────────────────────────────────────────────────────────
 
 
 def cmd_task_create(args: argparse.Namespace) -> None:
+    paths = list[Path]()
     tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id; not adding or updating more:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    if len(matching_tasks) == 1:
+        tn_existing = matching_tasks[0][1]
+        if tn != tn_existing:
+            _die(
+                f"error: task already exists but components mismatched; existing: {tn_existing}, given: {tn}"
+            )
 
     folder = tn.task_id + (f"-{tn.task_extra}" if tn.task_extra else "")
 
-    task_path = Path.cwd() / ".hb" / "task" / "active" / tn.author / folder
+    task_path = _path_hb_asserted() / "task" / "active" / tn.author / folder
     task_json = task_path / ".hb-task.json"
 
     task_path.mkdir(parents=True, exist_ok=True)
+    paths.append(task_path)
 
+    data: typing.Any = None
     if task_json.exists():
         with open(task_json) as f:
             data = json.load(f)
@@ -73,21 +188,65 @@ def cmd_task_create(args: argparse.Namespace) -> None:
             "task_id": tn.task_id,
             "task_extra": tn.task_extra or None,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "ticket": None,
+            "next_step": 0,
         }
 
     if args.ticket:
         ticket_path = Path(args.ticket)
         if not ticket_path.exists():
             _die(f"error: ticket file not found: {args.ticket}")
-        data["ticket"] = ticket_path.read_text()
-        data["ticket_source"] = str(ticket_path.resolve())
+
+        ticket_src = ticket_path.read_text()
+        ticket_dest_path = _path_task_ticket(task_path)
+        if not ticket_dest_path.exists():
+            _progress("importing ticket ...")
+            ticket_dest_path.write_text(ticket_src)
+            data["ticket_written_at"] = datetime.now(timezone.utc).isoformat()
+        else:
+            _progress("task already has ticket; checking for content difference ...")
+            ticket_dest = ticket_dest_path.read_text()
+            if ticket_src != ticket_dest:
+                if not args.ticket_overwrite:
+                    _die(
+                        f"error: source ticket at {ticket_path.absolute()} does not match "
+                        f"current ticket at {ticket_dest_path.absolute()}"
+                        "; to overwrite, supply --ticket-overwrite"
+                    )
+
+                _progress("ticket content has changed and --overwrite-ticket supplied; updating ...")
+                ticket_dest_path.write_text(ticket_src)
+                data["ticket_written_at"] = datetime.now(timezone.utc).isoformat()
+            else:
+                _progress("ticket has not changed, skipping ticket update")
+
+        paths.append(ticket_dest_path)
 
     with open(task_json, "w") as f:
         json.dump(data, f, indent=2)
         f.write("\n")
+    paths.append(task_json)
 
-    print(str(task_path))
+    _progress("task create done")
+    report_paths(paths)
+
+
+def _def_cli_task(subs: typing.Any) -> None:
+    p_task = subs.add_parser("task", help="Task operations")
+    task_subs = p_task.add_subparsers(dest="task_command", metavar="<action>")
+    task_subs.required = True
+
+    p_tc: argparse.ArgumentParser = task_subs.add_parser(
+        "create", help="Create or verify task skeleton (idempotent)"
+    )
+    p_tc.add_argument("--ticket", metavar="<path>", help="Seed task from this ticket file")
+    p_tc.add_argument(
+        "--ticket-overwrite",
+        default=False,
+        action="store_true",
+        help="Overwrite ticket if it exists",
+    )
+    p_tc.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_tc.set_defaults(func=cmd_task_create)
 
 
 # ── commit write-message-file ─────────────────────────────────────────────────
@@ -113,29 +272,7 @@ def cmd_commit_write_message_file(args: argparse.Namespace) -> None:
     print(path)
 
 
-# ── CLI wiring ────────────────────────────────────────────────────────────────
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(prog="hb-sdk", description="Hashbuild SDK CLI")
-    subs = parser.add_subparsers(dest="command", metavar="<command>")
-    subs.required = True
-
-    # task
-    p_task = subs.add_parser("task", help="Task operations")
-    task_subs = p_task.add_subparsers(dest="task_command", metavar="<action>")
-    task_subs.required = True
-
-    p_tc = task_subs.add_parser(
-        "create", help="Create or verify task skeleton (idempotent)"
-    )
-    p_tc.add_argument(
-        "--ticket", metavar="<path>", help="Seed task from this ticket file"
-    )
-    p_tc.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
-    p_tc.set_defaults(func=cmd_task_create)
-
-    # commit
+def _def_cli_commit(subs: typing.Any) -> None:
     p_commit = subs.add_parser("commit", help="Commit operations")
     commit_subs = p_commit.add_subparsers(dest="commit_command", metavar="<action>")
     commit_subs.required = True
@@ -143,9 +280,7 @@ def main() -> None:
     p_wmf = commit_subs.add_parser(
         "write-message-file", help="Write commit message to a temp file; prints path"
     )
-    p_wmf.add_argument(
-        "--task", required=True, metavar="<task>", help="Fully-qualified task name"
-    )
+    p_wmf.add_argument("--task", required=True, metavar="<task>", help="Fully-qualified task name")
     p_wmf.add_argument(
         "--step",
         type=int,
@@ -158,10 +293,21 @@ def main() -> None:
         metavar="<desc>",
         help='One-line description (completes "This commit will...")',
     )
-    p_wmf.add_argument(
-        "--long", metavar="<desc>", help="Longer explanation of why (omit when obvious)"
-    )
+    p_wmf.add_argument("--long", metavar="<desc>", help="Longer explanation of why (omit when obvious)")
     p_wmf.set_defaults(func=cmd_commit_write_message_file)
+
+
+# ── CLI wiring ────────────────────────────────────────────────────────────────
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(prog="hb-sdk", description="Hashbuild SDK CLI")
+    subs = parser.add_subparsers(dest="command", metavar="<command>")
+    subs.required = True
+
+    _def_cli_init(subs)
+    _def_cli_task(subs)
+    _def_cli_commit(subs)
 
     args = parser.parse_args()
     args.func(args)
