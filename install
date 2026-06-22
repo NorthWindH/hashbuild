@@ -6,6 +6,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -137,8 +138,8 @@ def _pending_remove(settings_path: Path, entries: list[str]) -> list[str]:
 
 
 def _patch_settings(settings_path: Path, entries: list[str]) -> None:
-    data = json.loads(settings_path.read_text()) if settings_path.exists() else {}
-    allow: list = data.setdefault("permissions", {}).setdefault("allow", [])
+    data: dict[str, Any] = json.loads(settings_path.read_text()) if settings_path.exists() else {}
+    allow: list[str] = data.setdefault("permissions", {}).setdefault("allow", [])
     existing = set(allow)
     allow.extend(e for e in entries if e not in existing)
     settings_path.write_text(json.dumps(data, indent=2) + "\n")
@@ -171,12 +172,8 @@ def _install_skill(skill_file: Path, skills_dir: Path) -> None:
     skill_dir.mkdir(parents=True, exist_ok=True)
 
     _check_symlink(skill_dir / "SKILL.md", skill_file.resolve(), "SKILL.md")
-    _check_symlink(
-        skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/"
-    )
-    _check_symlink(
-        skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/"
-    )
+    _check_symlink(skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/")
+    _check_symlink(skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/")
 
     info(f"    [ok] {skill_name}")
 
@@ -286,9 +283,7 @@ def run_uninstall(harnesses: list[str]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Install or uninstall Hashbuild skills into LLM harnesses."
-    )
+    parser = argparse.ArgumentParser(description="Install or uninstall Hashbuild skills into LLM harnesses.")
     parser.add_argument(
         "--harness",
         metavar="NAME",
@@ -311,10 +306,7 @@ def main() -> None:
         if not found:
             die(
                 "no supported harnesses detected\n"
-                + "\n".join(
-                    f"  {name}: {cfg['base']} (not found)"
-                    for name, cfg in HARNESSES.items()
-                )
+                + "\n".join(f"  {name}: {cfg['base']} (not found)" for name, cfg in HARNESSES.items())
             )
         harnesses = _prompt_harnesses(found)
 
