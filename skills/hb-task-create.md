@@ -9,19 +9,19 @@ Atomic: call `scripts/hb-sdk` to create or verify the task skeleton for one task
 
 ## Inputs
 
-| Parameter          | Required | Description                                                                                          |
-| ------------------ | -------- | ---------------------------------------------------------------------------------------------------- |
-| `name`             | yes*     | Fully-qualified task name in `author/abc-123-optional-flavor` format. See `references/structure.md`. |
-| `--ticket <path>`  | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.         |
-| `help`, `--help`, `-h` | no   | Print help and exit. *Not required when help is requested.                                           |
+| Parameter              | Required | Description                                                                                          |
+| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See `references/structure.md`. |
+| `--ticket <path>`      | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.         |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                          |
 
 ## Steps
 
-### 0. Help check
+### 1. Help check
 
 If the first argument is `help`, `--help`, or `-h`: follow `references/skill-help.md`. Stop.
 
-### 1. Create task skeleton
+### 2. Create task skeleton
 
 ```bash
 scripts/hb-sdk task create [--ticket <ticket_path>] <name>
@@ -33,7 +33,7 @@ scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 - capture the task path returned from stdout for use in the next step
 - if an error occurs, present error message on stderr verbatim
 
-### 2. Commit
+### 3. Commit
 
 - create a non-step commit by following `references/committing.md` and including any new or changed files related to this task
 
