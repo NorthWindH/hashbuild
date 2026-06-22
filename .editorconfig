@@ -1,0 +1,5 @@
+root = true
+
+[*]
+guidelines = 80 dashed, 100 dashed, 120 solid
+max_line_length = 110
