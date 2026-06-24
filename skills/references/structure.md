@@ -13,6 +13,8 @@
         - folder for each step: `<step-n>/`
         - steps are numbered in ascending order starting at `0`
         - examples: `step-0`, `step-1`, `step-2`, ..., `step-99999`
+        - for each step folder:
+          - name pattern in [Step Name Format](#step-name-format) below
 
 ## Structure Examples
 
@@ -127,11 +129,11 @@ Multi-author, multiple active tasks:
 
 ### Step Name Examples
 
-| Name                        | Valid                      |
-| --------------------------- | -------------------------- |
-| `step-0`                    | yes                        |
-| `step-1-add-form`           | yes                        |
-| `step-99999-final-cleanup`  | yes                        |
-| `step-`                     | no — missing `<n>`         |
-| `step-0-AddForm`            | no — uppercase in slug     |
-| `0-add-form`                | no — missing `step-` prefix |
+| Name                       | Valid                       |
+| -------------------------- | --------------------------- |
+| `step-0`                   | yes                         |
+| `step-1-add-form`          | yes                         |
+| `step-99999-final-cleanup` | yes                         |
+| `step-`                    | no — missing `<n>`          |
+| `step-0-AddForm`           | no — uppercase in slug      |
+| `0-add-form`               | no — missing `step-` prefix |

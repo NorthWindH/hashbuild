@@ -16,6 +16,7 @@ from pathlib import Path
 # task_id:    <prefix>-<num>   e.g. abc-123, PROJSLUG-456
 # task_extra: -<slug>          slug chars: [a-z-]
 TASK_NAME_RE = re.compile(r"^(?P<author>[^/]+)/(?P<task_id>[A-Za-z]+-\d+)(?P<task_extra>-[a-z][a-z-]*)?$")
+STEP_EXTRA_RE = re.compile(r"^[a-z][a-z-]*$")
 TASK_FOLDER_ACTIVE = "active"
 TASK_FOLDER_ARCHIVE = "archive"
 
@@ -73,6 +74,10 @@ def _path_hb_asserted() -> Path:
 
 def _path_task_ticket(task_path: Path) -> Path:
     return task_path / "ticket"
+
+
+def _path_step_ticket(step_path: Path) -> Path:
+    return step_path / "ticket.md"
 
 
 def report_paths(paths: Iterable[Path]) -> None:
@@ -247,6 +252,104 @@ def _def_cli_task(subs: typing.Any) -> None:
     )
     p_tc.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
     p_tc.set_defaults(func=cmd_task_create)
+
+    p_step = task_subs.add_parser("step", help="Step operations")
+    step_subs = p_step.add_subparsers(dest="step_command", metavar="<action>")
+    step_subs.required = True
+
+    p_sa = step_subs.add_parser("add", help="Add next step folder to a task")
+    p_sa.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_sa.add_argument("--flavor", metavar="<slug>", help="Optional step flavor suffix (slug chars: [a-z-])")
+    p_sa.add_argument("--ticket", metavar="<path>", help="Seed step from this ticket file (.md)")
+    p_sa.add_argument(
+        "--ticket-overwrite",
+        default=False,
+        action="store_true",
+        help="Overwrite ticket if it exists",
+    )
+    p_sa.set_defaults(func=cmd_task_step_add)
+
+
+# ── task step add ─────────────────────────────────────────────────────────────
+
+
+def cmd_task_step_add(args: argparse.Namespace) -> None:
+    paths = list[Path]()
+    tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {args.name}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    task_path = matching_tasks[0][0]
+    task_json = task_path / ".hb-task.json"
+
+    if not task_json.exists():
+        _die(f"error: task metadata not found: {task_json.absolute()}")
+
+    with open(task_json) as f:
+        data = json.load(f)
+
+    step_n = data["next_step"]
+
+    flavor = args.flavor
+    if flavor is not None:
+        if not STEP_EXTRA_RE.match(flavor):
+            _die(
+                f"error: invalid flavor '{flavor}'\n"
+                f"  slug allowed chars: [a-z-], must start with [a-z]"
+            )
+        step_folder_name = f"step-{step_n}-{flavor}"
+    else:
+        step_folder_name = f"step-{step_n}"
+
+    step_path = task_path / step_folder_name
+    _exists_or_do(step_path, lambda p: p.mkdir(parents=True, exist_ok=True))
+    paths.append(step_path)
+
+    if args.ticket:
+        ticket_path = Path(args.ticket)
+        if not ticket_path.exists():
+            _die(f"error: ticket file not found: {args.ticket}")
+        if ticket_path.suffix != ".md":
+            _die(f"error: ticket file must end in .md: {args.ticket}")
+
+        ticket_src = ticket_path.read_text()
+        ticket_dest_path = _path_step_ticket(step_path)
+        if not ticket_dest_path.exists():
+            _progress("importing ticket ...")
+            ticket_dest_path.write_text(ticket_src)
+        else:
+            _progress("step already has ticket; checking for content difference ...")
+            ticket_dest = ticket_dest_path.read_text()
+            if ticket_src != ticket_dest:
+                if not args.ticket_overwrite:
+                    _die(
+                        f"error: source ticket at {ticket_path.absolute()} does not match "
+                        f"current ticket at {ticket_dest_path.absolute()}"
+                        "; to overwrite, supply --ticket-overwrite"
+                    )
+                _progress("ticket content has changed and --ticket-overwrite supplied; updating ...")
+                ticket_dest_path.write_text(ticket_src)
+            else:
+                _progress("ticket has not changed, skipping ticket update")
+
+        paths.append(ticket_dest_path)
+
+    data["next_step"] = step_n + 1
+
+    with open(task_json, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+    paths.append(task_json)
+
+    _progress("task step add done")
+    report_paths(paths)
 
 
 # ── commit write-message-file ─────────────────────────────────────────────────
