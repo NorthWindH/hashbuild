@@ -44,7 +44,7 @@ def _progress_already_exists(p: Path) -> None:
     _progress(f"{p.absolute()} already exists")
 
 
-def _exists_or_do(p: Path, f: Callable[[Path], None]) -> Path:
+def _exists_or_do(p: Path, f: Callable[[Path], typing.Any]) -> Path:
     if p.exists():
         _progress_already_exists(p)
     else:
@@ -306,10 +306,7 @@ def cmd_task_step_add(args: argparse.Namespace) -> None:
     flavor = args.flavor
     if flavor is not None:
         if not STEP_EXTRA_RE.match(flavor):
-            _die(
-                f"error: invalid flavor '{flavor}'\n"
-                f"  slug allowed chars: [a-z-], must start with [a-z]"
-            )
+            _die(f"error: invalid flavor '{flavor}'\n  slug allowed chars: [a-z-], must start with [a-z]")
         step_folder_name = f"step-{step_n}-{flavor}"
     else:
         step_folder_name = f"step-{step_n}"
