@@ -4,6 +4,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -30,7 +31,7 @@ def init(cwd: Path) -> None:
     run(["init"], cwd)
 
 
-def task_create(cwd: Path, name: str, **kwargs) -> subprocess.CompletedProcess[str]:
+def task_create(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     args = ["task", "create", name]
     if ticket := kwargs.get("ticket"):
         args += ["--ticket", str(ticket)]
@@ -39,7 +40,7 @@ def task_create(cwd: Path, name: str, **kwargs) -> subprocess.CompletedProcess[s
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
-def task_step_add(cwd: Path, name: str, **kwargs) -> subprocess.CompletedProcess[str]:
+def task_step_add(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     args = ["task", "step", "add", name]
     if flavor := kwargs.get("flavor"):
         args += ["--flavor", flavor]
@@ -58,7 +59,7 @@ def task_path(cwd: Path, author: str, folder: str) -> Path:
     return hb(cwd) / "task" / "active" / author / folder
 
 
-def task_json(cwd: Path, author: str, folder: str) -> dict:
+def task_json(cwd: Path, author: str, folder: str) -> dict[str, Any]:
     p = task_path(cwd, author, folder) / ".hb-task.json"
     return json.loads(p.read_text())
 
@@ -66,19 +67,19 @@ def task_json(cwd: Path, author: str, folder: str) -> dict:
 # ── init ──────────────────────────────────────────────────────────────────────
 
 
-def test_init_creates_hb_dir(tmp_path):
+def test_init_creates_hb_dir(tmp_path: Path) -> None:
     init(tmp_path)
     assert (tmp_path / ".hb").is_dir()
     assert (tmp_path / ".hb" / ".gitkeep").exists()
 
 
-def test_init_idempotent(tmp_path):
+def test_init_idempotent(tmp_path: Path) -> None:
     init(tmp_path)
     init(tmp_path)
     assert (tmp_path / ".hb").is_dir()
 
 
-def test_init_fails_without_hb(tmp_path):
+def test_init_fails_without_hb(tmp_path: Path) -> None:
     result = run(["task", "create", "hasan/abc-1"], tmp_path, ok=False)
     assert ".hb/ directory not found" in result.stderr
 
@@ -86,7 +87,7 @@ def test_init_fails_without_hb(tmp_path):
 # ── task create ───────────────────────────────────────────────────────────────
 
 
-def test_task_create_basic(tmp_path):
+def test_task_create_basic(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     tp = task_path(tmp_path, "hasan", "abc-1")
@@ -98,7 +99,7 @@ def test_task_create_basic(tmp_path):
     assert data["next_step"] == 0
 
 
-def test_task_create_with_extra(tmp_path):
+def test_task_create_with_extra(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1-add-login")
     tp = task_path(tmp_path, "hasan", "abc-1-add-login")
@@ -107,20 +108,20 @@ def test_task_create_with_extra(tmp_path):
     assert data["task_extra"] == "add-login"
 
 
-def test_task_create_idempotent(tmp_path):
+def test_task_create_idempotent(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     task_create(tmp_path, "hasan/abc-1")
     assert task_json(tmp_path, "hasan", "abc-1")["task_id"] == "abc-1"
 
 
-def test_task_create_invalid_name(tmp_path):
+def test_task_create_invalid_name(tmp_path: Path) -> None:
     init(tmp_path)
     result = task_create(tmp_path, "abc-1", ok=False)
     assert "invalid task name" in result.stderr
 
 
-def test_task_create_with_ticket(tmp_path):
+def test_task_create_with_ticket(tmp_path: Path) -> None:
     init(tmp_path)
     ticket = tmp_path / "ticket.md"
     ticket.write_text("# My ticket")
@@ -129,7 +130,7 @@ def test_task_create_with_ticket(tmp_path):
     assert (tp / "ticket").read_text() == "# My ticket"
 
 
-def test_task_create_ticket_same_content_idempotent(tmp_path):
+def test_task_create_ticket_same_content_idempotent(tmp_path: Path) -> None:
     init(tmp_path)
     ticket = tmp_path / "ticket.md"
     ticket.write_text("# My ticket")
@@ -137,7 +138,7 @@ def test_task_create_ticket_same_content_idempotent(tmp_path):
     task_create(tmp_path, "hasan/abc-1", ticket=ticket)
 
 
-def test_task_create_ticket_content_conflict_errors(tmp_path):
+def test_task_create_ticket_content_conflict_errors(tmp_path: Path) -> None:
     init(tmp_path)
     ticket = tmp_path / "ticket.md"
     ticket.write_text("# Original")
@@ -147,7 +148,7 @@ def test_task_create_ticket_content_conflict_errors(tmp_path):
     assert "does not match" in result.stderr
 
 
-def test_task_create_ticket_overwrite(tmp_path):
+def test_task_create_ticket_overwrite(tmp_path: Path) -> None:
     init(tmp_path)
     ticket = tmp_path / "ticket.md"
     ticket.write_text("# Original")
@@ -162,33 +163,33 @@ def test_task_create_ticket_overwrite(tmp_path):
 
 
 @pytest.fixture()
-def task1(tmp_path):
+def task1(tmp_path: Path) -> Path:
     """Initialized repo with one task ready for steps."""
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     return tmp_path
 
 
-def test_step_add_creates_step_folder(task1):
+def test_step_add_creates_step_folder(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     tp = task_path(task1, "hasan", "abc-1")
     assert (tp / "step-0").is_dir()
 
 
-def test_step_add_creates_default_ticket(task1):
+def test_step_add_creates_default_ticket(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     ticket = task_path(task1, "hasan", "abc-1") / "step-0" / "ticket.md"
     assert ticket.read_text() == DEFAULT_TICKET
 
 
-def test_step_add_increments_next_step(task1):
+def test_step_add_increments_next_step(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     assert task_json(task1, "hasan", "abc-1")["next_step"] == 1
     task_step_add(task1, "hasan/abc-1")
     assert task_json(task1, "hasan", "abc-1")["next_step"] == 2
 
 
-def test_step_add_sequential_folders(task1):
+def test_step_add_sequential_folders(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     task_step_add(task1, "hasan/abc-1")
     task_step_add(task1, "hasan/abc-1")
@@ -198,24 +199,24 @@ def test_step_add_sequential_folders(task1):
     assert (tp / "step-2").is_dir()
 
 
-def test_step_add_with_flavor(task1):
+def test_step_add_with_flavor(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1", flavor="scaffold-routes")
     tp = task_path(task1, "hasan", "abc-1")
     assert (tp / "step-0-scaffold-routes").is_dir()
     assert task_json(task1, "hasan", "abc-1")["next_step"] == 1
 
 
-def test_step_add_flavor_invalid(task1):
+def test_step_add_flavor_invalid(task1: Path) -> None:
     result = task_step_add(task1, "hasan/abc-1", flavor="BadFlavor", ok=False)
     assert "invalid flavor" in result.stderr
 
 
-def test_step_add_flavor_starts_with_digit_invalid(task1):
+def test_step_add_flavor_starts_with_digit_invalid(task1: Path) -> None:
     result = task_step_add(task1, "hasan/abc-1", flavor="1-bad", ok=False)
     assert "invalid flavor" in result.stderr
 
 
-def test_step_add_with_ticket(task1, tmp_path):
+def test_step_add_with_ticket(task1: Path, tmp_path: Path) -> None:
     ticket = tmp_path / "step.md"
     ticket.write_text("# Step ticket")
     task_step_add(task1, "hasan/abc-1", ticket=ticket)
@@ -223,29 +224,29 @@ def test_step_add_with_ticket(task1, tmp_path):
     assert dest.read_text() == "# Step ticket"
 
 
-def test_step_add_ticket_non_md_rejected(task1, tmp_path):
+def test_step_add_ticket_non_md_rejected(task1: Path, tmp_path: Path) -> None:
     ticket = tmp_path / "step.txt"
     ticket.write_text("content")
     result = task_step_add(task1, "hasan/abc-1", ticket=ticket, ok=False)
     assert "must end in .md" in result.stderr
 
 
-def test_step_add_ticket_missing_file_rejected(task1, tmp_path):
+def test_step_add_ticket_missing_file_rejected(task1: Path, tmp_path: Path) -> None:
     result = task_step_add(task1, "hasan/abc-1", ticket=tmp_path / "ghost.md", ok=False)
     assert "ticket file not found" in result.stderr
 
 
-def test_step_add_ticket_same_content_skips(task1, tmp_path):
+def test_step_add_ticket_same_content_skips(task1: Path, tmp_path: Path) -> None:
     ticket = tmp_path / "step.md"
     ticket.write_text("# Step")
     task_step_add(task1, "hasan/abc-1", ticket=ticket)
-    result = task_step_add(task1, "hasan/abc-2", ok=False)
+    task_step_add(task1, "hasan/abc-2", ok=False)
     # just confirm first step's ticket is unchanged
     dest = task_path(task1, "hasan", "abc-1") / "step-0" / "ticket.md"
     assert dest.read_text() == "# Step"
 
 
-def test_step_add_ticket_content_conflict_errors(task1, tmp_path):
+def test_step_add_ticket_content_conflict_errors(task1: Path, tmp_path: Path) -> None:
     ticket = tmp_path / "step.md"
     ticket.write_text("# Original")
     task_step_add(task1, "hasan/abc-1", ticket=ticket)
@@ -260,7 +261,7 @@ def test_step_add_ticket_content_conflict_errors(task1, tmp_path):
     assert "does not match" in result.stderr
 
 
-def test_step_add_ticket_overwrite(task1, tmp_path):
+def test_step_add_ticket_overwrite(task1: Path, tmp_path: Path) -> None:
     ticket = tmp_path / "step.md"
     ticket.write_text("# Original")
     task_step_add(task1, "hasan/abc-1", ticket=ticket)
@@ -274,12 +275,12 @@ def test_step_add_ticket_overwrite(task1, tmp_path):
     assert step0.read_text() == "# Original"
 
 
-def test_step_add_task_not_found(task1):
+def test_step_add_task_not_found(task1: Path) -> None:
     result = task_step_add(task1, "hasan/abc-99", ok=False)
     assert "task not found" in result.stderr
 
 
-def test_step_add_default_ticket_idempotent(task1):
+def test_step_add_default_ticket_idempotent(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     # reset next_step to 0 to re-enter same step
     tj = task_path(task1, "hasan", "abc-1") / ".hb-task.json"
@@ -295,7 +296,7 @@ def test_step_add_default_ticket_idempotent(task1):
 # ── commit write-message-file ─────────────────────────────────────────────────
 
 
-def test_commit_write_message_file_basic(tmp_path):
+def test_commit_write_message_file_basic(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     result = run(
@@ -307,7 +308,7 @@ def test_commit_write_message_file_basic(tmp_path):
     assert path.read_text() == "abc-1: add login page\n"
 
 
-def test_commit_write_message_file_with_step(tmp_path):
+def test_commit_write_message_file_with_step(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     result = run(
@@ -318,7 +319,7 @@ def test_commit_write_message_file_with_step(tmp_path):
     assert path.read_text() == "abc-1/step-2: add login page\n"
 
 
-def test_commit_write_message_file_with_long(tmp_path):
+def test_commit_write_message_file_with_long(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
     result = run(
