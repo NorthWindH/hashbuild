@@ -10,18 +10,18 @@ Atomic: call `scripts/hb-sdk` to create or verify the task skeleton for one task
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                          |
-| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See `references/structure.md`. |
-| `--ticket <path>`      | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.         |
-| `--ticket-overwrite`   | no       | Whether to overwrite ticket file if it already exists. Default: false                                |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                          |
+| Parameter              | Required | Description                                                                                                                   |
+| ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See [references/structure.md](references/structure.md). |
+| `--ticket <path>`      | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.                                  |
+| `--ticket-overwrite`   | no       | Whether to overwrite ticket file if it already exists. Default: false                                                         |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                   |
 
 ## Steps
 
 ### 1. Help check
 
-If the first argument is `help`, `--help`, or `-h`: follow `references/skill-help.md`. Stop.
+If the first argument is `help`, `--help`, or `-h`: follow [references/skill-help.md](references/skill-help.md). Stop.
 
 ### 2. Create task skeleton
 
@@ -38,7 +38,7 @@ scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 
 ### 3. Commit
 
-- create a non-step commit by following `references/committing.md` and including any new or changed files related to this task
+- create a non-step commit by following [reference/committing.md](reference/committing.md) and including any new or changed files related to this task
 
 ## Output
 

@@ -5,35 +5,63 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, NoReturn
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
+
+@dataclass(frozen=True)
+class HarnessConfig:
+    path_base: Path
+    path_skills: Path
+    path_perm_skills: Path
+
+    path_settings: Path | None
+    """settings.json path per harness; None = no permission patching for that harness"""
+
+
+class HarnessKey(Enum):
+    Claude = "claude"
+    OpenCode = "opencode"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True)
+class ValidHarnesses:
+    harnesses: tuple[HarnessKey, ...] = field(default_factory=tuple)
+
+
+HARNESS_CLAUDE = HarnessKey("claude")
+HARNESS_OPENCODE = HarnessKey("opencode")
+
 # Base dir that must already exist (signals harness is installed).
 # Skills subdir is created if absent.
-HARNESSES: dict[str, dict[str, Path]] = {
-    "claude": {
-        "base": Path.home() / ".claude",
-        "skills_dir": Path.home() / ".claude" / "skills",
-    },
-    "opencode": {
-        "base": Path.home() / ".config" / "opencode",
-        "skills_dir": Path.home() / ".config" / "opencode" / "skills",
-    },
-}
-
-# settings.json path per harness; None = no permission patching for that harness
-HARNESS_SETTINGS: dict[str, Path | None] = {
-    "claude": Path.home() / ".claude" / "settings.json",
-    "opencode": None,
+HARNESSES: dict[HarnessKey, HarnessConfig] = {
+    HARNESS_CLAUDE: HarnessConfig(
+        path_base=Path.home() / ".claude",
+        path_skills=Path.home() / ".claude" / "skills",
+        path_perm_skills=Path("~") / ".claude" / "skills",
+        path_settings=Path.home() / ".claude" / "settings.json",
+    ),
+    HARNESS_OPENCODE: HarnessConfig(
+        path_base=Path.home() / ".config" / "opencode",
+        path_skills=Path.home() / ".config" / "opencode" / "skills",
+        path_perm_skills=Path("~") / ".config" / "opencode" / "skills",
+        path_settings=Path.home() / ".config" / "opencode" / "opencode.json",
+    ),
 }
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
-def die(msg: str) -> None:
+def die(msg: str) -> NoReturn:
     print(f"error: {msg}", file=sys.stderr)
     sys.exit(1)
 
@@ -42,58 +70,78 @@ def info(msg: str) -> None:
     print(msg)
 
 
-def _detect_harnesses() -> list[str]:
-    return [name for name, cfg in HARNESSES.items() if cfg["base"].is_dir()]
+def _detect_harnesses() -> ValidHarnesses:
+    return ValidHarnesses(tuple(key for key, cfg in HARNESSES.items() if cfg.path_base.is_dir()))
 
 
-def _prompt_harnesses(found: list[str]) -> list[str]:
-    info(f"Detected harnesses: {', '.join(found)}")
+def _prompt_harnesses(found: ValidHarnesses) -> ValidHarnesses:
+    info(f"Detected harnesses: {', '.join(str(h) for h in found.harnesses)}")
     try:
         resp = input("Target all? [Y/n] ").strip().lower()
     except EOFError:
         return found
+
     if resp in ("", "y", "yes"):
         return found
+
     try:
-        raw = input(f"Enter comma-separated subset ({', '.join(found)}): ")
+        raw = input(f"Enter comma-separated subset ({', '.join(str(h) for h in found.harnesses)}): ")
     except EOFError:
         return found
-    picks = [p.strip() for p in raw.split(",") if p.strip()]
-    unknown = [p for p in picks if p not in HARNESSES]
-    if unknown:
-        die(f"unknown harness(es): {', '.join(unknown)}")
-    not_found = [p for p in picks if p not in found]
-    if not_found:
-        die(
-            f"harness base dir not found for: {', '.join(not_found)}\n"
-            f"  ensure the harness is installed before running this script"
-        )
+
+    picks = [HarnessKey(p.strip()) for p in raw.split(",") if p.strip()]
     if not picks:
         die("no harnesses selected")
-    return picks
+
+    return _parse_harness_selection(picks, found)
 
 
-def _skill_files() -> list[Path]:
+def _parse_harness_selection(picks: Sequence[HarnessKey], found: ValidHarnesses) -> ValidHarnesses:
+    unknown = [p for p in picks if p not in HARNESSES]
+    if unknown:
+        die(f"unknown harness(es): {', '.join(str(h) for h in unknown)}")
+
+    not_found = [p for p in picks if p not in found.harnesses]
+    if not_found:
+        die(
+            f"harness base dir not found for: {', '.join(str(h) for h in not_found)}\n"
+            f"  ensure the harness is installed before installing hashbuild to it"
+        )
+
+    return ValidHarnesses(tuple(picks))
+
+
+def _src_skills_dir() -> Path:
     skills_dir = PROJECT_ROOT / "skills"
     if not skills_dir.is_dir():
         die(f"skills/ directory not found at {skills_dir}")
+
+    return skills_dir
+
+
+def _skill_files() -> list[Path]:
+    skills_dir = _src_skills_dir()
     files = sorted(skills_dir.glob("*.md"))
     if not files:
         die(f"no .md files found in {skills_dir}")
     return files
 
 
-def _check_symlink(link: Path, expected_target: Path, label: str) -> None:
+def _check_symlink(link: Path, expected_target: Path) -> None:
     """
     Ensure link is a symlink pointing to expected_target.
     Raises SystemExit with remediation steps on conflict.
     """
+
+    label = link.name
+
     if link.is_symlink():
         actual = Path(os.readlink(link))
         if actual == expected_target:
             return  # already correct — idempotent
+
         print(
-            f"\nerror: symlink conflict\n"
+            f"\nerror: symlink conflict ({label})\n"
             f"  path:             {link}\n"
             f"  expected target:  {expected_target}\n"
             f"  actual target:    {actual}\n"
@@ -101,9 +149,10 @@ def _check_symlink(link: Path, expected_target: Path, label: str) -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+
     if link.exists():
         print(
-            f"\nerror: path conflict — not a symlink\n"
+            f"\nerror: path conflict — not a symlink ({label})\n"
             f"  path:             {link}\n"
             f"  expected:         symlink → {expected_target}\n"
             f"  actual:           existing {'directory' if link.is_dir() else 'file'}\n"
@@ -111,48 +160,135 @@ def _check_symlink(link: Path, expected_target: Path, label: str) -> None:
             file=sys.stderr,
         )
         sys.exit(1)
+
     link.symlink_to(expected_target)
 
 
 # ── settings permission patching ─────────────────────────────────────────────
 
 
-def _permission_entries(skills_dir: Path, skill_names: list[str]) -> list[str]:
-    return [f"Read({skills_dir}/{name}/**)" for name in skill_names]
+@dataclass
+class SettingsUpdateResult:
+    path_settings: Path = field(default_factory=Path)
+    perms_added: list[str] = field(default_factory=list[str])
+    perms_removed: list[str] = field(default_factory=list[str])
+    updated_settings: dict[str, Any] = field(default_factory=dict[str, Any])
+
+    def __bool__(self) -> bool:
+        return bool(self.perms_added or self.perms_removed)
+
+    def flush(self) -> None:
+        """Write results to disk"""
+
+        if not self.updated_settings:
+            die("empty settings data; nothing to write")
+
+        self.path_settings.write_text(json.dumps(self.updated_settings, indent=2) + "\n")
 
 
-def _pending_add(settings_path: Path, entries: list[str]) -> list[str]:
-    if not settings_path.exists():
-        return list(entries)
-    data = json.loads(settings_path.read_text())
-    existing = set(data.get("permissions", {}).get("allow", []))
-    return [e for e in entries if e not in existing]
+class SettingsPatcher:
+    _harness: HarnessKey
+    _skill_names: list[str]
+    _src_skills_dir: Path
 
+    def __init__(self, harness: HarnessKey, src_skills_dir: Path, skill_names: list[str]) -> None:
+        self._harness = harness
+        self._skill_names = skill_names
+        self._src_skills_dir = src_skills_dir
 
-def _pending_remove(settings_path: Path, entries: list[str]) -> list[str]:
-    if not settings_path.exists():
-        return []
-    data = json.loads(settings_path.read_text())
-    existing = set(data.get("permissions", {}).get("allow", []))
-    return [e for e in entries if e in existing]
+    def _permission_entries(self) -> list[str]:
+        perms = list[str]()
+        for name in self._skill_names:
+            match self._harness:
+                # Add individual skill directories and resolved path
+                case HarnessKey.Claude:
+                    cfg = HARNESSES[HARNESS_CLAUDE]
+                    target = str(cfg.path_perm_skills / name / "**")
+                    perm = f"Read({target})"
+                    perms.append(perm)
 
+                case HarnessKey.OpenCode:
+                    cfg = HARNESSES[HARNESS_OPENCODE]
+                    perm = str(cfg.path_perm_skills / name / "*")
+                    perms.append(perm)
 
-def _patch_settings(settings_path: Path, entries: list[str]) -> None:
-    data: dict[str, Any] = json.loads(settings_path.read_text()) if settings_path.exists() else {}
-    allow: list[str] = data.setdefault("permissions", {}).setdefault("allow", [])
-    existing = set(allow)
-    allow.extend(e for e in entries if e not in existing)
-    settings_path.write_text(json.dumps(data, indent=2) + "\n")
+                case _:
+                    raise ValueError(self._harness)
 
+        match self._harness:
+            case HarnessKey.Claude:
+                target = "/" + str(self._src_skills_dir.resolve() / "**")
+                perm = f"Read({target})"
+                perms.append(perm)
 
-def _unpatch_settings(settings_path: Path, entries: list[str]) -> None:
-    if not settings_path.exists():
-        return
-    data = json.loads(settings_path.read_text())
-    to_remove = set(entries)
-    allow = data.get("permissions", {}).get("allow", [])
-    data["permissions"]["allow"] = [e for e in allow if e not in to_remove]
-    settings_path.write_text(json.dumps(data, indent=2) + "\n")
+            case HarnessKey.OpenCode:
+                perm = str(self._src_skills_dir / "*")
+                perms.append(perm)
+
+            case _:
+                raise ValueError(self._harness)
+
+        return perms
+
+    def _read_settings(self) -> dict[str, Any]:
+        cfg = HARNESSES[self._harness]
+        path_settings = cfg.path_settings
+        if not path_settings or not path_settings.exists():
+            return dict()
+
+        data: dict[str, Any] = json.loads(path_settings.read_text())
+        return data
+
+    def _update(self, action: Literal["install", "uninstall"]) -> SettingsUpdateResult:
+        cfg = HARNESSES[self._harness]
+        path_settings = cfg.path_settings
+        if not path_settings:
+            die(f"settings path not found for harness {self._harness}")
+
+        data = self._read_settings()
+        entries = self._permission_entries()
+        result = SettingsUpdateResult(
+            path_settings=path_settings,
+            updated_settings=data,
+        )
+
+        match self._harness:
+            case HarnessKey.Claude:
+                allow_cl: list[str] = data.setdefault("permissions", {}).setdefault("allow", [])
+                existing = set(allow_cl)
+                match action:
+                    case "install":
+                        result.perms_added = sorted(e for e in entries if e not in existing)
+                        allow_cl.extend(result.perms_added)
+
+                    case "uninstall":
+                        result.perms_removed = sorted(e for e in entries if e in existing)
+                        for e in result.perms_removed:
+                            allow_cl.remove(e)
+
+            case HarnessKey.OpenCode:
+                allow_oc: dict[str, str] = data.setdefault("permission", {}).setdefault("read", {})
+                match action:
+                    case "install":
+                        result.perms_added = sorted(e for e in entries if e not in allow_oc)
+                        for e in result.perms_added:
+                            allow_oc[e] = "allow"
+
+                    case "uninstall":
+                        result.perms_removed = sorted(e for e in entries if e in allow_oc)
+                        for e in result.perms_removed:
+                            del allow_oc[e]
+
+            case _:
+                raise ValueError(self._harness)
+
+        return result
+
+    def install(self) -> SettingsUpdateResult:
+        return self._update("install")
+
+    def uninstall(self) -> SettingsUpdateResult:
+        return self._update("uninstall")
 
 
 def _confirm(prompt: str) -> bool:
@@ -166,14 +302,16 @@ def _confirm(prompt: str) -> bool:
 # ── install / uninstall ───────────────────────────────────────────────────────
 
 
-def _install_skill(skill_file: Path, skills_dir: Path) -> None:
-    skill_name = skill_file.stem
-    skill_dir = skills_dir / skill_name
-    skill_dir.mkdir(parents=True, exist_ok=True)
+def _install_skill(src_skill_file: Path, dst_skills_dir: Path) -> None:
+    skill_name = src_skill_file.stem
+    dst_skill_dir = dst_skills_dir / skill_name
+    dst_skill_dir.mkdir(parents=True, exist_ok=True)
 
-    _check_symlink(skill_dir / "SKILL.md", skill_file.resolve(), "SKILL.md")
-    _check_symlink(skill_dir / "references", (PROJECT_ROOT / "references").resolve(), "references/")
-    _check_symlink(skill_dir / "scripts", (PROJECT_ROOT / "scripts").resolve(), "scripts/")
+    src_skill_dir = src_skill_file.parent
+
+    _check_symlink(dst_skill_dir / "SKILL.md", src_skill_file.resolve())
+    _check_symlink(dst_skill_dir / "references", (src_skill_dir / "references").resolve())
+    _check_symlink(dst_skill_dir / "scripts", (src_skill_dir / "scripts").resolve())
 
     info(f"    [ok] {skill_name}")
 
@@ -211,13 +349,16 @@ def _uninstall_skill(skill_file: Path, skills_dir: Path) -> None:
         info(f"    [ok] removed {skill_name}")
 
 
-def run_install(harnesses: list[str]) -> None:
-    skill_files = _skill_files()
-    for harness in harnesses:
+def run_install(picks: ValidHarnesses) -> None:
+    src_skill_files = _skill_files()
+    for i, harness in enumerate(picks.harnesses):
+        if i > 0:
+            info("")
+
         cfg = HARNESSES[harness]
-        base: Path = cfg["base"]
-        skills_dir: Path = cfg["skills_dir"]
-        settings_path: Path | None = HARNESS_SETTINGS.get(harness)
+        base = cfg.path_base
+        dst_skills_dir: Path = cfg.path_skills
+        settings_path = cfg.path_settings
 
         if not base.is_dir():
             die(
@@ -225,35 +366,38 @@ def run_install(harnesses: list[str]) -> None:
                 f"  ensure {harness} is installed before running this script"
             )
 
-        skills_dir.mkdir(parents=True, exist_ok=True)
-        info(f"  harness: {harness} ({skills_dir})")
+        dst_skills_dir.mkdir(parents=True, exist_ok=True)
+        info(f"  harness: {harness} ({dst_skills_dir})")
 
-        for skill_file in skill_files:
-            _install_skill(skill_file, skills_dir)
+        for src_skill_file in src_skill_files:
+            _install_skill(src_skill_file, dst_skills_dir)
 
         if settings_path is not None:
-            names = [f.stem for f in skill_files]
-            entries = _permission_entries(skills_dir, names)
-            to_add = _pending_add(settings_path, entries)
-            if not to_add:
+            names = [f.stem for f in src_skill_files]
+            patcher = SettingsPatcher(harness, _src_skills_dir(), names)
+            result = patcher.install()
+            if not result:
                 info(f"  [skip] read permissions already present in {settings_path}")
             else:
                 info(f"\n  The following read permissions will be added to {settings_path}:")
-                for e in to_add:
+                for e in result.perms_added:
                     info(f"    {e}")
                 if _confirm("  Apply? [Y/n] "):
-                    _patch_settings(settings_path, to_add)
+                    result.flush()
                     info(f"  [ok] patched {settings_path}")
                 else:
                     info("  [skip] skipped settings patch")
 
 
-def run_uninstall(harnesses: list[str]) -> None:
+def run_uninstall(picks: ValidHarnesses) -> None:
     skill_files = _skill_files()
-    for harness in harnesses:
+    for i, harness in enumerate(picks.harnesses):
+        if i > 0:
+            info("")
+
         cfg = HARNESSES[harness]
-        skills_dir: Path = cfg["skills_dir"]
-        settings_path: Path | None = HARNESS_SETTINGS.get(harness)
+        skills_dir = cfg.path_skills
+        settings_path = cfg.path_settings
         info(f"  harness: {harness} ({skills_dir})")
 
         if not skills_dir.exists():
@@ -264,16 +408,16 @@ def run_uninstall(harnesses: list[str]) -> None:
 
         if settings_path is not None:
             names = [f.stem for f in skill_files]
-            entries = _permission_entries(skills_dir, names)
-            to_remove = _pending_remove(settings_path, entries)
-            if not to_remove:
+            patcher = SettingsPatcher(harness, _src_skills_dir(), names)
+            result = patcher.uninstall()
+            if not result:
                 info(f"  [skip] no matching permissions found in {settings_path}")
             else:
                 info(f"\n  The following read permissions will be removed from {settings_path}:")
-                for e in to_remove:
+                for e in result.perms_removed:
                     info(f"    {e}")
                 if _confirm("  Remove? [Y/n] "):
-                    _unpatch_settings(settings_path, to_remove)
+                    result.flush()
                     info(f"  [ok] cleaned {settings_path}")
                 else:
                     info("  [skip] skipped settings cleanup")
@@ -283,14 +427,15 @@ def run_uninstall(harnesses: list[str]) -> None:
 
 
 def main() -> None:
+    harnessess_str = [str(h) for h in HARNESSES]
     parser = argparse.ArgumentParser(description="Install or uninstall Hashbuild skills into LLM harnesses.")
     parser.add_argument(
         "--harness",
         metavar="NAME",
-        choices=list(HARNESSES),
+        choices=harnessess_str,
         action="append",
         dest="harnesses",
-        help=f"target harness ({', '.join(HARNESSES)}); repeat for multiple; default: auto-detect",
+        help=f"target harness ({', '.join(harnessess_str)}); repeat for multiple; default: auto-detect",
     )
     parser.add_argument(
         "--uninstall",
@@ -299,15 +444,18 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    harnesses: list[str] = args.harnesses or []
+    found = _detect_harnesses()
+    if not found:
+        die(
+            "no supported harnesses detected\n"
+            + "\n".join(f"  {name}: {cfg.path_base} (not found)" for name, cfg in HARNESSES.items())
+        )
 
-    if not harnesses:
-        found = _detect_harnesses()
-        if not found:
-            die(
-                "no supported harnesses detected\n"
-                + "\n".join(f"  {name}: {cfg['base']} (not found)" for name, cfg in HARNESSES.items())
-            )
+    harnesses = ValidHarnesses()
+    if args.harnesses:
+        picks = [HarnessKey(h) for h in args.harnesses]
+        harnesses = _parse_harness_selection(picks, found)
+    else:
         harnesses = _prompt_harnesses(found)
 
     action = "Uninstalling" if args.uninstall else "Installing"
