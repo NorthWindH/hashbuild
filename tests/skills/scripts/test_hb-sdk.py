@@ -308,6 +308,12 @@ def test_step_path_by_step_n(task1: Path) -> None:
     assert result.stdout.strip().endswith("step-0")
 
 
+def test_step_path_by_full_step_name(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1", flavor="some-stuff")
+    result = run(["task", "step", "path", "hasan/abc-1/step-0-some-stuff"], task1)
+    assert result.stdout.strip().endswith("step-0-some-stuff")
+
+
 def test_step_path_task_flavor_optional(task1: Path) -> None:
     task_step_add(task1, "hasan/abc-1")
     result_short = run(["task", "step", "path", "hasan/abc-1/0"], task1)

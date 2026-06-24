@@ -279,7 +279,7 @@ def _def_cli_task(subs: typing.Any) -> None:
     p_sp.add_argument(
         "step_ref",
         metavar="<step_ref>",
-        help="Step reference: author/task_id[-extra]/<step_n> where step_n is an integer or step-<n>",
+        help="Step reference: author/task_id[-extra]/<step_n> where step_n is an integer, step-<n>, or step-<n>-<flavor>",
     )
     p_sp.set_defaults(func=cmd_task_step_path)
 
@@ -377,16 +377,17 @@ def _parse_step_ref(ref: str) -> tuple[TaskName, int]:
         _die(
             f"error: invalid step ref '{ref}'\n"
             f"  expected: <author>/<task_id>[-extra]/<step_n>\n"
-            f"  step_n: integer or step-<n>"
+            f"  step_n: integer, step-<n>, or step-<n>-<flavor>"
         )
     task_part, step_part = parts
-    step_str = step_part.removeprefix("step-")
+    # accept: "0", "step-0", "step-0-some-flavor"
+    n_str = step_part.removeprefix("step-").split("-")[0]
     try:
-        step_n = int(step_str)
+        step_n = int(n_str)
     except ValueError:
         _die(
             f"error: invalid step id '{step_part}' in '{ref}'\n"
-            f"  expected integer or step-<n>"
+            f"  expected: integer, step-<n>, or step-<n>-<flavor>"
         )
     tn = _parse_task_name(task_part)
     return tn, step_n

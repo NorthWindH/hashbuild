@@ -13,7 +13,7 @@ Generate or update the `plan.md` for one task step. Reads `ticket.md` from the s
 
 | Parameter              | Required | Description                                                                                                                                          |
 | ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` is an integer or `step-<n>`. |
+| `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                          |
 
 ## Steps
