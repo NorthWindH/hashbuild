@@ -275,6 +275,14 @@ def _def_cli_task(subs: typing.Any) -> None:
     )
     p_sa.set_defaults(func=cmd_task_step_add)
 
+    p_sp = step_subs.add_parser("path", help="Print absolute path of a step folder")
+    p_sp.add_argument(
+        "step_ref",
+        metavar="<step_ref>",
+        help="Step reference: author/task_id[-extra]/<step_n> where step_n is an integer or step-<n>",
+    )
+    p_sp.set_defaults(func=cmd_task_step_path)
+
 
 # ── task step add ─────────────────────────────────────────────────────────────
 
@@ -358,6 +366,63 @@ def cmd_task_step_add(args: argparse.Namespace) -> None:
 
     _progress("task step add done")
     report_paths(paths)
+
+
+# ── task step path ────────────────────────────────────────────────────────────
+
+
+def _parse_step_ref(ref: str) -> tuple[TaskName, int]:
+    parts = ref.rsplit("/", 1)
+    if len(parts) != 2:
+        _die(
+            f"error: invalid step ref '{ref}'\n"
+            f"  expected: <author>/<task_id>[-extra]/<step_n>\n"
+            f"  step_n: integer or step-<n>"
+        )
+    task_part, step_part = parts
+    step_str = step_part.removeprefix("step-")
+    try:
+        step_n = int(step_str)
+    except ValueError:
+        _die(
+            f"error: invalid step id '{step_part}' in '{ref}'\n"
+            f"  expected integer or step-<n>"
+        )
+    tn = _parse_task_name(task_part)
+    return tn, step_n
+
+
+def _find_step_folder(task_path: Path, step_n: int) -> Path:
+    prefix = f"step-{step_n}"
+    matches = [
+        p for p in task_path.iterdir()
+        if p.is_dir() and (p.name == prefix or p.name.startswith(prefix + "-"))
+    ]
+    if len(matches) == 0:
+        _die(f"error: step {step_n} not found in {task_path.absolute()}")
+    if len(matches) > 1:
+        _die(
+            f"error: multiple step folders for step {step_n} in {task_path.absolute()}:\n"
+            + "\n".join(str(m.absolute()) for m in sorted(matches))
+        )
+    return matches[0]
+
+
+def cmd_task_step_path(args: argparse.Namespace) -> None:
+    tn, step_n = _parse_step_ref(args.step_ref)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {tn.author}/{tn.task_id}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    task_path = matching_tasks[0][0]
+    step_path = _find_step_folder(task_path, step_n)
+    print(step_path.absolute())
 
 
 # ── commit write-message-file ─────────────────────────────────────────────────

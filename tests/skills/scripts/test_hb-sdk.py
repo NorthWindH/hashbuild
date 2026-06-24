@@ -293,6 +293,43 @@ def test_step_add_default_ticket_idempotent(task1: Path) -> None:
     assert dest.read_text() == DEFAULT_TICKET
 
 
+# ── task step path ────────────────────────────────────────────────────────────
+
+
+def test_step_path_by_integer(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1", flavor="scaffold-routes")
+    result = run(["task", "step", "path", "hasan/abc-1/0"], task1)
+    assert result.stdout.strip().endswith("step-0-scaffold-routes")
+
+
+def test_step_path_by_step_n(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    result = run(["task", "step", "path", "hasan/abc-1/step-0"], task1)
+    assert result.stdout.strip().endswith("step-0")
+
+
+def test_step_path_task_flavor_optional(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    result_short = run(["task", "step", "path", "hasan/abc-1/0"], task1)
+    result_full = run(["task", "step", "path", "hasan/abc-1/0"], task1)
+    assert result_short.stdout.strip() == result_full.stdout.strip()
+
+
+def test_step_path_not_found(task1: Path) -> None:
+    result = run(["task", "step", "path", "hasan/abc-1/99"], task1, ok=False)
+    assert "step 99 not found" in result.stderr
+
+
+def test_step_path_task_not_found(task1: Path) -> None:
+    result = run(["task", "step", "path", "hasan/abc-99/0"], task1, ok=False)
+    assert "task not found" in result.stderr
+
+
+def test_step_path_invalid_step_id(task1: Path) -> None:
+    result = run(["task", "step", "path", "hasan/abc-1/bad"], task1, ok=False)
+    assert "invalid step id" in result.stderr
+
+
 # ── commit write-message-file ─────────────────────────────────────────────────
 
 
