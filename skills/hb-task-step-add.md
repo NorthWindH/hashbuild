@@ -13,7 +13,7 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to add the next step folder to
 
 | Parameter              | Required | Description                                                                                                                                       |
 | ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
+| `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. The flavor is optional — the SDK matches on author and task ID alone. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
 | `--flavor <slug>`      | no       | Optional step flavor suffix appended to the step folder name (e.g. `scaffold-routes` → `step-0-scaffold-routes`). Slug chars: `[a-z-]`.           |
 | `--ticket <path>`      | no       | Path to a `.md` ticket file. When provided, copied to `ticket.md` inside the new step folder instead of generating the default template.          |
 | `--ticket-overwrite`   | no       | Whether to overwrite an existing `ticket.md` if its content differs. Default: false                                                               |
@@ -34,7 +34,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 - include `--flavor <slug>` only when a flavor was provided
 - include `--ticket <ticket_path>` only when a ticket file was provided
 - include `--ticket-overwrite` only when `--ticket-overwrite` was provided
-- `<name>` is the fully-qualified name exactly as received (e.g. `author/abc-123-some-stuff`)
+- `<name>` is the task name exactly as received; flavor is optional (e.g. `author/abc-123` or `author/abc-123-some-stuff`)
 - the SDK reads `next_step` from `.hb-task.json`, creates the folder, then increments `next_step`
 - capture the paths reported through stdout for use in the next step
 - if an error occurs, present error message on stderr verbatim
