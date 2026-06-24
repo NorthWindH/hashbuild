@@ -1,6 +1,7 @@
 """Tests for skills/scripts/hb-sdk"""
 
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -334,6 +335,25 @@ def test_step_path_task_not_found(task1: Path) -> None:
 def test_step_path_invalid_step_id(task1: Path) -> None:
     result = run(["task", "step", "path", "hasan/abc-1/bad"], task1, ok=False)
     assert "invalid step id" in result.stderr
+
+
+# ── task step execution-slug ──────────────────────────────────────────────────
+
+EXECUTION_SLUG_RE = re.compile(r"^execution-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}[+-]\d{4}\.md$")
+
+
+def test_execution_slug_format(tmp_path: Path) -> None:
+    result = run(["task", "step", "execution-slug"], tmp_path)
+    slug = result.stdout.strip()
+    assert EXECUTION_SLUG_RE.match(slug), f"unexpected slug format: {slug!r}"
+
+
+def test_execution_slug_unique(tmp_path: Path) -> None:
+    import time
+    r1 = run(["task", "step", "execution-slug"], tmp_path)
+    time.sleep(1.1)
+    r2 = run(["task", "step", "execution-slug"], tmp_path)
+    assert r1.stdout.strip() != r2.stdout.strip()
 
 
 # ── commit write-message-file ─────────────────────────────────────────────────

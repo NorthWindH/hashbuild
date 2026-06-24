@@ -283,6 +283,11 @@ def _def_cli_task(subs: typing.Any) -> None:
     )
     p_sp.set_defaults(func=cmd_task_step_path)
 
+    p_es = step_subs.add_parser(
+        "execution-slug", help="Print an execution filename slug with local timestamp"
+    )
+    p_es.set_defaults(func=cmd_task_step_execution_slug)
+
 
 # ── task step add ─────────────────────────────────────────────────────────────
 
@@ -424,6 +429,14 @@ def cmd_task_step_path(args: argparse.Namespace) -> None:
     task_path = matching_tasks[0][0]
     step_path = _find_step_folder(task_path, step_n)
     print(step_path.absolute())
+
+
+# ── task step execution-slug ──────────────────────────────────────────────────
+
+
+def cmd_task_step_execution_slug(args: argparse.Namespace) -> None:
+    ts = datetime.now().astimezone().strftime("%Y-%m-%dT%H-%M-%S%z")
+    print(f"execution-{ts}.md")
 
 
 # ── commit write-message-file ─────────────────────────────────────────────────
