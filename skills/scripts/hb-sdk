@@ -312,6 +312,7 @@ def cmd_task_step_add(args: argparse.Namespace) -> None:
     _exists_or_do(step_path, lambda p: p.mkdir(parents=True, exist_ok=True))
     paths.append(step_path)
 
+    ticket_dest_path = _path_step_ticket(step_path)
     if args.ticket:
         ticket_path = Path(args.ticket)
         if not ticket_path.exists():
@@ -320,7 +321,6 @@ def cmd_task_step_add(args: argparse.Namespace) -> None:
             _die(f"error: ticket file must end in .md: {args.ticket}")
 
         ticket_src = ticket_path.read_text()
-        ticket_dest_path = _path_step_ticket(step_path)
         if not ticket_dest_path.exists():
             _progress("importing ticket ...")
             ticket_dest_path.write_text(ticket_src)
@@ -338,8 +338,13 @@ def cmd_task_step_add(args: argparse.Namespace) -> None:
                 ticket_dest_path.write_text(ticket_src)
             else:
                 _progress("ticket has not changed, skipping ticket update")
+    else:
+        _exists_or_do(
+            ticket_dest_path,
+            lambda p: p.write_text("# Background\n\n- \n\n# Acceptance Criteria\n\n1. \n"),
+        )
 
-        paths.append(ticket_dest_path)
+    paths.append(ticket_dest_path)
 
     data["next_step"] = step_n + 1
 
