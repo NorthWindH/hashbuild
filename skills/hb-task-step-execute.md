@@ -2,7 +2,7 @@
 name: hb-task-step-execute
 description: >
   Read plan.md in a step folder and execute the plan, then record an execution summary.
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write Edit Bash(*) 
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write Edit Bash(*)
 ---
 
 # hb-task-step-execute
@@ -11,10 +11,10 @@ Execute the plan described in `plan.md` for one task step, then write an executi
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                                         |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                         |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
 ## Steps
 
@@ -48,11 +48,8 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 ```
 
 - captures the output as `$SLUG`
-- write `$STEP_PATH/$SLUG` with a structured summary of this execution:
-  - what was done (tasks completed)
-  - outcome per acceptance criterion from `plan.md`
-  - any deviations from the plan and their justification
-  - commands run and their results where relevant
+- read [${CLAUDE_SKILL_DIR}/references/execution-template.md](references/execution-template.md) for the required structure
+- write `$STEP_PATH/$SLUG` populated from that template with the factual record of this execution
 
 ### 6. Commit
 
