@@ -355,6 +355,11 @@ def test_step_number_from_full_step_name(tmp_path: Path) -> None:
     assert result.stdout.strip() == "99"
 
 
+def test_step_number_with_task_flavor(tmp_path: Path) -> None:
+    result = run(["task", "step", "number", "hasan/abc-1-some-task/step-5"], tmp_path)
+    assert result.stdout.strip() == "5"
+
+
 def test_step_number_invalid(tmp_path: Path) -> None:
     result = run(["task", "step", "number", "hasan/abc-1/bad"], tmp_path, ok=False)
     assert "invalid step id" in result.stderr
