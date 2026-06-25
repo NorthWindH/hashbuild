@@ -12,9 +12,9 @@ essential ticket fields at creation time removes that gap and keeps the workflow
 1. `hb-task-create <name>` (no `--ticket`) enters interactive mode and asks the user
    for Background and Acceptance Criteria, then writes a conforming `ticket.md` to the
    task folder before committing.
-    1. The generated `ticket.md` follows the structure in `ticket-template.md`
-       (Background, Acceptance Criteria, Out of scope sections).
-    2. The commit includes the generated `ticket.md`.
+   1. The generated `ticket.md` follows the structure in `ticket-template.md`
+      (Background, Acceptance Criteria, Out of scope sections).
+   2. The commit includes the generated `ticket.md`.
 2. `hb-task-step-add <name>` (no `--ticket`) applies the same interactive flow and
    writes `ticket.md` to the step folder before committing.
 3. Passing `--no-interactive` to either skill skips the prompt and creates the skeleton
@@ -27,7 +27,9 @@ essential ticket fields at creation time removes that gap and keeps the workflow
 
 # Out of scope
 
-- Modifying any other hb-* skills.
+- Modifying any other hb-\* skills.
 - Validating the quality or completeness of user-provided answers — the prompt collects
-  and writes what the user types verbatim.
+  and converts what the user writes into background and acceptance criteria.
+  - if it's already in the right form (background section, acceptance criteria section, optional Out Of Scope section),
+    then can transcribe what the user wrote verbatim
 - Adding `--no-interactive` to skills other than `hb-task-create` and `hb-task-step-add`.
