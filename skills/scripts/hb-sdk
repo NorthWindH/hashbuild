@@ -533,6 +533,155 @@ def cmd_task_step_execution_slug(args: argparse.Namespace) -> None:
     print(f"execution-{ts}.md")
 
 
+# ── summarize ─────────────────────────────────────────────────────────────────
+
+
+@dataclass
+class _StepInfo:
+    name: str
+    has_ticket: bool
+    has_plan: bool
+    has_execution: bool
+
+
+@dataclass
+class _TaskInfo:
+    author: str
+    task_id: str
+    task_folder: str
+    task_path: Path
+    has_ticket: bool
+    steps: list["_StepInfo"]
+
+    @property
+    def steps_pending_execution(self) -> int:
+        return sum(1 for s in self.steps if not s.has_execution)
+
+    @property
+    def next_pending_step(self) -> str | None:
+        for s in self.steps:
+            if not s.has_execution:
+                return s.name
+        return None
+
+
+def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
+    tn = _parse_task_name(f"{author}/{task_path.name}")
+    steps = list[_StepInfo]()
+    for step_path in _list_step_folders(task_path):
+        has_execution = any(
+            p.is_file() and p.name.startswith("execution-") and p.name.endswith(".md")
+            for p in step_path.iterdir()
+        )
+        steps.append(
+            _StepInfo(
+                name=step_path.name,
+                has_ticket=(step_path / "ticket.md").exists(),
+                has_plan=(step_path / "plan.md").exists(),
+                has_execution=has_execution,
+            )
+        )
+    return _TaskInfo(
+        author=tn.author,
+        task_id=tn.task_id,
+        task_folder=task_path.name,
+        task_path=task_path,
+        has_ticket=(task_path / "ticket.md").exists(),
+        steps=steps,
+    )
+
+
+def cmd_summarize(args: argparse.Namespace) -> None:
+    hb = _path_hb()
+
+    if not hb.exists():
+        print(
+            json.dumps(
+                {
+                    "initialized": False,
+                    "active_tasks": [],
+                    "archive": {"count": 0, "last_archived": None},
+                },
+                indent=2,
+            )
+        )
+        return
+
+    active_tasks = list[_TaskInfo]()
+    active_base = hb / "task" / TASK_FOLDER_ACTIVE
+    if active_base.exists():
+        for author_dir in sorted(active_base.iterdir()):
+            if not author_dir.is_dir():
+                continue
+            for task_dir in sorted(author_dir.iterdir()):
+                if not task_dir.is_dir():
+                    continue
+                active_tasks.append(_summarize_task(task_dir, author_dir.name))
+
+    archived_count = 0
+    last_archived_path: Path | None = None
+    last_archived_mtime: float = -1.0
+
+    archive_base = hb / "task" / TASK_FOLDER_ARCHIVE
+    if archive_base.exists():
+        for author_dir in archive_base.iterdir():
+            if not author_dir.is_dir():
+                continue
+            for task_dir in author_dir.iterdir():
+                if not task_dir.is_dir():
+                    continue
+                archived_count += 1
+                mtime = task_dir.stat().st_mtime
+                if mtime > last_archived_mtime:
+                    last_archived_mtime = mtime
+                    last_archived_path = task_dir
+
+    last_archived: str | None = None
+    if last_archived_path is not None:
+        tn = _parse_task_name(f"{last_archived_path.parent.name}/{last_archived_path.name}")
+        last_archived = f"{tn.author}/{tn.task_id}"
+
+    print(
+        json.dumps(
+            {
+                "initialized": True,
+                "active_tasks": [
+                    {
+                        "author": t.author,
+                        "task_id": t.task_id,
+                        "task_folder": t.task_folder,
+                        "task_path": str(t.task_path.absolute()),
+                        "has_ticket": t.has_ticket,
+                        "total_steps": len(t.steps),
+                        "steps": [
+                            {
+                                "name": s.name,
+                                "has_ticket": s.has_ticket,
+                                "has_plan": s.has_plan,
+                                "has_execution": s.has_execution,
+                            }
+                            for s in t.steps
+                        ],
+                        "steps_pending_execution": t.steps_pending_execution,
+                        "next_pending_step": t.next_pending_step,
+                    }
+                    for t in active_tasks
+                ],
+                "archive": {
+                    "count": archived_count,
+                    "last_archived": last_archived,
+                },
+            },
+            indent=2,
+        )
+    )
+
+
+def _def_cli_summarize(subs: typing.Any) -> None:
+    p = subs.add_parser("summarize", help="Print workspace summary as JSON for status reporting")
+    p.set_defaults(func=cmd_summarize)
+
+
 # ── commit write-message-file ─────────────────────────────────────────────────
 
 
@@ -591,6 +740,7 @@ def main() -> None:
 
     _def_cli_init(subs)
     _def_cli_task(subs)
+    _def_cli_summarize(subs)
     _def_cli_commit(subs)
 
     args = parser.parse_args()
