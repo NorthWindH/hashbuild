@@ -32,6 +32,8 @@ Tell the user:
 
 > Hashbuild is ready. To start your first task, `/clear` this conversation to free context, then run `/hb-task-create` with the task name and an optional ticket file.
 >
+> At any point, run `/hb-status` to see the current state of all active tasks and get a recommended next action.
+>
 > A ticket file is a Markdown file that defines what the task must achieve. It has three sections:
 >
 > - **Background** — one sentence (or more, if needed) on what you need and why
@@ -39,9 +41,11 @@ Tell the user:
 > - **Out of scope** — what this task deliberately does not do
 >
 > Example invocation:
+>
 > ```
 > /hb-task-create author/abc-123-my-task --ticket path/to/ticket.md
 > ```
+>
 > The ticket file is optional — you can add it later — but starting with one keeps planning grounded.
 
 ## Output
