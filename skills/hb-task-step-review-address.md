@@ -63,7 +63,8 @@ Skip this step entirely if `--no-todo-scan` was passed.
 3. Parse the diff output:
    - Track the current file path from `+++ b/<path>` lines
    - Collect all added lines (starting with `+`, not `+++`) that contain `TODO REVIEW` (case-insensitive)
-   - For each match, record: the file path, the full comment text (the portion of the line after `TODO REVIEW`), and the surrounding diff context (nearby lines)
+   - For each marker line found, also collect any **continuation lines**: subsequent added lines that extend the same comment (same comment prefix — `//`, `#`, ` *`, etc. — and no new `TODO REVIEW` marker), stopping when the comment block ends (blank line, non-comment line, closing `*/`, or a new `TODO REVIEW` marker)
+   - For each match, record: the file path, the full comment text (marker line plus all continuation lines, stripped of comment prefixes), and the surrounding diff context (nearby lines)
 
 4. Group tightly coupled comments: when multiple `TODO REVIEW` comments in the same file are clearly part of a range or describe the same concern (e.g. "make change from here:" followed later by "to here"), treat them as a single concern. Prefer one concern per comment when coupling is ambiguous.
 
@@ -143,7 +144,13 @@ Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
 
 #### 8d. Delete TODO REVIEW comment(s)
 
-If the concern was sourced from one or more `TODO REVIEW` comments (indicated by a **source:** line in the concern body), delete those comment lines from the referenced file(s). Search the file for lines containing the exact `TODO REVIEW` comment text recorded in the **source:** note and remove the entire line. Do this before or as part of the commit in the next sub-step.
+If the concern was sourced from one or more `TODO REVIEW` comments (indicated by a **source:** line in the concern body), delete those comment lines from the referenced file(s):
+
+- Locate the marker line by searching for `TODO REVIEW` with the recorded comment text
+- Also delete any continuation lines that were captured as part of the same multi-line comment (i.e. the lines immediately following the marker that extend the comment, as described in step 4.3)
+- Remove all of these lines entirely from the file
+
+Do this before or as part of the commit in the next sub-step.
 
 #### 8e. Commit
 
