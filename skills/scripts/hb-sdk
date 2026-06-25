@@ -339,10 +339,20 @@ def cmd_task_archive(args: argparse.Namespace) -> None:
     if dest.exists():
         _die(f"error: destination already exists: {dest.absolute()}")
 
+    paths = list[Path]()
+    paths.append(task_path)
+
+    active_author_dir = active_base / tn.author
     task_path.rename(dest)
     _progress(f"archived task to {dest.absolute()}")
+    paths.append(dest)
 
-    report_paths([dest])
+    if active_author_dir.exists() and not any(active_author_dir.iterdir()):
+        active_author_dir.rmdir()
+        _progress(f"removed empty author directory: {active_author_dir.absolute()}")
+        paths.append(active_author_dir)
+
+    report_paths(paths)
 
 
 # ── task step add ─────────────────────────────────────────────────────────────
