@@ -26,6 +26,24 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk init
 
 - create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task
 
+### 4. Prompt user to create their first task
+
+Tell the user:
+
+> Hashbuild is ready. To start your first task, `/clear` this conversation to free context, then run `/hb-task-create` with the task name and an optional ticket file.
+>
+> A ticket file is a Markdown file that defines what the task must achieve. It has three sections:
+>
+> - **Background** — one sentence (or more, if needed) on what you need and why
+> - **Acceptance Criteria** — numbered, concrete, checkable conditions; every criterion must be falsifiable ("input X produces output Y", not "handles X correctly")
+> - **Out of scope** — what this task deliberately does not do
+>
+> Example invocation:
+> ```
+> /hb-task-create author/abc-123-my-task --ticket path/to/ticket.md
+> ```
+> The ticket file is optional — you can add it later — but starting with one keeps planning grounded.
+
 ## Output
 
 Report the task path and changed/created files. If any command fails, surface the error verbatim to the caller.
