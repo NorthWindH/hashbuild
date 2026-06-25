@@ -45,6 +45,10 @@ To uninstall:
 python install --uninstall
 ```
 
+### Idempotency
+
+Install and uninstall actions are idempotent so you can feel free to call them repeatedly and in any order.
+
 ---
 
 ## Skills
