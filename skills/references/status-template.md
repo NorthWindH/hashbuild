@@ -23,22 +23,13 @@
 ## Active Tasks
 
 <!--
-  One subsection per active task, in filesystem order (author → task_id).
-  For each step, "pending execution" means the step folder exists but contains
-  no `execution-*.md` file.
+  One row per active task, in filesystem order (author → task_id).
+  "Steps pending execution" means steps with no `execution-*.md` file.
 -->
 
-### `<author>/<task_id>`
-
-<!--
-  Repeat this block for each active task. Replace placeholders with real values.
--->
-
-|                         |             |
-| ----------------------- | ----------- |
-| Steps                   | `<total>`   |
-| Steps pending execution | `<count>`   |
-| Next step to execute    | `<step_id>` |
+| Task                        | Steps pending execution | Total steps |
+| --------------------------- | ----------------------- | ----------- |
+| `<author>/<task_folder>`    | `<count>`               | `<total>`   |
 
 ---
 

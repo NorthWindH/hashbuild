@@ -71,7 +71,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize
 Produce the report by filling the template with data from the summary JSON:
 
 - **Initialization**: "`.hb/` initialized" if `initialized` is true; otherwise "`.hb/` not found — run `/hb-init`"
-- **Active Tasks**: one subsection per entry in `active_tasks`, heading `author/task_folder`; fill `total_steps`, `steps_pending_execution`, and `next_pending_step` (omit the "Next step to execute" row when `next_pending_step` is null); omit the section entirely when `active_tasks` is empty
+- **Active Tasks**: one table with columns Task, Steps pending execution, Total steps — one row per entry in `active_tasks` using `author/task_folder`; omit the section entirely when `active_tasks` is empty
 - **Archive**: fill `count` and `last_archived`; omit the "Last archived" row when `last_archived` is null; omit the section entirely when `count` is 0
 - **Next Action**: apply the decision tree from the template's `## Next Action` comment — evaluate conditions in order and output the first that applies
 
