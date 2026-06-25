@@ -17,6 +17,10 @@ the structure defined in `${CLAUDE_SKILL_DIR}/references/status-template.md`.
 | ---------------------- | -------- | -------------------- |
 | `help`, `--help`, `-h` | no       | Print help and exit. |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

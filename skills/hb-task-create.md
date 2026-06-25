@@ -18,6 +18,10 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to create or verify the task s
 | `--ticket-overwrite`   | no       | Whether to overwrite ticket file if it already exists. Default: false                                                                             |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

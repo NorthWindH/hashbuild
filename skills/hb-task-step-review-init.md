@@ -16,6 +16,10 @@ Create `review.md` in a step folder, seeded from [${CLAUDE_SKILL_DIR}/references
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

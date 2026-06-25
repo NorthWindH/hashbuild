@@ -10,6 +10,10 @@ allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)
 
 Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to create hashbuild directory structure (.hb directory).
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

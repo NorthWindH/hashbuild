@@ -19,6 +19,10 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to add the next step folder to
 | `--ticket-overwrite`   | no       | Whether to overwrite an existing `ticket.md` if its content differs. Default: false                                                               |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

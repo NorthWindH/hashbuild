@@ -19,6 +19,10 @@ Work through every unresolved review item in `review.md` for a task step. Normal
 | `--commits N`          | no       | Number of recent commits to scan for `TODO REVIEW` comments (default: 1, i.e. HEAD only).                                                                                  |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

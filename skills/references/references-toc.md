@@ -1,0 +1,12 @@
+| File                                                          | Description                                                                                                                              |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `${CLAUDE_SKILL_DIR}/references/README.md`                    | Framework overview and lifecycle; read for general orientation, information on skills or their usage, or to explain hashbuild to a user. |
+| `${CLAUDE_SKILL_DIR}/references/structure.md`                 | Task/step name formats and `.hb/` folder layout; read to validate names or resolve paths.                                                |
+| `${CLAUDE_SKILL_DIR}/references/skill-help.md`                | Help output format; read when the user passes `help`, `--help`, or `-h`.                                                                 |
+| `${CLAUDE_SKILL_DIR}/references/committing.md`                | Git staging and commit rules; read before any commit in an hb-\* skill.                                                                  |
+| `${CLAUDE_SKILL_DIR}/references/ticket-template.md`           | Ticket file structure; read when drafting a new task or step ticket.                                                                     |
+| `${CLAUDE_SKILL_DIR}/references/plan-template.md`             | Plan file structure; read when generating or updating a step's `plan.md`.                                                                |
+| `${CLAUDE_SKILL_DIR}/references/execution-template.md`        | Execution summary structure; read when writing `execution-*.md` after a step.                                                            |
+| `${CLAUDE_SKILL_DIR}/references/review-template.md`           | Review file structure; read when creating or addressing `review.md`.                                                                     |
+| `${CLAUDE_SKILL_DIR}/references/status-template.md`           | Status report template and Next Action decision tree; read when rendering `/hb-status`.                                                  |
+| `${CLAUDE_SKILL_DIR}/references/git-status-short-format.adoc` | Git `XY` status codes; read when `git status --short` shows an unfamiliar code.                                                          |

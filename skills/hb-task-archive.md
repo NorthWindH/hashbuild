@@ -16,6 +16,10 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to move a task from `active` t
 | `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. The flavor is optional — the SDK matches on author and task ID alone. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check

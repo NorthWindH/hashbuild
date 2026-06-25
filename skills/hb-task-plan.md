@@ -16,6 +16,10 @@ Compares the task-level `ticket.md` acceptance criteria against each step's `tic
 | `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                    |
 
+## Reference Files
+
+!`cat ${CLAUDE_SKILL_DIR}/references/references-toc.md`
+
 ## Steps
 
 ### 1. Help check
