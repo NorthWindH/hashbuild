@@ -11,10 +11,10 @@ Work through every unresolved review item in `review.md` for a task step. Normal
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                                                 |
-| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                 |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
 ## Steps
 
@@ -48,6 +48,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 Scan `## Notes` for all `### ` headings that are review items.
 
 A heading is a review item if it either:
+
 - already has the prefix `STEP-N-REVIEW-M:` (well-formed), or
 - is a bare or partially-formed heading that should be a review item based on context
 
@@ -69,7 +70,7 @@ Rebuild the `## Status` table so it has exactly one row per review item (in ID o
 
 ### 6. Commit normalisation (if review.md changed)
 
-If `review.md` was modified in steps 4–5, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) before proceeding.
+If `review.md` was modified in steps 4–5, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) to do a step commit before proceeding.
 
 ### 7. Address each unresolved item
 
