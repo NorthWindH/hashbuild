@@ -41,6 +41,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 
 - create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task
 
+### 4. Prompt user
+
+Tell the user:
+
+> Task created. `/clear` this conversation, then: if you have a task `ticket.md`, run `/hb-task-plan <name>` to analyze acceptance criteria and create steps to cover them. If not, write a `ticket.md` first (Background, Acceptance Criteria, Out of scope), then run `/hb-task-plan`. To add the first step manually instead, run `/hb-task-step-add <name>`.
+
 ## Output
 
 Report the task path and changed/created files. If any command fails, surface the error verbatim to the caller.

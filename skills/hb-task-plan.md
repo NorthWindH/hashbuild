@@ -91,3 +91,9 @@ For each gap or related group of gaps (keep each step small to medium — use th
 
 - list all steps created with their paths and the gaps each one addresses
 - if any step failed, surface the error verbatim
+
+### 10. Prompt user
+
+Tell the user:
+
+> Steps ready. `/clear` this conversation, then run `/hb-task-step-plan <name>/0` to create the implementation plan for the first step.

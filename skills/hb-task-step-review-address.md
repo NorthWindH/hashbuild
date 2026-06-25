@@ -107,6 +107,12 @@ Commit `review.md` together with any files changed while addressing this item, b
 
 Repeat 7a–7d for the next unresolved item.
 
+### 8. Prompt user
+
+Tell the user:
+
+> Review is iterative — you can add more concerns to `review.md` and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+
 ## Output
 
 Report the step path, the final state of the status table, and the list of commits made. If any command fails, surface the error verbatim to the caller.

@@ -45,6 +45,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md`
 
+### 6. Prompt user
+
+Tell the user:
+
+> Plan ready. `/clear` this conversation, then run `/hb-task-step-execute <step_ref>` to carry out the plan.
+
 ## Output
 
 Report the path to the written `plan.md`. If any command fails, surface the error verbatim to the caller.

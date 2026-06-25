@@ -55,6 +55,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including all files changed during execution and `$STEP_PATH/$SLUG`
 
+### 7. Prompt user
+
+Tell the user:
+
+> Step executed. `/clear` this conversation, then: to start a code review, run `/hb-task-step-review-init <step_ref>`. To move to the next step, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+
 ## Output
 
 Report the step path, the execution summary path, and the list of changed files. If any command fails, surface the error verbatim to the caller.

@@ -38,6 +38,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task archive <name>
 
 - create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task
 
+### 4. Prompt user
+
+Tell the user:
+
+> Task archived. `/clear` this conversation, then run `/hb-status` to see remaining active tasks and decide what to work on next, or `/hb-task-create` to start a new task.
+
 ## Output
 
 Report the archived task path. If any command fails, surface the error verbatim to the caller.

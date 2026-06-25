@@ -43,6 +43,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this step
 
+### 4. Prompt user
+
+Tell the user:
+
+> Step added. `/clear` this conversation, then: if the step ticket is ready, run `/hb-task-step-plan <step_ref>` to create the implementation plan. If the ticket still needs its acceptance criteria filled in, edit `ticket.md` in the step folder first.
+
 ## Output
 
 Report the step path and changed/created files. If any command fails, surface the error verbatim to the caller.
