@@ -11,10 +11,10 @@ Compares the task-level `ticket.md` acceptance criteria against each step's `tic
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                    |
-| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                           |
+| ---------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                    |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                           |
 
 ## Reference Files
 
@@ -74,7 +74,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
 
 ### 8. Create gap-filling steps
 
-For each gap or related group of gaps (keep each step small to medium — use the size of surrounding steps as a guide):
+For each gap or related group of gaps (keep each step small to medium; target less than 300 estimated lines of changes per step — use the size of surrounding steps as a guide):
 
 1. **Draft ticket**: write a temporary ticket file using [${CLAUDE_SKILL_DIR}/references/ticket-template.md](references/ticket-template.md) as the structural template:
    - **Background**: state which task-level criteria this step addresses and why
