@@ -59,7 +59,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 
 Tell the user:
 
-> Step executed. `/clear` this conversation, then: to start a code review, run `/hb-task-step-review-init <step_ref>`. To move to the next step, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+> Step executed. `/clear` this conversation, then: to start a code review, either run `/hb-task-step-review-address <step_ref>` directly (if you added `TODO REVIEW` comments and committed them), or run `/hb-task-step-review-init <step_ref>` to create `review.md` and fill in concerns manually. To move to the next step, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
 
 ## Output
 

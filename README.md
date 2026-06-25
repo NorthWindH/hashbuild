@@ -117,19 +117,29 @@ Reads the step's `ticket.md` and writes `plan.md` — a detailed, mechanical imp
 
 Carries out `plan.md` and writes an `execution-*.md` summary recording what was built, any deviations from the plan, and verification evidence.
 
-Optionally, start a code review after execution:
+Optionally, start a code review after execution. There are two ways to begin:
 
-```
-/hb-task-step-review-init author/abc-123/0
-```
-
-Fill in your review concerns in `review.md`. You can also leave `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this duplicates logic in X`) and commit them — they are automatically picked up from the HEAD commit and added as review items when you run the next command. Then:
+**Option A — `TODO REVIEW` comments (skip review-init):** add `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this duplicates logic in X`), commit them, then run review-address directly:
 
 ```
 /hb-task-step-review-address author/abc-123/0
 ```
 
-`TODO REVIEW` comments are deleted from the source files once their review item is addressed. Pass `--no-todo-scan` to skip comment scanning, or `--commits N` to scan more than one commit.
+The skill picks up the comments, creates `review.md` automatically, adds them as review items, addresses them, and deletes the comments from source.
+
+**Option B — manual review.md:** create `review.md` first and fill in concerns by hand:
+
+```
+/hb-task-step-review-init author/abc-123/0
+```
+
+Then run:
+
+```
+/hb-task-step-review-address author/abc-123/0
+```
+
+Both options support `TODO REVIEW` comments — they are always scanned unless `--no-todo-scan` is passed. Pass `--commits N` to scan more than one commit.
 
 Review is iterative — add more concerns and re-run `/hb-task-step-review-address` as needed.
 
