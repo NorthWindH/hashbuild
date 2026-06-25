@@ -293,6 +293,12 @@ def _def_cli_task(subs: typing.Any) -> None:
     )
     p_sn.set_defaults(func=cmd_task_step_number)
 
+    p_sl = step_subs.add_parser(
+        "list", help="List step folders in ascending step-number order; prints one absolute path per line"
+    )
+    p_sl.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_sl.set_defaults(func=cmd_task_step_list)
+
     p_es = step_subs.add_parser(
         "execution-slug", help="Print an execution filename slug with local timestamp"
     )
@@ -411,8 +417,7 @@ def _parse_step_ref(ref: str) -> tuple[TaskName, int]:
 def _find_step_folder(task_path: Path, step_n: int) -> Path:
     prefix = f"step-{step_n}"
     matches = [
-        p for p in task_path.iterdir()
-        if p.is_dir() and (p.name == prefix or p.name.startswith(prefix + "-"))
+        p for p in task_path.iterdir() if p.is_dir() and (p.name == prefix or p.name.startswith(prefix + "-"))
     ]
     if len(matches) == 0:
         _die(f"error: step {step_n} not found in {task_path.absolute()}")
@@ -422,6 +427,20 @@ def _find_step_folder(task_path: Path, step_n: int) -> Path:
             + "\n".join(str(m.absolute()) for m in sorted(matches))
         )
     return matches[0]
+
+
+def _list_step_folders(task_path: Path) -> list[Path]:
+    """Return all step-* directories sorted by step number ascending."""
+    steps = list[tuple[int, Path]]()
+    for p in task_path.iterdir():
+        if not p.is_dir() or not p.name.startswith("step-"):
+            continue
+        n_str = p.name.removeprefix("step-").split("-")[0]
+        try:
+            steps.append((int(n_str), p))
+        except ValueError:
+            continue
+    return [p for _, p in sorted(steps)]
 
 
 def cmd_task_step_path(args: argparse.Namespace) -> None:
@@ -444,6 +463,26 @@ def cmd_task_step_path(args: argparse.Namespace) -> None:
 def cmd_task_step_number(args: argparse.Namespace) -> None:
     _, step_n = _parse_step_ref(args.step_ref)
     print(step_n)
+
+
+# ── task step list ────────────────────────────────────────────────────────────
+
+
+def cmd_task_step_list(args: argparse.Namespace) -> None:
+    tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {args.name}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    task_path = matching_tasks[0][0]
+    for step_path in _list_step_folders(task_path):
+        print(step_path.absolute())
 
 
 # ── task step execution-slug ──────────────────────────────────────────────────

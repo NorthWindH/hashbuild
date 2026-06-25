@@ -10,11 +10,17 @@
       - name pattern in [Task Name Format](#task-name-format) below
       - inside each task folder:
         - `.hb-task.json`: task file info
+        - `ticket.md`: task-level ticket; optional
         - folder for each step: `<step-n>/`
         - steps are numbered in ascending order starting at `0`
         - examples: `step-0`, `step-1`, `step-2`, ..., `step-99999`
         - for each step folder:
           - name pattern in [Step Name Format](#step-name-format) below
+          - inside each step folder:
+            - `ticket.md`: step-level ticket; created by user or by /hb-task-plan to define step acceptance criteria
+            - `plan.md`: created by /hb-task-step-plan
+            - `execution-*.md`: created by /hb-task-step-execute
+            - `review.md`: created by /hb-task-step-review-init and maintained by user and /hb-task-step-review-address
 
 ## Structure Examples
 

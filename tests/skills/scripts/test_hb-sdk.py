@@ -52,6 +52,10 @@ def task_step_add(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedPr
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
+def task_step_list(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["task", "step", "list", name], cwd, ok=kwargs.get("ok", True))
+
+
 def hb(cwd: Path) -> Path:
     return cwd / ".hb"
 
@@ -300,6 +304,80 @@ def test_step_add_default_ticket_idempotent(task1: Path) -> None:
     # default ticket untouched on second pass
     dest = task_path(task1, "hasan", "abc-1") / "step-0" / "ticket.md"
     assert dest.read_text() == DEFAULT_TICKET
+
+
+# ── task step list ────────────────────────────────────────────────────────────
+
+
+def test_step_list_empty(task1: Path) -> None:
+    result = task_step_list(task1, "hasan/abc-1")
+    assert result.stdout.strip() == ""
+
+
+def test_step_list_single_step(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    result = task_step_list(task1, "hasan/abc-1")
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 1
+    assert lines[0].endswith("step-0")
+
+
+def test_step_list_multiple_steps_ascending_order(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    task_step_add(task1, "hasan/abc-1")
+    task_step_add(task1, "hasan/abc-1")
+    result = task_step_list(task1, "hasan/abc-1")
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 3
+    assert lines[0].endswith("step-0")
+    assert lines[1].endswith("step-1")
+    assert lines[2].endswith("step-2")
+
+
+def test_step_list_with_flavors(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1", flavor="init-db")
+    task_step_add(task1, "hasan/abc-1", flavor="seed-data")
+    result = task_step_list(task1, "hasan/abc-1")
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith("step-0-init-db")
+    assert lines[1].endswith("step-1-seed-data")
+
+
+def test_step_list_mixed_plain_and_flavored(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    task_step_add(task1, "hasan/abc-1", flavor="do-thing")
+    task_step_add(task1, "hasan/abc-1")
+    result = task_step_list(task1, "hasan/abc-1")
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 3
+    assert lines[0].endswith("step-0")
+    assert lines[1].endswith("step-1-do-thing")
+    assert lines[2].endswith("step-2")
+
+
+def test_step_list_outputs_absolute_paths(task1: Path) -> None:
+    task_step_add(task1, "hasan/abc-1")
+    result = task_step_list(task1, "hasan/abc-1")
+    p = Path(result.stdout.strip())
+    assert p.is_absolute()
+    assert p.is_dir()
+
+
+def test_step_list_numeric_not_lexicographic_order(task1: Path) -> None:
+    for _ in range(11):
+        task_step_add(task1, "hasan/abc-1")
+    result = task_step_list(task1, "hasan/abc-1")
+    lines = result.stdout.strip().splitlines()
+    assert len(lines) == 11
+    names = [Path(line).name for line in lines]
+    assert names[9] == "step-9"
+    assert names[10] == "step-10"
+
+
+def test_step_list_task_not_found(task1: Path) -> None:
+    result = task_step_list(task1, "hasan/abc-99", ok=False)
+    assert "task not found" in result.stderr
 
 
 # ── task step path ────────────────────────────────────────────────────────────
