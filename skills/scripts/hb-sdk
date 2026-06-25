@@ -243,6 +243,21 @@ def cmd_task_create(args: argparse.Namespace) -> None:
     report_paths(paths)
 
 
+def cmd_task_path(args: argparse.Namespace) -> None:
+    tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {args.name}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    print(matching_tasks[0][0].absolute())
+
+
 def _def_cli_task(subs: typing.Any) -> None:
     p_task = subs.add_parser("task", help="Task operations")
     task_subs = p_task.add_subparsers(dest="task_command", metavar="<action>")
@@ -251,6 +266,10 @@ def _def_cli_task(subs: typing.Any) -> None:
     p_ta = task_subs.add_parser("archive", help="Archive a task (move from active to archive)")
     p_ta.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
     p_ta.set_defaults(func=cmd_task_archive)
+
+    p_tp = task_subs.add_parser("path", help="Print absolute path of a task folder")
+    p_tp.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_tp.set_defaults(func=cmd_task_path)
 
     p_tc: argparse.ArgumentParser = task_subs.add_parser(
         "create", help="Create or verify task skeleton (idempotent)"
