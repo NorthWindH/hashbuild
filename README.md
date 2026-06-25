@@ -8,20 +8,15 @@ Each skill is a focused, atomic operation. Each step in the lifecycle produces a
 
 ---
 
-## Skills
+### Prior Art
 
-| Skill                          | What it does                                                         |
-| ------------------------------ | -------------------------------------------------------------------- |
-| `/hb-init`                     | Initialize `.hb/` in your project (idempotent, run once per project) |
-| `/hb-status`                   | Show workspace state and recommended next action                     |
-| `/hb-task-create`              | Create a task skeleton                                               |
-| `/hb-task-plan`                | Analyze task ticket vs. step tickets; create steps for any gaps      |
-| `/hb-task-step-add`            | Add the next step folder to a task                                   |
-| `/hb-task-step-plan`           | Write `plan.md` for a step from its `ticket.md`                      |
-| `/hb-task-step-execute`        | Execute a step's `plan.md` and record an execution summary           |
-| `/hb-task-step-review-init`    | Create `review.md` in a step folder                                  |
-| `/hb-task-step-review-address` | Normalize and address all open review items                          |
-| `/hb-task-archive`             | Move a completed task from active to the archive                     |
+Hashbuild draws from a growing family of structured AI development workflows. [GSD](https://github.com/open-gsd/gsd-core) (open-gsd) pioneered the phase-plan-execute loop inside Claude Code and remains the most fully-featured framework in this space; its companion [gsd-pi](https://github.com/open-gsd/gsd-pi) extends it with a meta-prompting layer designed to keep agents oriented over long autonomous runs. Other notable influences include [Claude Engineer](https://github.com/Doriandarko/claude-engineer), which introduced task decomposition via tool calls, and the broader class of scaffolded-agent approaches (AutoGPT, Aider, Cursor's multi-step modes) that demonstrated the value of durable artifact trails across AI-assisted work sessions.
+
+### Status
+
+**Experimental.** The skill interface and `.hb/` file layout may change between releases.
+You can use it for real work but at this stage I'm still testing it so YMMV.
+Pin to a specific commit if stability matters to you.
 
 ---
 
@@ -49,6 +44,23 @@ To uninstall:
 ```bash
 python install --uninstall
 ```
+
+---
+
+## Skills
+
+| Skill                          | What it does                                                         |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `/hb-init`                     | Initialize `.hb/` in your project (idempotent, run once per project) |
+| `/hb-status`                   | Show workspace state and recommended next action                     |
+| `/hb-task-create`              | Create a task skeleton                                               |
+| `/hb-task-plan`                | Analyze task ticket vs. step tickets; create steps for any gaps      |
+| `/hb-task-step-add`            | Add the next step folder to a task                                   |
+| `/hb-task-step-plan`           | Write `plan.md` for a step from its `ticket.md`                      |
+| `/hb-task-step-execute`        | Execute a step's `plan.md` and record an execution summary           |
+| `/hb-task-step-review-init`    | Create `review.md` in a step folder                                  |
+| `/hb-task-step-review-address` | Normalize and address all open review items                          |
+| `/hb-task-archive`             | Move a completed task from active to the archive                     |
 
 ---
 
