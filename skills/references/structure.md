@@ -31,15 +31,31 @@
     │   └── hasan/
     │       └── projslug-42-add-login-page/
     │           ├── .hb-task.json
+    │           ├── ticket.md
     │           ├── step-0-scaffold-routes/
+    │           │   ├── ticket.md
+    │           │   ├── plan.md
+    │           │   ├── execution-2026-06-01T09-15-32-0500.md
+    │           │   └── review.md
     │           ├── step-1-add-form/
+    │           │   ├── ticket.md
+    │           │   └── plan.md
     │           └── step-2-wire-auth/
+    │               └── ticket.md
     └── archive/
         └── hasan/
             └── projslug-17/
                 ├── .hb-task.json
                 ├── step-0-init-db/
+                │   ├── ticket.md
+                │   ├── plan.md
+                │   ├── execution-2026-05-20T14-02-11-0500.md
+                │   └── review.md
                 └── step-1-seed-data/
+                    ├── ticket.md
+                    ├── plan.md
+                    ├── execution-2026-05-21T10-44-07-0500.md
+                    └── review.md
 ```
 
 Mixed — some steps with `step_extra`, some without:
@@ -52,8 +68,15 @@ Mixed — some steps with `step_extra`, some without:
     │       └── abc-55-refactor-api/
     │           ├── .hb-task.json
     │           ├── step-0/
+    │           │   ├── ticket.md
+    │           │   ├── plan.md
+    │           │   ├── execution-2026-06-10T11-30-00-0500.md
+    │           │   └── review.md
     │           ├── step-1-extract-handler/
+    │           │   ├── ticket.md
+    │           │   └── plan.md
     │           └── step-2/
+    │               └── ticket.md
     └── archive/
 ```
 
@@ -66,23 +89,46 @@ Multi-author, multiple active tasks:
     │   ├── hasan/
     │   │   ├── abc-100-fix-auth-token/
     │   │   │   ├── .hb-task.json
+    │   │   │   ├── ticket.md
     │   │   │   ├── step-0-repro/
+    │   │   │   │   ├── ticket.md
+    │   │   │   │   ├── plan.md
+    │   │   │   │   ├── execution-2026-06-18T08-55-42-0500.md
+    │   │   │   │   └── review.md
     │   │   │   └── step-1-patch-expiry/
+    │   │   │       ├── ticket.md
+    │   │   │       └── plan.md
     │   │   └── abc-101/
     │   │       ├── .hb-task.json
     │   │       └── step-0/
+    │   │           └── ticket.md
     │   └── northwind/
     │       └── abc-200-update-schema/
     │           ├── .hb-task.json
     │           ├── step-0-audit-tables/
+    │           │   ├── ticket.md
+    │           │   ├── plan.md
+    │           │   ├── execution-2026-06-19T13-22-05-0500.md
+    │           │   └── review.md
     │           ├── step-1-migrate/
+    │           │   ├── ticket.md
+    │           │   └── plan.md
     │           └── step-2-backfill/
+    │               └── ticket.md
     └── archive/
         └── hasan/
             └── abc-99-initial-setup/
                 ├── .hb-task.json
                 ├── step-0-bootstrap/
+                │   ├── ticket.md
+                │   ├── plan.md
+                │   ├── execution-2026-06-05T16-10-33-0500.md
+                │   └── review.md
                 └── step-1-config/
+                    ├── ticket.md
+                    ├── plan.md
+                    ├── execution-2026-06-06T09-03-57-0500.md
+                    └── review.md
 ```
 
 # Name Format
