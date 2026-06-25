@@ -11,10 +11,10 @@ Create `review.md` in a step folder, seeded from [${CLAUDE_SKILL_DIR}/references
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                                                 |
-| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                 |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
 ## Steps
 
@@ -58,9 +58,9 @@ Write `$STEP_PATH/review.md` with the following content (substituting `N` with t
 
 ## Status
 
-| ID | Resolution |
-|---|---|
-| STEP-N-REVIEW-1 | |
+| ID              | Resolution |
+| --------------- | ---------- |
+| STEP-N-REVIEW-1 |            |
 
 ---
 
@@ -72,12 +72,10 @@ Write `$STEP_PATH/review.md` with the following content (substituting `N` with t
 
 <!-- Example of a filled-in review item (for reference only — do not edit):
 
-### STEP-N-REVIEW-99: Short title of concern — ADDRESSED
+### STEP-N-REVIEW-99: Short title of concern
 
 - **file(s):** `path/to/file.py` (symbol or function name the concern touches)
 - The concern or suggestion in the reviewer's terms: the smell, duplication, missing case, or proposed alternative.
-
-**Resolution:** What was actually done — the refactor performed, or the investigation run and its result. For an Assessed (keep as-is) disposition, show the evidence: the scan or command run, the counts, and the trade-off.
 
 -->
 ```
