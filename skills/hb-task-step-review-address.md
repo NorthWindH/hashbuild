@@ -43,8 +43,8 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 
 ### 3. Read review.md
 
-- read `$STEP_PATH/review.md`
-- if the file does not exist, abort with: `error: review.md not found in $STEP_PATH — run /hb-task-step-review-init first`
+- if `$STEP_PATH/review.md` exists: read it and continue
+- if it does not exist: invoke the `hb-task-step-review-init` skill for `<step_ref>`, then read the newly created `$STEP_PATH/review.md` and continue
 
 ### 4. Scan commits for TODO REVIEW comments
 
@@ -83,6 +83,10 @@ Skip this step entirely if `--no-todo-scan` was passed.
    Do not assign an item id to the heading `###` — normalization in the next step will assign the ID.
 
 6. If any items were appended, write the updated `review.md`.
+
+7. Check whether `review.md` is still in its default state — defined as: exactly one `### ` heading in `## Notes` with no title text and no body content (the untouched placeholder from `hb-task-step-review-init`). If it is, notify the user and stop:
+
+   > `review.md` has no review concerns yet. Fill in review items under `## Notes`, or add `TODO REVIEW` comments to the codebase, commit them, then re-run `/hb-task-step-review-address <step_ref>`.
 
 ### 5. Normalise review item IDs
 
