@@ -123,11 +123,13 @@ Optionally, start a code review after execution:
 /hb-task-step-review-init author/abc-123/0
 ```
 
-Fill in your review concerns in `review.md`, then:
+Fill in your review concerns in `review.md`. You can also leave `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this duplicates logic in X`) and commit them — they are automatically picked up from the HEAD commit and added as review items when you run the next command. Then:
 
 ```
 /hb-task-step-review-address author/abc-123/0
 ```
+
+`TODO REVIEW` comments are deleted from the source files once their review item is addressed. Pass `--no-todo-scan` to skip comment scanning, or `--commits N` to scan more than one commit.
 
 Review is iterative — add more concerns and re-run `/hb-task-step-review-address` as needed.
 

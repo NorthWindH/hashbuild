@@ -106,6 +106,8 @@ Tell the user:
 
 > `review.md` created at `$STEP_PATH/review.md`. Fill in the review items under `## Notes` — one `### STEP-N-REVIEW-M:` heading per concern, with body per the commented example at the bottom of the file. **Do not edit the `## Status` table** — it is maintained by the hashbuild skills.
 >
+> You can also leave `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this function duplicates logic in X`) and commit them. When you run `/hb-task-step-review-address`, those comments are automatically picked up from the HEAD commit and added as review items — then deleted from the source after they are addressed. Pass `--no-todo-scan` to skip this behavior, or `--commits N` to scan more than one commit.
+>
 > When done, `/clear` this conversation, then run `/hb-task-step-review-address <step_ref>` to work through the review items.
 
 Also show the user:

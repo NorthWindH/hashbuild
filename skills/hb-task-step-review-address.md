@@ -1,7 +1,8 @@
 ---
 name: hb-task-step-review-address
 description: >
-  Read review.md in a step folder, normalise review item IDs, sync the status table, then address each unresolved item one by one with a commit per item.
+  Read review.md in a step folder, pickup TODO REVIEW comments in HEAD commit, normalise review item IDs,
+  sync the status table, then address each unresolved item one by one with a commit per item.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write Edit Bash(*)
 ---
 
@@ -14,6 +15,8 @@ Work through every unresolved review item in `review.md` for a task step. Normal
 | Parameter              | Required | Description                                                                                                                                                                |
 | ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
+| `--no-todo-scan`       | no       | Skip scanning commits for `TODO REVIEW` comments.                                                                                                                          |
+| `--commits N`          | no       | Number of recent commits to scan for `TODO REVIEW` comments (default: 1, i.e. HEAD only).                                                                                  |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
 ## Steps
@@ -43,7 +46,44 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 - read `$STEP_PATH/review.md`
 - if the file does not exist, abort with: `error: review.md not found in $STEP_PATH — run /hb-task-step-review-init first`
 
-### 4. Normalise review item IDs
+### 4. Scan commits for TODO REVIEW comments
+
+Skip this step entirely if `--no-todo-scan` was passed.
+
+1. Determine which commits to scan:
+   - If `--commits N` was provided: the N most recent commits — `git log --format=%H -N`
+   - Otherwise: HEAD only — `git log --format=%H -1`
+
+2. For each commit hash, get its diff:
+
+   ```bash
+   git show <hash> --unified=3
+   ```
+
+3. Parse the diff output:
+   - Track the current file path from `+++ b/<path>` lines
+   - Collect all added lines (starting with `+`, not `+++`) that contain `TODO REVIEW` (case-insensitive)
+   - For each match, record: the file path, the full comment text (the portion of the line after `TODO REVIEW`), and the surrounding diff context (nearby lines)
+
+4. Group tightly coupled comments: when multiple `TODO REVIEW` comments in the same file are clearly part of a range or describe the same concern (e.g. "make change from here:" followed later by "to here"), treat them as a single concern. Prefer one concern per comment when coupling is ambiguous.
+
+5. For each concern (single comment or group), append a new review item to `## Notes` in `review.md`:
+
+   ```markdown
+   ### <concern_heading: interpret the TODO REVIEW comment text as the reviewer's concern and generate a heading for it>
+
+   - **file(s):** `<file>` (around `TODO REVIEW` marker)
+   - <concern: interpret the TODO REVIEW comment text as the reviewer's concern and describe it>
+   - **source:** `TODO REVIEW` in commit `<hash>` — delete comment from source file after addressing
+
+   ---
+   ```
+
+   Do not assign an item id to the heading `###` — normalization in the next step will assign the ID.
+
+6. If any items were appended, write the updated `review.md`.
+
+### 5. Normalise review item IDs
 
 Scan `## Notes` for all `### ` headings that are review items.
 
@@ -60,7 +100,7 @@ A heading is a review item if it either:
 
 Rewrite any headings that needed normalisation in `review.md`.
 
-### 5. Sync status table
+### 6. Sync status table
 
 Rebuild the `## Status` table so it has exactly one row per review item (in ID order):
 
@@ -68,23 +108,23 @@ Rebuild the `## Status` table so it has exactly one row per review item (in ID o
 - items missing from the table: add a new row with an empty `Resolution` cell
 - rows in the table with no matching `## Notes` item: remove them
 
-### 6. Commit normalisation (if review.md changed)
+### 7. Commit normalisation (if review.md changed)
 
-If `review.md` was modified in steps 4–5, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) to do a step commit before proceeding.
+If `review.md` was modified in steps 4–6, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) to do a step commit before proceeding.
 
-### 7. Address each unresolved item
+### 8. Address each unresolved item
 
 An item is **unresolved** when its `Resolution` cell in the status table is empty.
 
 For each unresolved item, in ID order:
 
-#### 7a. Read the item
+#### 8a. Read the item
 
 Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
 
 - if the body is empty or only a bare heading with no concern stated, **prompt the user** to fill in the concern before continuing with this item; await their response
 
-#### 7b. Address the concern
+#### 8b. Address the concern
 
 - investigate and address the concern described in the item
 - if the concern is unclear even after reading context, prompt the user for clarification before acting
@@ -93,7 +133,7 @@ Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
   - write a `**Resolution:**` section describing what was done (or why nothing was done, with evidence)
   - disposition: **Addressed**, **Assessed**, or **Deferred**
 
-#### 7c. Update review.md
+#### 8c. Update review.md
 
 - update the `### STEP-N-REVIEW-M:` body in `## Notes` with the full note (concern + resolution)
 - update the item's `Resolution` cell in the `## Status` table with the disposition and one-line summary:
@@ -101,17 +141,21 @@ Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
   - `✅ Assessed — <one-line kept-as-is + why>`
   - `⏭️ Deferred — <one-line + pointer to where>`
 
-#### 7d. Commit
+#### 8d. Delete TODO REVIEW comment(s)
 
-Commit `review.md` together with any files changed while addressing this item, by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md).
+If the concern was sourced from one or more `TODO REVIEW` comments (indicated by a **source:** line in the concern body), delete those comment lines from the referenced file(s). Search the file for lines containing the exact `TODO REVIEW` comment text recorded in the **source:** note and remove the entire line. Do this before or as part of the commit in the next sub-step.
 
-Repeat 7a–7d for the next unresolved item.
+#### 8e. Commit
 
-### 8. Prompt user
+Commit `review.md` as a step commit together with any files changed while addressing this item (including source files where `TODO REVIEW` comments were deleted), by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md).
+
+Repeat 8a–8e for the next unresolved item.
+
+### 9. Prompt user
 
 Tell the user:
 
-> Review is iterative — you can add more concerns to `review.md` and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+> Review is iterative — you can add more concerns to `review.md` or add and commit more TODO REVIEW comments and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
 
 ## Output
 
