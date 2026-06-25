@@ -283,6 +283,14 @@ def _def_cli_task(subs: typing.Any) -> None:
     )
     p_sp.set_defaults(func=cmd_task_step_path)
 
+    p_sn = step_subs.add_parser("number", help="Print the numeric step number from a step reference")
+    p_sn.add_argument(
+        "step_ref",
+        metavar="<step_ref>",
+        help="Step reference: author/task_id[-extra]/<step_n> where step_n is an integer, step-<n>, or step-<n>-<flavor>",
+    )
+    p_sn.set_defaults(func=cmd_task_step_number)
+
     p_es = step_subs.add_parser(
         "execution-slug", help="Print an execution filename slug with local timestamp"
     )
@@ -429,6 +437,11 @@ def cmd_task_step_path(args: argparse.Namespace) -> None:
     task_path = matching_tasks[0][0]
     step_path = _find_step_folder(task_path, step_n)
     print(step_path.absolute())
+
+
+def cmd_task_step_number(args: argparse.Namespace) -> None:
+    _, step_n = _parse_step_ref(args.step_ref)
+    print(step_n)
 
 
 # ── task step execution-slug ──────────────────────────────────────────────────

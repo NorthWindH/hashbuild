@@ -337,6 +337,29 @@ def test_step_path_invalid_step_id(task1: Path) -> None:
     assert "invalid step id" in result.stderr
 
 
+# ── task step number ──────────────────────────────────────────────────────────
+
+
+def test_step_number_from_integer(tmp_path: Path) -> None:
+    result = run(["task", "step", "number", "hasan/abc-1/0"], tmp_path)
+    assert result.stdout.strip() == "0"
+
+
+def test_step_number_from_step_n(tmp_path: Path) -> None:
+    result = run(["task", "step", "number", "hasan/abc-1/step-3"], tmp_path)
+    assert result.stdout.strip() == "3"
+
+
+def test_step_number_from_full_step_name(tmp_path: Path) -> None:
+    result = run(["task", "step", "number", "hasan/abc-1/step-99-some-flavor"], tmp_path)
+    assert result.stdout.strip() == "99"
+
+
+def test_step_number_invalid(tmp_path: Path) -> None:
+    result = run(["task", "step", "number", "hasan/abc-1/bad"], tmp_path, ok=False)
+    assert "invalid step id" in result.stderr
+
+
 # ── task step execution-slug ──────────────────────────────────────────────────
 
 EXECUTION_SLUG_RE = re.compile(r"^execution-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}[+-]\d{4}\.md$")

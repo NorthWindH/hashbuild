@@ -29,7 +29,13 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 ```
 
 - captures the absolute path as `$STEP_PATH`
-- derives the step number `N` from the folder name (e.g. `step-3-some-flavor` → `N=3`)
+- if an error occurs, surface it verbatim and stop
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
+```
+
+- captures the numeric step number as `$N`
 - if an error occurs, surface it verbatim and stop
 
 ### 3. Check for existing review.md
