@@ -57,6 +57,10 @@ def task_archive(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedPro
     return run(["task", "archive", name], cwd, ok=kwargs.get("ok", True))
 
 
+def task_path_cmd(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["task", "path", name], cwd, ok=kwargs.get("ok", True))
+
+
 def task_step_list(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(["task", "step", "list", name], cwd, ok=kwargs.get("ok", True))
 
@@ -251,6 +255,63 @@ def test_task_archive_name_by_task_id_only(tmp_path: Path) -> None:
     # resolve by task_id alone
     task_archive(tmp_path, "hasan/abc-1")
     assert archive_path(tmp_path, "hasan", "abc-1-some-flavor").is_dir()
+
+
+# ── task path ────────────────────────────────────────────────────────────────
+
+
+def test_task_path_basic(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = task_path_cmd(tmp_path, "hasan/abc-1")
+    p = Path(result.stdout.strip())
+    assert p == task_path(tmp_path, "hasan", "abc-1").absolute()
+
+
+def test_task_path_with_extra(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1-add-login")
+    result = task_path_cmd(tmp_path, "hasan/abc-1-add-login")
+    p = Path(result.stdout.strip())
+    assert p == task_path(tmp_path, "hasan", "abc-1-add-login").absolute()
+
+
+def test_task_path_resolve_by_task_id_when_folder_has_extra(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1-add-login")
+    result = task_path_cmd(tmp_path, "hasan/abc-1")
+    p = Path(result.stdout.strip())
+    assert p == task_path(tmp_path, "hasan", "abc-1-add-login").absolute()
+
+
+def test_task_path_output_is_absolute(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = task_path_cmd(tmp_path, "hasan/abc-1")
+    p = Path(result.stdout.strip())
+    assert p.is_absolute()
+    assert p.is_dir()
+
+
+def test_task_path_archived_task(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = task_path_cmd(tmp_path, "hasan/abc-1")
+    p = Path(result.stdout.strip())
+    assert p == archive_path(tmp_path, "hasan", "abc-1").absolute()
+
+
+def test_task_path_not_found(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = task_path_cmd(tmp_path, "hasan/abc-99", ok=False)
+    assert "task not found" in result.stderr
+
+
+def test_task_path_invalid_name(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = task_path_cmd(tmp_path, "abc-1", ok=False)
+    assert "invalid task name" in result.stderr
 
 
 # ── task step add ─────────────────────────────────────────────────────────────
