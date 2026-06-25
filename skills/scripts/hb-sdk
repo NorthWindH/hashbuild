@@ -79,7 +79,7 @@ def _path_hb_asserted() -> Path:
 
 
 def _path_task_ticket(task_path: Path) -> Path:
-    return task_path / "ticket"
+    return task_path / "ticket.md"
 
 
 def _path_step_ticket(step_path: Path) -> Path:
@@ -206,6 +206,8 @@ def cmd_task_create(args: argparse.Namespace) -> None:
         ticket_path = Path(args.ticket)
         if not ticket_path.exists():
             _die(f"error: ticket file not found: {args.ticket}")
+        if ticket_path.suffix != ".md":
+            _die(f"error: ticket file must end in .md: {args.ticket}")
 
         ticket_src = ticket_path.read_text()
         ticket_dest_path = _path_task_ticket(task_path)

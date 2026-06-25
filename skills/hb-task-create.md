@@ -14,7 +14,7 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to create or verify the task s
 | Parameter              | Required | Description                                                                                                                                       |
 | ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
-| `--ticket <path>`      | no       | Path to a ticket file (any format). When provided, `hb-sdk` seeds the task from its content.                                                      |
+| `--ticket <path>`      | no       | Path to a ticket file (must be `.md`). When provided, `hb-sdk` seeds the task from its content.                                                   |
 | `--ticket-overwrite`   | no       | Whether to overwrite ticket file if it already exists. Default: false                                                                             |
 | `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
 
