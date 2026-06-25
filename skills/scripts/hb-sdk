@@ -248,6 +248,10 @@ def _def_cli_task(subs: typing.Any) -> None:
     task_subs = p_task.add_subparsers(dest="task_command", metavar="<action>")
     task_subs.required = True
 
+    p_ta = task_subs.add_parser("archive", help="Archive a task (move from active to archive)")
+    p_ta.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_ta.set_defaults(func=cmd_task_archive)
+
     p_tc: argparse.ArgumentParser = task_subs.add_parser(
         "create", help="Create or verify task skeleton (idempotent)"
     )
@@ -303,6 +307,42 @@ def _def_cli_task(subs: typing.Any) -> None:
         "execution-slug", help="Print an execution filename slug with local timestamp"
     )
     p_es.set_defaults(func=cmd_task_step_execution_slug)
+
+
+# ── task archive ──────────────────────────────────────────────────────────────
+
+
+def cmd_task_archive(args: argparse.Namespace) -> None:
+    tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {args.name}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    task_path, _ = matching_tasks[0]
+
+    active_base = _path_hb_asserted() / "task" / TASK_FOLDER_ACTIVE
+    try:
+        task_path.relative_to(active_base)
+    except ValueError:
+        _die(f"error: task is already archived: {task_path.absolute()}")
+
+    archive_author_dir = _path_hb_asserted() / "task" / TASK_FOLDER_ARCHIVE / tn.author
+    archive_author_dir.mkdir(parents=True, exist_ok=True)
+
+    dest = archive_author_dir / task_path.name
+    if dest.exists():
+        _die(f"error: destination already exists: {dest.absolute()}")
+
+    task_path.rename(dest)
+    _progress(f"archived task to {dest.absolute()}")
+
+    report_paths([dest])
 
 
 # ── task step add ─────────────────────────────────────────────────────────────
