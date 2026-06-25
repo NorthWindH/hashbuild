@@ -27,7 +27,7 @@ Each skill is a focused, atomic operation. Each step in the lifecycle produces a
 
 ## Installation
 
-**Prerequisites:** Python 3.14+ and Claude Code or OpenCode.
+**Prerequisites:** Python 3.10+ and Claude Code or OpenCode.
 
 Clone this repository and run the installer from its root:
 
