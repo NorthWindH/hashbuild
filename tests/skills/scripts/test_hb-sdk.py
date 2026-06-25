@@ -128,7 +128,15 @@ def test_task_create_with_ticket(tmp_path: Path) -> None:
     ticket.write_text("# My ticket")
     task_create(tmp_path, "hasan/abc-1", ticket=ticket)
     tp = task_path(tmp_path, "hasan", "abc-1")
-    assert (tp / "ticket").read_text() == "# My ticket"
+    assert (tp / "ticket.md").read_text() == "# My ticket"
+
+
+def test_task_create_ticket_non_md_rejected(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket = tmp_path / "ticket.txt"
+    ticket.write_text("content")
+    result = task_create(tmp_path, "hasan/abc-1", ticket=ticket, ok=False)
+    assert "must end in .md" in result.stderr
 
 
 def test_task_create_ticket_same_content_idempotent(tmp_path: Path) -> None:
@@ -157,7 +165,7 @@ def test_task_create_ticket_overwrite(tmp_path: Path) -> None:
     ticket.write_text("# Changed")
     task_create(tmp_path, "hasan/abc-1", ticket=ticket, ticket_overwrite=True)
     tp = task_path(tmp_path, "hasan", "abc-1")
-    assert (tp / "ticket").read_text() == "# Changed"
+    assert (tp / "ticket.md").read_text() == "# Changed"
 
 
 # ── task step add ─────────────────────────────────────────────────────────────
