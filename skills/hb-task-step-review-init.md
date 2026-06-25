@@ -66,16 +66,36 @@ Write `$STEP_PATH/review.md` with the following content (substituting `N` with t
 
 ## Notes
 
-### STEP-N-REVIEW-1:
+###
 
 ---
 
-<!-- Example of a filled-in review item (for reference only — do not edit):
+<!-- README-1:
 
-### STEP-N-REVIEW-99: Short title of concern
+Example of a filled-in review item (for reference only — do not edit):
+
+### STEP-10-REVIEW-99: Short title of concern
 
 - **file(s):** `path/to/file.py` (symbol or function name the concern touches)
 - The concern or suggestion in the reviewer's terms: the smell, duplication, missing case, or proposed alternative.
+
+-->
+
+<!-- README-2:
+
+Review note ids are NOT REQUIRED; they will be filled in by /hb-task-step-review-address
+
+For example, if you defined a review item as follows:
+
+### main.py looks bad
+
+- the file `path/to/main.py` looks ugly; fix it
+
+Then /hb-task-step-review-address will normalize it as follows:
+
+### STEP-7-REVIREW-13: main.py looks bad
+
+- the file `path/to/main.py` looks ugly; fix it
 
 -->
 ```
@@ -85,6 +105,11 @@ Write `$STEP_PATH/review.md` with the following content (substituting `N` with t
 Tell the user:
 
 > `review.md` created at `$STEP_PATH/review.md`. Fill in the review items under `## Notes` — one `### STEP-N-REVIEW-M:` heading per concern, with body per the commented example at the bottom of the file. **Do not edit the `## Status` table** — it is maintained by the hashbuild skills.
+
+Also show the user:
+
+- README-1 defined in step 4
+- README-2 defined in step 4
 
 ### 6. Commit
 
