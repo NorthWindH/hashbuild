@@ -424,8 +424,7 @@ Existing tests outside `# ── summarize ──` block pass unchanged — they
 
 1. **Full test run:**
    ```bash
-   cd /home/hkamal/repos/hashbuild
-   .venv/bin/pytest tests/skills/scripts/test_hb-sdk.py -v
+   make test
    ```
    All tests must pass (0 failures, 0 errors).
 
