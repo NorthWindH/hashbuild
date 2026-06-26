@@ -49,10 +49,13 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 - captures the numeric step number as `$N`
 - if an error occurs, surface it verbatim and stop
 
-### 3. Read review.md
+### 3. Create or read review.md
 
-- if `$STEP_PATH/review.md` exists: read it and continue
-- if it does not exist: invoke the `hb-task-step-review-init` skill for `<step_ref>`, then read the newly created `$STEP_PATH/review.md` and continue
+If `$STEP_PATH/review.md` already exists: read it and continue.
+
+If it does not exist, create it now by following the subflow below, then read the newly created `$STEP_PATH/review.md` and continue. The subflow contains no user notification and creates no commit:
+
+!`cat ${CLAUDE_SKILL_DIR}/references/review-init-subflow.md`
 
 ### 4. Scan commits for TODO REVIEW comments
 
