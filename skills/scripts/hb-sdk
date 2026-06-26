@@ -23,6 +23,7 @@ from pathlib import Path
 # task_extra: -<slug>          slug chars: [a-z-]
 TASK_NAME_RE = re.compile(r"^(?P<author>[^/]+)/(?P<task_id>[A-Za-z]+-\d+)(?P<task_extra>-[a-z][a-z-]*)?$")
 STEP_EXTRA_RE = re.compile(r"^[a-z][a-z-]*$")
+TAG_RE = re.compile(r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$")
 TASK_FOLDER_ACTIVE = "active"
 TASK_FOLDER_ARCHIVE = "archive"
 
@@ -779,18 +780,35 @@ def _commit_write_message_file(subject: str, long: str | None) -> None:
     print(path)
 
 
+def _validate_tag(tag: str) -> None:
+    if not TAG_RE.match(tag):
+        _die(
+            f"error: invalid --tag value '{tag}'\n"
+            "  must match [a-z][a-z0-9]*(-[a-z0-9]+)*\n"
+            "  (lowercase letters and digits, hyphens allowed between segments)"
+        )
+
+
 def cmd_commit_wmf_plain(args: argparse.Namespace) -> None:
     _commit_write_message_file(f"hb: {args.short}", args.long)
 
 
 def cmd_commit_wmf_task(args: argparse.Namespace) -> None:
     tn = _parse_task_name(args.task)
-    _commit_write_message_file(f"{tn.task_id}: {args.short}", args.long)
+    if args.tag:
+        _validate_tag(args.tag)
+        _commit_write_message_file(f"{tn.task_id}: ({args.tag}) {args.short}", args.long)
+    else:
+        _commit_write_message_file(f"{tn.task_id}: {args.short}", args.long)
 
 
 def cmd_commit_wmf_task_step(args: argparse.Namespace) -> None:
     tn = _parse_task_name(args.task)
-    _commit_write_message_file(f"{tn.task_id}/step-{args.step}: {args.short}", args.long)
+    if args.tag:
+        _validate_tag(args.tag)
+        _commit_write_message_file(f"{tn.task_id}/step-{args.step}: ({args.tag}) {args.short}", args.long)
+    else:
+        _commit_write_message_file(f"{tn.task_id}/step-{args.step}: {args.short}", args.long)
 
 
 def _def_cli_commit(subs: typing.Any) -> None:
@@ -813,6 +831,7 @@ def _def_cli_commit(subs: typing.Any) -> None:
     p_task.add_argument("--task", required=True, metavar="<task>", help="Fully-qualified task name")
     p_task.add_argument("--short", required=True, metavar="<desc>", help="One-line description")
     p_task.add_argument("--long", metavar="<desc>", help="Longer explanation (optional)")
+    p_task.add_argument("--tag", metavar="<tag>", help="Optional lifecycle tag; injected as (tag) in subject")
     p_task.set_defaults(func=cmd_commit_wmf_task)
 
     p_task_step = wmf_subs.add_parser("task-step", help="Step-level commit")
@@ -820,6 +839,7 @@ def _def_cli_commit(subs: typing.Any) -> None:
     p_task_step.add_argument("--step", required=True, type=int, metavar="<n>", help="Step number")
     p_task_step.add_argument("--short", required=True, metavar="<desc>", help="One-line description")
     p_task_step.add_argument("--long", metavar="<desc>", help="Longer explanation (optional)")
+    p_task_step.add_argument("--tag", metavar="<tag>", help="Optional lifecycle tag; injected as (tag) in subject")
     p_task_step.set_defaults(func=cmd_commit_wmf_task_step)
 
 

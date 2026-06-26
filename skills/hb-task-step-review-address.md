@@ -82,7 +82,7 @@ Skip this step entirely if `--no-todo-scan` was passed.
 
    > The following uncommitted file(s) contain `TODO REVIEW` comments: [list files]. Commit them now so their comments are picked up as review items?
    - If user accepts:
-     - Commit only the files containing `TODO REVIEW` comments by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md). Use a short description such as "add TODO REVIEW comments for review pickup".
+     - Commit only the files containing `TODO REVIEW` comments by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md); pass `--tag step-review`. Use a short description such as "add TODO REVIEW comments for review pickup".
      - The next step will scan this newly committed change and pick up the comments automatically.
    - If user declines: continue without committing.
 
@@ -155,7 +155,7 @@ Rebuild the `## Status` table so it has exactly one row per review item (in ID o
 
 ### 8. Commit normalisation (if review.md changed)
 
-If `review.md` was modified in steps 5–7, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) to do a step commit before proceeding.
+If `review.md` was modified in steps 5–7, commit it now by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) to do a step commit before proceeding; pass `--tag step-review`.
 
 ### 9. Address each unresolved item
 
@@ -198,7 +198,7 @@ Do this before or as part of the commit in the next sub-step.
 
 #### 9e. Commit
 
-Commit `review.md` as a step commit together with any files changed while addressing this item (including source files where `TODO REVIEW` comments were deleted), by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md).
+Commit `review.md` as a step commit together with any files changed while addressing this item (including source files where `TODO REVIEW` comments were deleted), by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md); pass `--tag step-review`.
 
 Repeat 9a–9e for the next unresolved item.
 

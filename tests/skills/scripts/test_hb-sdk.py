@@ -83,6 +83,8 @@ def commit_write_message_file(cwd: Path, mode: str, **kwargs: Any) -> subprocess
         args += ["--short", short]
     if long := kwargs.get("long"):
         args += ["--long", long]
+    if tag := kwargs.get("tag"):
+        args += ["--tag", tag]
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
@@ -801,6 +803,59 @@ def test_commit_wmf_task_step_requires_step(tmp_path: Path) -> None:
 def test_commit_wmf_no_mode_errors(tmp_path: Path) -> None:
     result = run(["commit", "write-message-file", "--task", "hasan/abc-1", "--short", "x"], tmp_path, ok=False)
     assert result.returncode != 0
+
+
+def test_commit_wmf_task_with_tag(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", tag="step-add", short="add routes")
+    path = Path(result.stdout.strip())
+    assert path.read_text() == "abc-1: (step-add) add routes\n"
+
+
+def test_commit_wmf_task_without_tag_unchanged(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", short="add routes")
+    path = Path(result.stdout.strip())
+    assert path.read_text() == "abc-1: add routes\n"
+
+
+def test_commit_wmf_task_step_with_tag(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task-step", task="hasan/abc-1", step=2, tag="step-plan", short="write plan")
+    path = Path(result.stdout.strip())
+    assert path.read_text() == "abc-1/step-2: (step-plan) write plan\n"
+
+
+def test_commit_wmf_task_step_without_tag_unchanged(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task-step", task="hasan/abc-1", step=2, short="write plan")
+    path = Path(result.stdout.strip())
+    assert path.read_text() == "abc-1/step-2: write plan\n"
+
+
+def test_commit_wmf_plain_rejects_tag(tmp_path: Path) -> None:
+    result = run(["commit", "write-message-file", "plain", "--tag", "foo", "--short", "x"], tmp_path, ok=False)
+    assert result.returncode != 0
+
+
+def test_commit_wmf_invalid_tag_uppercase(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", tag="Foo", short="x", ok=False)
+    assert result.returncode != 0
+    assert "invalid" in result.stderr
+
+
+def test_commit_wmf_invalid_tag_underscore(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", tag="foo_bar", short="x", ok=False)
+    assert result.returncode != 0
+    assert "invalid" in result.stderr
 
 
 # ── summarize ─────────────────────────────────────────────────────────────────

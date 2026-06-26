@@ -51,7 +51,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 
 ### 5. Commit
 
-- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md`
+- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md`; pass `--tag step-plan`
 
 ### 6. Prompt user
 

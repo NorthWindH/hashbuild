@@ -51,7 +51,7 @@ Also show the user:
 
 ### 6. Commit
 
-- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/review.md`
+- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/review.md`; pass `--tag step-review`
 
 ## Output
 

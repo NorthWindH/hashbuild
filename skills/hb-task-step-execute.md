@@ -61,7 +61,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 
 ### 6. Commit
 
-- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including all files changed during execution and `$STEP_PATH/$SLUG`
+- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including all files changed during execution and `$STEP_PATH/$SLUG`; pass `--tag step-execute`
 
 ### 7. Prompt user
 

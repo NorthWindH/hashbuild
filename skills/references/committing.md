@@ -68,13 +68,13 @@ To generate a commit message, use `${CLAUDE_SKILL_DIR}/scripts/hb-sdk`.
 Invoke `${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file <MODE>` to generate a commit message.
 Choose the mode that matches the current context:
 
-| Mode        | When to use                                               | Required flags                | Forbidden flags    | Subject format                |
-| ----------- | --------------------------------------------------------- | ----------------------------- | ------------------ | ----------------------------- |
-| `plain`     | Framework bootstrap commits with no task (e.g. `hb-init`) | `--short`                     | `--task`, `--step` | `hb: <short>`                 |
-| `task`      | Task-level commits (skill operates on a task, not a step) | `--task`, `--short`           | `--step`           | `<task_id>: <short>`          |
-| `task-step` | Step-level commits (skill operates on a specific step)    | `--task`, `--step`, `--short` | —                  | `<task_id>/step-<n>: <short>` |
+| Mode        | When to use                                               | Required flags                | Optional flags        | Forbidden flags    | Subject format                          |
+| ----------- | --------------------------------------------------------- | ----------------------------- | --------------------- | ------------------ | --------------------------------------- |
+| `plain`     | Framework bootstrap commits with no task (e.g. `hb-init`) | `--short`                    | `--long`              | `--task`, `--step` | `hb: <short>`                           |
+| `task`      | Task-level commits (skill operates on a task, not a step) | `--task`, `--short`          | `--long`, `--tag`     | `--step`           | `<task_id>: <short>` or `<task_id>: (<tag>) <short>` |
+| `task-step` | Step-level commits (skill operates on a specific step)    | `--task`, `--step`, `--short` | `--long`, `--tag`    | —                  | `<task_id>/step-<n>: <short>` or `<task_id>/step-<n>: (<tag>) <short>` |
 
-All modes accept an optional `--long <desc>` for a longer explanation of why the change was made (only include when the why is non-obvious). Wrap `--short` and `--long` values in `""` to avoid shell issues.
+All modes accept an optional `--long <desc>` for a longer explanation of why the change was made (only include when the why is non-obvious). `task` and `task-step` accept an optional `--tag <slug>` to identify the lifecycle skill that produced the commit; the slug is injected as `(<tag>)` immediately after the colon-space separator. Tag must match `[a-z][a-z0-9]*(-[a-z0-9]+)*` (lowercase slug). Wrap `--short`, `--long`, and `--tag` values in `""` to avoid shell issues.
 
 Returns the path to the commit message file on stdout. Returns error messages on stderr. If any error occurs, surface verbatim to the user or fix automatically if possible.
 
@@ -92,12 +92,27 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task \
   --short "add step-1 ticket"
 # → subject: hb-001: add step-1 ticket
 
+# task — with lifecycle tag
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task \
+  --task northwind/hb-001-init-commit-support \
+  --tag "task-create" \
+  --short "create task skeleton"
+# → subject: hb-001: (task-create) create task skeleton
+
 # task-step — operating on a specific step
 ${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task-step \
   --task northwind/hb-001-init-commit-support \
   --step 1 \
   --short "wire hb-init to plain mode"
 # → subject: hb-001/step-1: wire hb-init to plain mode
+
+# task-step — with lifecycle tag
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task-step \
+  --task northwind/hb-001-init-commit-support \
+  --step 2 \
+  --tag "step-execute" \
+  --short "implement tag flag"
+# → subject: hb-001/step-2: (step-execute) implement tag flag
 ```
 
 ### 3. Commit
