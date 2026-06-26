@@ -615,11 +615,11 @@ def cmd_task_step_execution_slug(args: argparse.Namespace) -> None:
 
 # ── summarize ─────────────────────────────────────────────────────────────────
 
-REVIEW_CLOSED_STATUSES = frozenset({"addressed", "assessed", "deferred"})
 _SEPARATOR_RE = re.compile(r"^[-:]+$")
 
 
 def _parse_review_open(review_path: Path) -> bool:
+    """Return True if any Status-table row has an empty Resolution cell."""
     text = review_path.read_text()
     for line in text.splitlines():
         if "|" not in line:
@@ -627,14 +627,11 @@ def _parse_review_open(review_path: Path) -> bool:
         cols = [c.strip() for c in line.split("|")]
         if len(cols) < 4:
             continue
-        status_val = cols[2].lower()
-        if not status_val or _SEPARATOR_RE.match(status_val):
+        id_val = cols[1].lower()
+        if not id_val or _SEPARATOR_RE.match(id_val) or id_val == "id":
             continue
-        if status_val in ("status", "resolution"):
-            continue
-        if any(kw in status_val for kw in REVIEW_CLOSED_STATUSES):
-            continue
-        return True
+        if not cols[2]:  # empty Resolution cell = open item
+            return True
     return False
 
 

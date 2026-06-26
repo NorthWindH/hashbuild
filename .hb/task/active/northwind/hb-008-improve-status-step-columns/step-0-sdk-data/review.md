@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — deleted unused `sp1` variable |
-| STEP-0-REVIEW-2 |            |
+| STEP-0-REVIEW-2 | ✅ Addressed — updated hb-sdk parser + all tests to use 2-column format |
 | STEP-0-REVIEW-3 |            |
 
 ---
@@ -29,6 +29,16 @@
 - **file(s):** `tests/skills/scripts/test_hb-sdk.py` (around `TODO REVIEW` marker, `test_summarize_steps_needs_review_includes_executed_and_review_open` and related tests)
 - The review.md content written inline in tests (raw table string `| ID | Status | Description |...`) doesn't match the real review.md format produced by `hb-task-step-review-init`. All tests that test review.md parsing should use the actual review.md format. Also update hb-sdk itself if it currently parses the old format — the only format that needs to be supported going forward is the real one.
 - **source:** `TODO REVIEW` in commit `24985c3` — delete comment from source file after addressing
+
+**Resolution:** Two changes made:
+
+1. **`skills/scripts/hb-sdk` — `_parse_review_open`**: Rewrote the parser to use the actual 2-column format (`| ID | Resolution |`). Old logic looked at the third column for keyword values ("open", "addressed", etc.). New logic: an empty `Resolution` cell indicates an open item; any non-empty value indicates a closed item. Also removed the now-unnecessary `REVIEW_CLOSED_STATUSES` constant.
+
+2. **`tests/skills/scripts/test_hb-sdk.py`**: Updated 7 `review.md` write calls to use the actual format — `# Step N Review / ## Status / | ID | Resolution |` with emoji-prefixed resolution values (`✅ Addressed — ...`, `⏭️ Deferred — ...`) and empty cells for open items. The `TODO REVIEW` comment was also deleted.
+
+All 129 tests pass.
+
+**Disposition: Addressed**
 
 ---
 

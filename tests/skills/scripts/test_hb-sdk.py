@@ -1133,7 +1133,7 @@ def test_summarize_step_status_review_open(tmp_path: Path) -> None:
     step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
     (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (step_path / "review.md").write_text(
-        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | open | some issue |\n"
+        "# Step 0 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n| STEP-0-REVIEW-1 |  |\n"
     )
     result = summarize(tmp_path)
     step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
@@ -1148,7 +1148,9 @@ def test_summarize_step_status_reviewed_all_closed(tmp_path: Path) -> None:
     step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
     (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (step_path / "review.md").write_text(
-        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | addressed | fixed |\n| R2 | deferred | later |\n"
+        "# Step 0 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n"
+        "| STEP-0-REVIEW-1 | ✅ Addressed — fixed |\n"
+        "| STEP-0-REVIEW-2 | ⏭️ Deferred — later |\n"
     )
     result = summarize(tmp_path)
     step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
@@ -1174,7 +1176,8 @@ def test_summarize_step_status_review_case_insensitive(tmp_path: Path) -> None:
     step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
     (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (step_path / "review.md").write_text(
-        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | ADDRESSED | fixed |\n"
+        "# Step 0 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n"
+        "| STEP-0-REVIEW-1 | ✅ Addressed — fixed |\n"
     )
     result = summarize(tmp_path)
     step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
@@ -1188,7 +1191,9 @@ def test_summarize_step_status_review_mixed(tmp_path: Path) -> None:
     step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
     (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (step_path / "review.md").write_text(
-        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | addressed | fixed |\n| R2 | open | still open |\n"
+        "# Step 0 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n"
+        "| STEP-0-REVIEW-1 | ✅ Addressed — fixed |\n"
+        "| STEP-0-REVIEW-2 |  |\n"
     )
     result = summarize(tmp_path)
     step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
@@ -1249,10 +1254,14 @@ def test_summarize_task_count_fields_mixed(tmp_path: Path) -> None:
     (sp3 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     # step-4: review-open
     (sp4 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
-    (sp4 / "review.md").write_text("| R1 | open | x |\n")
+    (sp4 / "review.md").write_text(
+        "# Step 4 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n| STEP-4-REVIEW-1 |  |\n"
+    )
     # step-5: reviewed
     (sp5 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
-    (sp5 / "review.md").write_text("| R1 | addressed | x |\n")
+    (sp5 / "review.md").write_text(
+        "# Step 5 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n| STEP-5-REVIEW-1 | ✅ Addressed — x |\n"
+    )
 
     result = summarize(tmp_path)
     t = json.loads(result.stdout)["active_tasks"][0]
@@ -1273,10 +1282,9 @@ def test_summarize_steps_needs_review_includes_executed_and_review_open(tmp_path
     sp1 = task_path(tmp_path, "hasan", "abc-1") / "step-1"
     (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (sp1 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
-    # TODO REVIEW this format doesn't match actual review.md file; update this format to match real review.md files.
-    # - apply this change to all tests that test review.md parsing but don't use actual review.md format
-    # - also update hb-sdk itself as required since the only format that needs to be supported is the real format in review.md
-    (sp1 / "review.md").write_text("| ID | Status | Desc |\n| --- | --- | --- |\n| R1 | open | x |\n")
+    (sp1 / "review.md").write_text(
+        "# Step 1 Review\n\n## Status\n\n| ID | Resolution |\n| --- | --- |\n| STEP-1-REVIEW-1 |  |\n"
+    )
     result = summarize(tmp_path)
     t = json.loads(result.stdout)["active_tasks"][0]
     assert "step-0" in t["steps_needs_review"]
