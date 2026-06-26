@@ -17,14 +17,18 @@ Hashbuild currently supports tasks and steps as its primary work objects. A ligh
     1. If `<target>` is `<author>/<task_id>`, seeds `hb-task-create` interactive mode with the idea's content.
     2. If `<target>` is `<author>/<task_id>/step-n`, seeds `hb-task-step-add` interactive mode with the idea's content.
     3. In both cases the user may expand on the content before the ticket is written, then the idea is removed via `hb-sdk idea remove`.
-6. All four skills are backed by new `hb-sdk` subcommands: `idea add`, `idea remove`, and `idea show` (accepting optional `<author>` and `<author>/<index>` args to scope the result).
+6. All five skills are backed by new `hb-sdk` subcommands: `idea add`, `idea remove`, `idea show` (accepting optional `<author>` and `<author>/<index>` args to scope the result), and `idea set-content`.
 7. `hb-idea-list` output format is governed by a new `idea-list-template.md` reference file so that presentation is consistent across invocation forms.
 8. `README.md` is updated to document the four new skills (`hb-idea-add`, `hb-idea-remove`, `hb-idea-list`, `hb-idea-promote`) — purpose, arguments, and example usage.
 9. `skills/references/structure.md` is updated to document the idea file location (`.hb/idea/<author>/ideas.json`) and the structure of the ideas JSON (shape of each idea entry and the `<author>/<index>` ID scheme).
+10. `hb-idea-edit <author>/<index>` allows interactive reformulation of an existing idea:
+    1. Seeds the interactive session with the idea's current content.
+    2. Prompts the user to describe freeform what they want to do with the content.
+    3. Applies the requested changes and presents the reformulated content for confirmation.
+    4. On confirmation, persists the updated content via `hb-sdk idea set-content`.
 
 ---
 
 # Out of scope
 
-- In-place editing of existing ideas (update/replace).
 - Bulk promotion or bulk removal of multiple ideas at once.
