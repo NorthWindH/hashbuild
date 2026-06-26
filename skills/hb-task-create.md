@@ -6,6 +6,8 @@ description: >
   /hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] [--no-interactive] <author/task-id>
 
   Idempotent. Ensure a task skeleton exists for a given fully-qualified task name. Accepts an optional ticket file to seed the task.
+# TODO REVIEW assess whether /tmp and /private/tmp paths correctly resolve to system paths
+# see https://code.claude.com/docs/en/permissions and https://code.claude.com/docs/en/skills
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(/tmp/*) Write(/private/tmp/*) Read(/tmp/*) Read(/private/tmp/*) Edit(/tmp/*) Edit(/private/tmp/*)
 ---
 
@@ -36,6 +38,7 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 ### 2. Flag precedence / interactive ticket
 
 Set:
+
 - `$TICKET_SUPPLIED` = `true` if `--ticket <path>` was provided; otherwise `false`
 - `$NO_INTERACTIVE` = `true` if `--no-interactive` was provided; otherwise `false`
 
@@ -46,11 +49,11 @@ Evaluate in order (first match wins):
 3. **Neither flag** — interactive mode:
    a. Set `$TARGET_PATH` = `/tmp`.
    b. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](references/interactive-ticket-subflow.md) with:
-      - `$TARGET_PATH` = `/tmp`
-      - `$TICKET_SUPPLIED` = `false`
-      - `$NO_INTERACTIVE` = `false`
+   - `$TARGET_PATH` = `/tmp`
+   - `$TICKET_SUPPLIED` = `false`
+   - `$NO_INTERACTIVE` = `false`
 
-      The subflow writes `ticket.md` to `/tmp/hb-ticket.md`.
+   The subflow writes `ticket.md` to `/tmp/hb-ticket.md`.
    c. Set `$WRITTEN_TICKET` = `/tmp/hb-ticket.md`.
    d. Proceed to Step 3 with `--ticket $WRITTEN_TICKET`.
 
