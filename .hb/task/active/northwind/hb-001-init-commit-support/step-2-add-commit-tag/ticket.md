@@ -23,8 +23,11 @@ Skills are then updated to pass the appropriate tag when they call `commit write
 2. `task-step` mode accepts an optional `--tag <tag>` argument.
     1. With `--tag <t>`: subject is `<task_id>/step-<n>: (<t>) <short>`
     2. Without `--tag`: subject is `<task_id>/step-<n>: <short>` (no change to existing behavior)
-3. `plain` mode is unaffected — it does not accept `--tag` and passing it is an error.
-4. `--tag` is valid alongside `--long`; `--long` body is unaffected.
+3. `--tag` value must match the slug pattern `[a-z][a-z0-9]*(-[a-z0-9]+)*` (lowercase letters, digits, hyphens; no leading/trailing/consecutive hyphens). Invalid values exit non-zero with an error on stderr.
+    1. Valid: `foo`, `foo-bar`, `step-add`, `task-archive`
+    2. Invalid: `Foo`, `foo_bar`, `-foo`, `foo-`, `foo--bar`, `foo bar`
+4. `plain` mode is unaffected — it does not accept `--tag` and passing it is an error.
+5. `--tag` is valid alongside `--long`; `--long` body is unaffected.
 
 ## B. `committing.md` updated
 
@@ -46,23 +49,24 @@ Each skill below passes the specified `--tag` value when calling `commit write-m
 | `skills/hb-task-step-review-init.md` | `step-review` |
 | `skills/hb-task-step-review-address.md` | `step-review` |
 
-7. Skills not in the table (`hb-init`, `hb-status`, `hb-task-plan`) are not modified.
+8. Skills not in the table (`hb-init`, `hb-status`, `hb-task-plan`) are not modified.
 
 ## D. Tests
 
-8. `tests/skills/scripts/test_hb-sdk.py` is updated to cover:
-    1. `task` mode with `--tag`: subject contains `(tag)` in the correct position
+9. `tests/skills/scripts/test_hb-sdk.py` is updated to cover:
+    1. `task` mode with valid `--tag`: subject contains `(tag)` in the correct position
     2. `task` mode without `--tag`: subject is unchanged from current behavior
-    3. `task-step` mode with `--tag`: subject contains `(tag)` in the correct position
+    3. `task-step` mode with valid `--tag`: subject contains `(tag)` in the correct position
     4. `task-step` mode without `--tag`: subject is unchanged from current behavior
     5. `plain` mode rejects `--tag`
-9. All existing tests pass without modification.
+    6. Invalid tag value (at least one case, e.g. `Foo` or `foo_bar`) exits non-zero with an error
+10. All existing tests pass without modification.
 
 ---
 
 # Out of scope
 
-- Validating or restricting the set of allowed tag values (any non-empty string is accepted).
+- Restricting which specific tag values skills may use (any valid slug is accepted).
 - Adding `--tag` support to `plain` mode.
 - Changing the `--long` body format.
 - Updating any execution or review artifacts to surface the tag.
