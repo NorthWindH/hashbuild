@@ -1,5 +1,7 @@
 ---
 name: hb-task-step-review-address
+argument-hint: "[--help] [--no-todo-scan] [--commits N] <author/task-id/step-n>"
+arguments: step_ref
 description: >
   /hb-task-step-review-address [--help] [--no-todo-scan] [--commits N] <author/task-id/step-n>
 

@@ -1,5 +1,7 @@
 ---
 name: hb-task-create
+argument-hint: "[--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>"
+arguments: task_id
 description: >
   /hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>
 

@@ -4,17 +4,23 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-0-REVIEW-1 |            |
+| STEP-0-REVIEW-1 | ✅ Addressed — added `argument-hint` to all 11 skills; `arguments` added to 9 positional-arg skills; TODO REVIEW comment deleted from `hb-init.md` |
 
 ---
 
 ## Notes
 
-### STEP-0-REVIEW-1: Populate `arguments` and `argument-hint` frontmatter fields for all skills
+### STEP-0-REVIEW-1: Populate `arguments` and `argument-hint` frontmatter fields for all skills — ADDRESSED
 
-- **file(s):** `skills/hb-init.md` (frontmatter block)
-- The reviewer requests populating the `arguments` and `argument-hint` frontmatter fields (per the Claude skills frontmatter reference) in `hb-init.md` and all other skills in this directory.
+- **file(s):** `skills/hb-init.md` (frontmatter block); applies to all 11 skills in `skills/`
+- The reviewer requests populating the `arguments` and `argument-hint` frontmatter fields (per the Claude skills frontmatter reference at `https://code.claude.com/docs/en/skills#frontmatter-reference`) in `hb-init.md` and all other skills in this directory.
 - **source:** `TODO REVIEW` in commit `1731a91` — delete comment from source file after addressing
+
+**Resolution:** Added `argument-hint` to all 11 skills (`hb-init`, `hb-status`, `hb-task-archive`, `hb-task-create`, `hb-task-plan`, `hb-task-step-add`, `hb-task-step-execute`, `hb-task-step-plan`, `hb-task-step-review-address`, `hb-task-step-review-init`, `hb-task-unarchive`). The value matches the synopsis argument surface (minus the command name) already established in step-0, e.g. `"[--help] <author/task-id/step-n>"`.
+
+For `arguments`: added to the 9 skills that have a primary positional argument (`task_id` for task-scoped skills, `step_ref` for step-scoped skills). Omitted for `hb-init` and `hb-status`, which accept no positional args. The hb-* skills use their own SDK-based argument parsing rather than `$name` substitution, so `arguments` is primarily declarative metadata here.
+
+The two `# TODO REVIEW` comment lines were deleted from `skills/hb-init.md`.
 
 ---
 

@@ -1,5 +1,6 @@
 ---
 name: hb-status
+argument-hint: "[--help]"
 description: >
   /hb-status [--help]
 

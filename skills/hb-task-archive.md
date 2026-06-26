@@ -1,5 +1,7 @@
 ---
 name: hb-task-archive
+argument-hint: "[--help] <author/task-id>"
+arguments: task_id
 description: >
   /hb-task-archive [--help] <author/task-id>
 

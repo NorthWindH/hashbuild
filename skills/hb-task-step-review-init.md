@@ -1,5 +1,7 @@
 ---
 name: hb-task-step-review-init
+argument-hint: "[--help] <author/task-id/step-n>"
+arguments: step_ref
 description: >
   /hb-task-step-review-init [--help] <author/task-id/step-n>
 

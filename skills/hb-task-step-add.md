@@ -1,5 +1,7 @@
 ---
 name: hb-task-step-add
+argument-hint: "[--help] [--flavor <slug>] [--ticket <path>] [--ticket-overwrite] <author/task-id>"
+arguments: task_id
 description: >
   /hb-task-step-add [--help] [--flavor <slug>] [--ticket <path>] [--ticket-overwrite] <author/task-id>
 

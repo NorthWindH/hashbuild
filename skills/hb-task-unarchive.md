@@ -1,5 +1,7 @@
 ---
 name: hb-task-unarchive
+argument-hint: "[--help] <author/task-id>"
+arguments: task_id
 description: >
   /hb-task-unarchive [--help] <author/task-id>
 

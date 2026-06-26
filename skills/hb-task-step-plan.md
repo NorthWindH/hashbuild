@@ -1,5 +1,7 @@
 ---
 name: hb-task-step-plan
+argument-hint: "[--help] <author/task-id/step-n>"
+arguments: step_ref
 description: >
   /hb-task-step-plan [--help] <author/task-id/step-n>
 
