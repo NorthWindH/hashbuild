@@ -206,9 +206,7 @@ Repeat 9a–9e for the next unresolved item.
 
 Tell the user:
 
-<!-- TODO REVIEW update call to action below to mention committed or uncommitted TODO REVIEW comments -->
-
-> Review is iterative — you can add more concerns to `review.md` or add and commit more TODO REVIEW comments and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+> Review is iterative — you can add more concerns to `review.md` or add `TODO REVIEW` comments (committed or uncommitted) and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
 
 ## Output
 
