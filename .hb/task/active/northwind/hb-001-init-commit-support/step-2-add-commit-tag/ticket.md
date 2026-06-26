@@ -31,8 +31,8 @@ Skills are then updated to pass the appropriate tag when they call `commit write
 
 ## B. `committing.md` updated
 
-5. The mode table in `committing.md` reflects the optional `--tag` flag for `task` and `task-step` rows.
-6. The examples section includes at least one example showing `--tag` usage for each of `task` and `task-step`.
+6. The mode table in `committing.md` reflects the optional `--tag` flag for `task` and `task-step` rows.
+7. The examples section includes at least one example showing `--tag` usage for each of `task` and `task-step`.
 
 ## C. Skills pass correct tags
 
