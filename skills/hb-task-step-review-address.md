@@ -57,6 +57,15 @@ If it does not exist, create it now by following the subflow below, then read th
 
 !`cat ${CLAUDE_SKILL_DIR}/references/review-init-subflow.md`
 
+<!-- TODO REVIEW in addition to commits, if `--no-todo-scan` was _not_ provided, then also scan any
+   files that have been changed but not committed for TODO REVIEW comments.
+   If found, ask user if they should be committed prior to continuing the flow.
+   If user accepts, commit the changed files that contain TODO REVIEW comments, then continue flow.
+   If user declines, just continue the flow.
+
+   Update accordingly: description, call to action from other skills, and README.
+ -->
+
 ### 4. Scan commits for TODO REVIEW comments
 
 Skip this step entirely if `--no-todo-scan` was passed.
