@@ -2,6 +2,8 @@
 
 import argparse
 
+# TODO REVIEW this file is importing private symbols (_def_*); fix so that these symbols are public (ie def_*).
+# Do the same for all other cases in hb_sdk where a .py module is importing a private symbol from another .py module.
 from .commit import _def_cli_commit
 from .init_cmd import _def_cli_init
 from .summarize import _def_cli_summarize
