@@ -10,3 +10,5 @@
 | `${CLAUDE_SKILL_DIR}/references/review-template.md`           | Review file structure; read when creating or addressing `review.md`.                                                                     |
 | `${CLAUDE_SKILL_DIR}/references/status-template.md`           | Status report template and Next Action decision tree; read when rendering `/hb-status`.                                                  |
 | `${CLAUDE_SKILL_DIR}/references/git-status-short-format.adoc` | Git `XY` status codes; read when `git status --short` shows an unfamiliar code.                                                          |
+
+<!-- TODO REVIEW add unarchive skill to this table -->

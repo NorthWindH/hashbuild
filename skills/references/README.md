@@ -53,6 +53,8 @@ Install and uninstall actions are idempotent so you can feel free to call them r
 
 ## Skills
 
+<!-- TODO REVIEW update this table and sections below to add unarchive skill -->
+
 | Skill                          | What it does                                                         |
 | ------------------------------ | -------------------------------------------------------------------- |
 | `/hb-init`                     | Initialize `.hb/` in your project (idempotent, run once per project) |
