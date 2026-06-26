@@ -5,12 +5,25 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 |            |
+| STEP-1-REVIEW-2 |            |
 
 ---
 
 ## Notes
 
-###
+### STEP-1-REVIEW-1: README.md Skills table missing unarchive skill
+
+- **file(s):** `skills/references/README.md` (around `TODO REVIEW` marker)
+- The Skills table and the sections below it do not yet document the `/hb-task-unarchive` skill; they need to be updated to include it alongside the archive skill.
+- **source:** `TODO REVIEW` in commit `29fa290` — delete comment from source file after addressing
+
+---
+
+### STEP-1-REVIEW-2: references-toc.md missing unarchive skill row
+
+- **file(s):** `skills/references/references-toc.md` (around `TODO REVIEW` marker)
+- The references TOC table does not include a row for the unarchive skill file; it needs an entry pointing to `hb-task-unarchive.md`.
+- **source:** `TODO REVIEW` in commit `29fa290` — delete comment from source file after addressing
 
 ---
 
