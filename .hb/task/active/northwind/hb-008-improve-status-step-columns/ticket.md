@@ -16,13 +16,19 @@ The current `/hb-status` Active Tasks table reports coarse step counts (pending 
     5. `review-open` — has a review file with at least one item whose status is not `addressed`, `deferred`, or a closed equivalent
     6. `reviewed` — has a review file and all items are closed (addressed or deferred), or the review file exists but contains no items
 2. `active_tasks[]` gains six count fields derived from step statuses: `steps_skeleton`, `steps_ticketed`, `steps_planned`, `steps_executed`, `steps_review_open`, `steps_reviewed`.
-3. `next_pending_step` continues to point to the first step that has not yet been executed (no `execution-*.md`).
+3. `active_tasks[]` gains two name-list fields, each an array of step folder names (e.g. `step-1-add-form`):
+    1. `steps_needs_review` — steps whose status is `executed` or `review-open` (done but not fully reviewed)
+    2. `steps_needs_work` — steps whose status is `skeleton`, `ticketed`, or `planned` (not yet executed)
+4. `next_pending_step` continues to point to the first step that has not yet been executed (no `execution-*.md`).
 
 ## B. Active Tasks table in status template and `hb-status` output
 
 1. The Active Tasks table is replaced with columns: Task | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total.
 2. Each count cell shows `—` when the count is zero (not `0`), to reduce visual noise.
 3. The `steps_pending_execution` and `steps_with_ticket` columns are removed from both the template and the SDK output.
+4. Below each task row, two indented lists are rendered (each omitted when empty):
+    1. **Needs review** — step folder names from `steps_needs_review` (status `executed` or `review-open`)
+    2. **Needs work** — step folder names from `steps_needs_work` (status `skeleton`, `ticketed`, or `planned`)
 
 ## C. Archive section — last 5 tasks with flavor
 
