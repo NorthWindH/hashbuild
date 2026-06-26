@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — dual-path `/tmp/*` + `/private/tmp/*` is the correct portable strategy; no change needed |
-| STEP-1-REVIEW-2 |            |
+| STEP-1-REVIEW-2 | ✅ Addressed — corrected `/tmp/hb-ticket.md` → `/tmp/ticket.md` to match subflow output |
 
 ---
 
@@ -26,10 +26,12 @@
 
 Because the harness's symlink-resolution behaviour is unspecified, the dual-path approach is the correct defensive strategy: `Write(/tmp/*)` covers the raw path on both platforms, and `Write(/private/tmp/*)` covers the resolved path on macOS. Neither entry is redundant in a portability context. No change needed. The rationale was already recorded in plan commit `3e9a7ff`.
 
-### STEP-1-REVIEW-2: Ticket filename mismatch between subflow output and skill expectation
+### STEP-1-REVIEW-2: Ticket filename mismatch between subflow output and skill expectation — ADDRESSED
 
 - **file(s):** `skills/hb-task-create.md` (step 2, case 3) and `skills/references/interactive-ticket-subflow.md` (section D)
-- The subflow's Write step produces `$TARGET_PATH/ticket.md`. With `$TARGET_PATH = /tmp`, the file is written to `/tmp/ticket.md`. However, the skill sets `$WRITTEN_TICKET = /tmp/hb-ticket.md` and passes that path to the SDK. The SDK call will receive a path that does not exist, causing interactive mode to silently fail or error.
+- The subflow's Write step produces `$TARGET_PATH/ticket.md`. With `$TARGET_PATH = /tmp`, the file is written to `/tmp/ticket.md`. However, the skill set `$WRITTEN_TICKET = /tmp/hb-ticket.md` and passed that path to the SDK. The SDK call would receive a path that does not exist, causing interactive mode to silently fail or error.
+
+**Resolution:** Fixed both the comment and the `$WRITTEN_TICKET` assignment in `skills/hb-task-create.md` (step 2, case 3) to use `/tmp/ticket.md`, which is what `$TARGET_PATH/ticket.md` resolves to. The subflow contract (`$TARGET_PATH/ticket.md`) is unchanged; only the caller's reference was wrong. Discovered during investigation of STEP-1-REVIEW-1.
 
 ---
 

@@ -51,8 +51,8 @@ Evaluate in order (first match wins):
    - `$TICKET_SUPPLIED` = `false`
    - `$NO_INTERACTIVE` = `false`
 
-   The subflow writes `ticket.md` to `/tmp/hb-ticket.md`.
-   c. Set `$WRITTEN_TICKET` = `/tmp/hb-ticket.md`.
+   The subflow writes `ticket.md` to `/tmp/ticket.md`.
+   c. Set `$WRITTEN_TICKET` = `/tmp/ticket.md`.
    d. Proceed to Step 3 with `--ticket $WRITTEN_TICKET`.
 
 ### 3. Create task skeleton
