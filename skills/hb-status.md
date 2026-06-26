@@ -38,7 +38,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize
 
 - prints a JSON object to stdout; capture and parse it
 - the JSON structure is:
-  ```
+  ```json
   {
     "initialized": bool,
     "active_tasks": [
@@ -50,15 +50,31 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize
         "has_ticket": bool,
         "total_steps": int,
         "steps": [
-          { "name": str, "has_ticket": bool, "has_plan": bool, "has_execution": bool }
+          {
+            "name": str,
+            "has_ticket": bool,
+            "has_plan": bool,
+            "has_execution": bool,
+            "has_review": bool,
+            "status": str
+          }
         ],
-        "steps_pending_execution": int,
+        "steps_skeleton": int,
+        "steps_ticketed": int,
+        "steps_planned": int,
+        "steps_executed": int,
+        "steps_review_open": int,
+        "steps_reviewed": int,
+        "steps_needs_review": [str],
+        "steps_needs_work": [str],
         "next_pending_step": str | null
       }
     ],
     "archive": {
       "count": int,
-      "last_archived": str | null   // "author/task_id" (no flavor), or null if empty
+      "recent": [
+        { "author": str, "task_id": str, "task_folder": str }
+      ]
     }
   }
   ```
@@ -74,8 +90,8 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize
 Produce the report by filling the template with data from the summary JSON:
 
 - **Initialization**: "`.hb/` initialized" if `initialized` is true; otherwise "`.hb/` not found — run `/hb-init`"
-- **Active Tasks**: one table with columns Task, Steps pending execution, Total steps — one row per entry in `active_tasks` using `author/task_folder`; omit the section entirely when `active_tasks` is empty
-- **Archive**: fill `count` and `last_archived`; omit the "Last archived" row when `last_archived` is null; omit the section entirely when `count` is 0
+- **Active Tasks**: one table with columns Task | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total — one row per entry in `active_tasks` using `author/task_folder`; show `—` for any count column that is zero (Total column always shows the raw integer); below each row render two indented lists (each omitted when the corresponding array is empty): **Needs review** (names from `steps_needs_review`) and **Needs work** (names from `steps_needs_work`); omit the section entirely when `active_tasks` is empty
+- **Archive**: render a count-only row (`Archived tasks | <count>`) then a bulleted list of `author/task_folder` from `archive.recent` (up to 5 entries); omit the section entirely when `archive.recent` is empty
 - **Next Action**: apply the decision tree from the template's `## Next Action` comment — evaluate conditions in order and output the first that applies
 
 Output the rendered report as markdown.

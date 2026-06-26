@@ -25,27 +25,34 @@
 <!--
   One row per active task, in filesystem order (author → task_id).
   "Ticket" shows ✓ if the task has ticket.md, ✗ otherwise (task-level has_ticket).
-  "Steps pending execution" means steps with no `execution-*.md` file (steps_pending_execution).
-  "Steps with ticket" shows steps_with_ticket directly.
+  Count columns (Skeleton/Ticketed/Planned/Executed/Review open/Reviewed) show — when zero.
+  "Total" always shows the raw integer.
+  Below each task row, two indented lists are rendered (each omitted when the
+  corresponding array is empty):
+    - Needs review — step folder names from steps_needs_review
+    - Needs work   — step folder names from steps_needs_work
 -->
 
-| Task                        | Ticket | Steps pending execution | Steps with ticket | Total steps |
-| --------------------------- | ------ | ----------------------- | ----------------- | ----------- |
-| `<author>/<task_folder>`    | ✓/✗   | `<count>`               | `<count>`         | `<total>`   |
+| Task                     | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total |
+| ------------------------ | ------ | -------- | -------- | ------- | -------- | ----------- | -------- | ----- |
+| `<author>/<task_folder>` | ✓/✗   | `<—/n>`  | `<—/n>`  | `<—/n>` | `<—/n>`  | `<—/n>`     | `<—/n>`  | `<n>` |
+
+  - **Needs review:** `<step-folder>`, …
+  - **Needs work:** `<step-folder>`, …
 
 ---
 
 ## Archive
 
-|                |                      |
-| -------------- | -------------------- |
-| Archived tasks | `<count>`            |
-| Last archived  | `<author>/<task_id>` |
+|                |           |
+| -------------- | --------- |
+| Archived tasks | `<count>` |
+
+- `<author>/<task_folder>`
 
 <!--
-  Last archived: the task folder under task/archive/ with the most recent
-  modification time, identified as author/task_id (no flavor). Omit the row
-  if the archive is empty.
+  Recent: up to 5 most-recently-archived entries from archive.recent, each as
+  author/task_folder. Omit the section entirely when archive.recent is empty.
 -->
 
 ---
