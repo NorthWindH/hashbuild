@@ -6,6 +6,9 @@ description: >
   /hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] [--no-interactive] <author/task-id>
 
   Idempotent. Ensure a task skeleton exists for a given fully-qualified task name. Accepts an optional ticket file to seed the task.
+# TODO REVIEW look at https://code.claude.com/docs/en/permissions and https://code.claude.com/docs/en/skills
+# how do claude permissions map `/` pre-pended paths? Do they map to system root or project root?
+# we need them to map to system root so assess this
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(/tmp/*) Write(/private/tmp/*) Read(/tmp/*) Read(/private/tmp/*) Edit(/tmp/*) Edit(/private/tmp/*)
 ---
 
