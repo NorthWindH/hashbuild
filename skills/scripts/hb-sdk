@@ -587,6 +587,10 @@ class _TaskInfo:
         return sum(1 for s in self.steps if not s.has_execution)
 
     @property
+    def steps_with_ticket(self) -> int:
+        return sum(1 for s in self.steps if s.has_ticket)
+
+    @property
     def next_pending_step(self) -> str | None:
         for s in self.steps:
             if not s.has_execution:
@@ -692,6 +696,7 @@ def cmd_summarize(args: argparse.Namespace) -> None:
                             for s in t.steps
                         ],
                         "steps_pending_execution": t.steps_pending_execution,
+                        "steps_with_ticket": t.steps_with_ticket,
                         "next_pending_step": t.next_pending_step,
                     }
                     for t in active_tasks
