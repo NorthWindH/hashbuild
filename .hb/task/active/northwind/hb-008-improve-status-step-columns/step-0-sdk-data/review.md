@@ -7,6 +7,7 @@
 | STEP-0-REVIEW-1 | ✅ Addressed — deleted unused `sp1` variable |
 | STEP-0-REVIEW-2 | ✅ Addressed — updated hb-sdk parser + all tests to use 2-column format |
 | STEP-0-REVIEW-3 | ✅ Addressed — hb-sdk refactored into hb_sdk/ module; tests split into 4 files |
+| STEP-0-REVIEW-4 |            |
 
 ---
 
@@ -57,6 +58,14 @@ All 129 tests pass.
 - 129 tests pass in the new structure; all are functionally equivalent to the originals.
 
 **Disposition: Addressed**
+
+---
+
+### STEP-0-REVIEW-4: Private symbol imports in hb_sdk should be public
+
+- **file(s):** `skills/scripts/hb_sdk/__main__.py` (around `TODO REVIEW` marker)
+- `__main__.py` imports private symbols prefixed with `_def_` (e.g. `_def_cli_commit`, `_def_cli_init`, `_def_cli_summarize`, `_def_cli_task`). These should be renamed to remove the underscore prefix and be treated as public API. The same fix should be applied to all similar cross-module private-symbol imports across `hb_sdk/`.
+- **source:** `TODO REVIEW` in commit `85ec3b6` — delete comment from source file after addressing
 
 ---
 
