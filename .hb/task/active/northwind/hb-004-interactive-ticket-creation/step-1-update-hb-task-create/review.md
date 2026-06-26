@@ -7,6 +7,7 @@
 | STEP-1-REVIEW-1 | ✅ Assessed — dual-path `/tmp/*` + `/private/tmp/*` is the correct portable strategy; no change needed |
 | STEP-1-REVIEW-2 | ✅ Addressed — corrected `/tmp/hb-ticket.md` → `/tmp/ticket.md` to match subflow output |
 | STEP-1-REVIEW-3 | ✅ Assessed — paths are system-absolute (confirmed by settings.json + no project tmp/); no change needed |
+| STEP-1-REVIEW-4 | ✅ Addressed — updated all six allowed-tools path entries from `/tmp/` to `//tmp/` and `/private/tmp/` to `//private/tmp/` |
 
 ---
 
@@ -49,6 +50,21 @@ Because the harness's symlink-resolution behaviour is unspecified, the dual-path
 | No `tmp/` at project root | `ls hashbuild/tmp` → does not exist; a project-relative interpretation would mean no file could ever match |
 
 A leading `/` in `allowed-tools` patterns is the filesystem root. `Write(/tmp/*)` correctly covers the system temp directory. No change needed.
+
+---
+
+### STEP-1-REVIEW-4: allowed-tools paths should use `//` prefix, not `/` — ADDRESSED
+
+- **file(s):** `skills/hb-task-create.md` (`allowed-tools` frontmatter)
+- The investigation of STEP-1-REVIEW-3 showed that the permissions system stores system-absolute paths with a `//` prefix (e.g. `Read(//home/hkamal/repos/hashbuild/skills/**)`), not a single `/`. The current entries use single-slash paths like `Write(/tmp/*)`, `Write(/private/tmp/*)`, etc. These should be updated to `Write(//tmp/*)`, `Write(//private/tmp/*)`, etc. to match the canonical form the harness expects.
+
+**Resolution:** Updated all six path entries in the `allowed-tools` frontmatter of `skills/hb-task-create.md`:
+- `Write(/tmp/*)` → `Write(//tmp/*)`
+- `Write(/private/tmp/*)` → `Write(//private/tmp/*)`
+- `Read(/tmp/*)` → `Read(//tmp/*)`
+- `Read(/private/tmp/*)` → `Read(//private/tmp/*)`
+- `Edit(/tmp/*)` → `Edit(//tmp/*)`
+- `Edit(/private/tmp/*)` → `Edit(//private/tmp/*)`
 
 ---
 

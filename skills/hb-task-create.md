@@ -6,7 +6,7 @@ description: >
   /hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] [--no-interactive] <author/task-id>
 
   Idempotent. Ensure a task skeleton exists for a given fully-qualified task name. Accepts an optional ticket file to seed the task.
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(/tmp/*) Write(/private/tmp/*) Read(/tmp/*) Read(/private/tmp/*) Edit(/tmp/*) Edit(/private/tmp/*)
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(//tmp/*) Write(//private/tmp/*) Read(//tmp/*) Read(//private/tmp/*) Edit(//tmp/*) Edit(//private/tmp/*)
 ---
 
 # hb-task-create
