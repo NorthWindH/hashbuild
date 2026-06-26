@@ -6,6 +6,7 @@
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — new step 4 added to skill; description, CTA, and README updated |
 | STEP-0-REVIEW-2 | ✅ Addressed — deleted TODO REVIEW comment from references-toc.md |
+| STEP-0-REVIEW-3 |            |
 
 ---
 
@@ -37,6 +38,14 @@ The `TODO REVIEW` comment itself was deleted from `skills/hb-task-step-review-ad
 - **source:** `TODO REVIEW` in commit `4895b102d24203269a5fcfdf64a57842aebbdcfe` — delete comment from source file after addressing
 
 **Resolution:** Deleted the `<!-- TODO REVIEW this is a test review message; go through the normal review address flow then address it by deleting this comment -->` line from the bottom of `skills/references/references-toc.md`. This was a self-referential test item verifying the review-address flow works end to end — successfully exercised.
+
+---
+
+### STEP-0-REVIEW-3: Update step 10 call-to-action to mention uncommitted TODO REVIEW comments
+
+- **file(s):** `skills/hb-task-step-review-address.md` (step 10 — Prompt user)
+- The call-to-action prompt at the end of the skill still says "add and commit more TODO REVIEW comments" — it should be updated to say "committed or uncommitted" to match the new working-tree scanning feature added in STEP-0-REVIEW-1.
+- **source:** `TODO REVIEW` in commit `2a7b26ae84d91052d1256f74d3df04735dee2d37` — delete comment from source file after addressing
 
 ---
 
