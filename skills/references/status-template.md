@@ -26,12 +26,12 @@
   One row per active task, in filesystem order (author → task_id).
   "Ticket" shows ✓ if the task has ticket.md, ✗ otherwise (task-level has_ticket).
   "Steps pending execution" means steps with no `execution-*.md` file (steps_pending_execution).
-  "Steps with ticket" shows <steps_with_ticket>/<total_steps> using the steps_with_ticket field.
+  "Steps with ticket" shows steps_with_ticket directly.
 -->
 
 | Task                        | Ticket | Steps pending execution | Steps with ticket | Total steps |
 | --------------------------- | ------ | ----------------------- | ----------------- | ----------- |
-| `<author>/<task_folder>`    | ✓/✗   | `<count>`               | `<n>/<total>`     | `<total>`   |
+| `<author>/<task_folder>`    | ✓/✗   | `<count>`               | `<count>`         | `<total>`   |
 
 ---
 
