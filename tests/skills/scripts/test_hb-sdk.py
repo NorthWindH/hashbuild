@@ -1235,8 +1235,6 @@ def test_summarize_task_count_fields_mixed(tmp_path: Path) -> None:
 
     base = task_path(tmp_path, "hasan", "abc-1")
     sp0 = base / "step-0"
-    # TODO REVIEW sp1 is not accessed; consider deleting
-    sp1 = base / "step-1"
     sp2 = base / "step-2"
     sp3 = base / "step-3"
     sp4 = base / "step-4"

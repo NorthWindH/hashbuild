@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-0-REVIEW-1 |            |
+| STEP-0-REVIEW-1 | ✅ Addressed — deleted unused `sp1` variable |
 | STEP-0-REVIEW-2 |            |
 | STEP-0-REVIEW-3 |            |
 
@@ -14,9 +14,13 @@
 
 ### STEP-0-REVIEW-1: Unused sp1 variable in test_summarize_task_count_fields_mixed
 
-- **file(s):** `tests/skills/scripts/test_hb-sdk.py` (around `TODO REVIEW` marker, `test_summarize_task_count_fields_mixed`)
+- **file(s):** `tests/skills/scripts/test_hb-sdk.py` (`test_summarize_task_count_fields_mixed`)
 - `sp1` is assigned but never accessed in the test body; consider deleting it.
 - **source:** `TODO REVIEW` in commit `24985c3` — delete comment from source file after addressing
+
+**Resolution:** Deleted both the `TODO REVIEW` comment and the `sp1 = base / "step-1"` assignment. Step-1 needed no file manipulation in this test (the comment `# step-1: ticketed` already explained that), so the variable was truly dead code. All 129 tests pass after removal.
+
+**Disposition: Addressed**
 
 ---
 
