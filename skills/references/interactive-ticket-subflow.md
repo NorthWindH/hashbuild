@@ -50,6 +50,8 @@ If `$USER_INPUT` is prose, bullets, or a partial draft that does not match Rule 
 
 #### D. Write step
 
+Before writing, if `$TARGET_PATH/ticket.md` already exists, delete it.
+
 Write the derived content to `$TARGET_PATH/ticket.md` using this structure:
 
 ```
