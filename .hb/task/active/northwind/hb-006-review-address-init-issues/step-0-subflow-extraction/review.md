@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — new step 4 added to skill; description, CTA, and README updated |
-| STEP-0-REVIEW-2 |            |
+| STEP-0-REVIEW-2 | ✅ Addressed — deleted TODO REVIEW comment from references-toc.md |
 
 ---
 
@@ -30,11 +30,13 @@ The `TODO REVIEW` comment itself was deleted from `skills/hb-task-step-review-ad
 
 ---
 
-### STEP-0-REVIEW-2: Test review message — delete comment from references-toc.md
+### STEP-0-REVIEW-2: Test review message — delete comment from references-toc.md — ADDRESSED
 
 - **file(s):** `skills/references/references-toc.md` (bottom of file)
 - This is a test review message left as a `TODO REVIEW` comment. It should be addressed by going through the normal review address flow, then deleted.
 - **source:** `TODO REVIEW` in commit `4895b102d24203269a5fcfdf64a57842aebbdcfe` — delete comment from source file after addressing
+
+**Resolution:** Deleted the `<!-- TODO REVIEW this is a test review message; go through the normal review address flow then address it by deleting this comment -->` line from the bottom of `skills/references/references-toc.md`. This was a self-referential test item verifying the review-address flow works end to end — successfully exercised.
 
 ---
 

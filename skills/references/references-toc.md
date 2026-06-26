@@ -12,5 +12,3 @@
 | `${CLAUDE_SKILL_DIR}/references/status-template.md`           | Status report template and Next Action decision tree; read when rendering `/hb-status`.                                                  |
 | `${CLAUDE_SKILL_DIR}/references/git-status-short-format.adoc` | Git `XY` status codes; read when `git status --short` shows an unfamiliar code.                                                          |
 | `${CLAUDE_SKILL_DIR}/hb-task-unarchive.md`                    | Unarchive skill; read when the user asks about restoring an archived task.                                                               |
-
-<!-- TODO REVIEW this is a test review message; go through the normal review address flow then address it by deleting this comment -->
