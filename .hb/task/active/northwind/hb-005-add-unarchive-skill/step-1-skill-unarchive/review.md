@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Addressed — added skill row to table + "Unarchive a task" section in Getting Started |
-| STEP-1-REVIEW-2 |            |
+| STEP-1-REVIEW-2 | ✅ Addressed — added hb-task-unarchive.md row to references TOC |
 
 ---
 
@@ -26,6 +26,8 @@
 - **file(s):** `skills/references/references-toc.md` (around `TODO REVIEW` marker)
 - The references TOC table does not include a row for the unarchive skill file; it needs an entry pointing to `hb-task-unarchive.md`.
 - **source:** `TODO REVIEW` in commit `29fa290` — delete comment from source file after addressing
+
+**Resolution:** Added a row for `${CLAUDE_SKILL_DIR}/hb-task-unarchive.md` at the end of the TOC table with the trigger "read when the user asks about restoring an archived task." The `TODO REVIEW` comment was deleted from the source file. Symlinked copies in `.claude/skills/` propagated automatically.
 
 ---
 
