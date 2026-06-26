@@ -1,6 +1,8 @@
 ---
 name: hb-task-step-plan
 description: >
+  /hb-task-step-plan [--help] <author/task-id/step-n>
+
   Idempotent. Create or update plan.md in a step folder based on the step's ticket.md and the plan template.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write
 ---

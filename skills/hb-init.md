@@ -1,6 +1,8 @@
 ---
 name: hb-init
 description: >
+  /hb-init [--help]
+
   Idempotent. Ensure that hashbuild directory structure exists (.hb directory).
   Should be called before any other /hb-* skills are invoked for the first time.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)

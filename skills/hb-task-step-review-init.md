@@ -1,6 +1,8 @@
 ---
 name: hb-task-step-review-init
 description: >
+  /hb-task-step-review-init [--help] <author/task-id/step-n>
+
   Idempotent. Create review.md in a step folder seeded with one placeholder review item. Does nothing if review.md already exists with required structure.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write
 ---

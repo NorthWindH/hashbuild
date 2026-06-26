@@ -1,6 +1,8 @@
 ---
 name: hb-task-step-execute
 description: >
+  /hb-task-step-execute [--help] <author/task-id/step-n>
+
   Read plan.md in a step folder and execute the plan, then record an execution summary.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write Edit Bash(*)
 ---

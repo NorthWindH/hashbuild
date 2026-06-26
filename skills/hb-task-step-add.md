@@ -1,6 +1,8 @@
 ---
 name: hb-task-step-add
 description: >
+  /hb-task-step-add [--help] [--flavor <slug>] [--ticket <path>] [--ticket-overwrite] <author/task-id>
+
   Idempotent. Add the next step folder to an existing task. Accepts an optional ticket file to seed the step.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)
 ---

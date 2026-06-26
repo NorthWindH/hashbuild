@@ -1,6 +1,8 @@
 ---
 name: hb-task-plan
 description: >
+  /hb-task-plan [--help] <author/task-id>
+
   Analyze a task's acceptance criteria against existing step tickets to identify coverage gaps, then optionally create additional steps to fill them.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Bash(find *) Read Write
 ---

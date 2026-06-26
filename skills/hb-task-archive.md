@@ -1,6 +1,8 @@
 ---
 name: hb-task-archive
 description: >
+  /hb-task-archive [--help] <author/task-id>
+
   Archive a task by moving its folder from `task/active` to `task/archive`.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)
 ---

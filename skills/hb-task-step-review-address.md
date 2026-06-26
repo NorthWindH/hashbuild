@@ -1,6 +1,8 @@
 ---
 name: hb-task-step-review-address
 description: >
+  /hb-task-step-review-address [--help] [--no-todo-scan] [--commits N] <author/task-id/step-n>
+
   Read review.md in a step folder, pickup TODO REVIEW comments in HEAD commit, normalise review item IDs,
   sync the status table, then address each unresolved item one by one with a commit per item.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Read Write Edit Bash(*)

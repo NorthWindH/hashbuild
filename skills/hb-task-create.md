@@ -1,6 +1,8 @@
 ---
 name: hb-task-create
 description: >
+  /hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>
+
   Idempotent. Ensure a task skeleton exists for a given fully-qualified task name. Accepts an optional ticket file to seed the task.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)
 ---

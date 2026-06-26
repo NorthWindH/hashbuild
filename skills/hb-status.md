@@ -1,6 +1,8 @@
 ---
 name: hb-status
 description: >
+  /hb-status [--help]
+
   Report the current state of .hb: initialization, active tasks with step progress,
   archive summary, and recommended next action.
 allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Read
