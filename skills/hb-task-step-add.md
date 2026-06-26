@@ -15,14 +15,14 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to add the next step folder to
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                       |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                                                                 |
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. The flavor is optional — the SDK matches on author and task ID alone. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
-| `--flavor <slug>`      | no       | Optional step flavor suffix appended to the step folder name (e.g. `scaffold-routes` → `step-0-scaffold-routes`). Slug chars: `[a-z-]`.           |
-| `--ticket <path>`      | no       | Path to a `.md` ticket file. When provided, copied to `ticket.md` inside the new step folder instead of generating the default template.          |
-| `--ticket-overwrite`   | no       | Whether to overwrite an existing `ticket.md` if its content differs. Default: false                                                               |
-| `--no-interactive`     | no       | Skip interactive ticket creation. Creates a skeleton only, with no ticket.                                                                        |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
+| `--flavor <slug>`      | no       | Optional step flavor suffix appended to the step folder name (e.g. `scaffold-routes` → `step-0-scaffold-routes`). Slug chars: `[a-z-]`.                                                                                     |
+| `--ticket <path>`      | no       | Path to a `.md` ticket file. When provided, copied to `ticket.md` inside the new step folder instead of generating the default template.                                                                                    |
+| `--ticket-overwrite`   | no       | Whether to overwrite an existing `ticket.md` if its content differs. Default: false                                                                                                                                         |
+| `--no-interactive`     | no       | Skip interactive ticket creation. Creates a skeleton only, with no ticket.                                                                                                                                                  |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                                                                 |
 
 ## Reference Files
 
@@ -73,6 +73,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 ### 4. Commit
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this step; pass `--tag step-add`
+<!-- TODO REVIEW should not stage temporary ticket; hb-sdk will report path of permanent ticket.md file so stage that instead -->
 - when interactive mode ran (Step 2, case 3): also stage `$WRITTEN_TICKET` (the generated `ticket.md`)
 
 ### 5. Prompt user
