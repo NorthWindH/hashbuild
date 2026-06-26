@@ -615,6 +615,28 @@ def cmd_task_step_execution_slug(args: argparse.Namespace) -> None:
 
 # ── summarize ─────────────────────────────────────────────────────────────────
 
+REVIEW_CLOSED_STATUSES = frozenset({"addressed", "assessed", "deferred"})
+_SEPARATOR_RE = re.compile(r"^[-:]+$")
+
+
+def _parse_review_open(review_path: Path) -> bool:
+    text = review_path.read_text()
+    for line in text.splitlines():
+        if "|" not in line:
+            continue
+        cols = [c.strip() for c in line.split("|")]
+        if len(cols) < 4:
+            continue
+        status_val = cols[2].lower()
+        if not status_val or _SEPARATOR_RE.match(status_val):
+            continue
+        if status_val in ("status", "resolution"):
+            continue
+        if any(kw in status_val for kw in REVIEW_CLOSED_STATUSES):
+            continue
+        return True
+    return False
+
 
 @dataclass
 class _StepInfo:
@@ -622,6 +644,20 @@ class _StepInfo:
     has_ticket: bool
     has_plan: bool
     has_execution: bool
+    has_review: bool
+    review_open: bool
+
+    @property
+    def status(self) -> str:
+        if self.has_review:
+            return "review-open" if self.review_open else "reviewed"
+        if self.has_execution:
+            return "executed"
+        if self.has_plan:
+            return "planned"
+        if self.has_ticket:
+            return "ticketed"
+        return "skeleton"
 
 
 @dataclass
@@ -634,12 +670,36 @@ class _TaskInfo:
     steps: list["_StepInfo"]
 
     @property
-    def steps_pending_execution(self) -> int:
-        return sum(1 for s in self.steps if not s.has_execution)
+    def steps_skeleton(self) -> int:
+        return sum(1 for s in self.steps if s.status == "skeleton")
 
     @property
-    def steps_with_ticket(self) -> int:
-        return sum(1 for s in self.steps if s.has_ticket)
+    def steps_ticketed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "ticketed")
+
+    @property
+    def steps_planned(self) -> int:
+        return sum(1 for s in self.steps if s.status == "planned")
+
+    @property
+    def steps_executed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "executed")
+
+    @property
+    def steps_review_open(self) -> int:
+        return sum(1 for s in self.steps if s.status == "review-open")
+
+    @property
+    def steps_reviewed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "reviewed")
+
+    @property
+    def steps_needs_review(self) -> list[str]:
+        return [s.name for s in self.steps if s.status in ("executed", "review-open")]
+
+    @property
+    def steps_needs_work(self) -> list[str]:
+        return [s.name for s in self.steps if s.status in ("skeleton", "ticketed", "planned")]
 
     @property
     def next_pending_step(self) -> str | None:
@@ -657,12 +717,17 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
             p.is_file() and p.name.startswith("execution-") and p.name.endswith(".md")
             for p in step_path.iterdir()
         )
+        review_path = step_path / "review.md"
+        has_review = review_path.is_file()
+        review_open = _parse_review_open(review_path) if has_review else False
         steps.append(
             _StepInfo(
                 name=step_path.name,
                 has_ticket=(step_path / "ticket.md").exists(),
                 has_plan=(step_path / "plan.md").exists(),
                 has_execution=has_execution,
+                has_review=has_review,
+                review_open=review_open,
             )
         )
     return _TaskInfo(
@@ -684,7 +749,7 @@ def cmd_summarize(args: argparse.Namespace) -> None:
                 {
                     "initialized": False,
                     "active_tasks": [],
-                    "archive": {"count": 0, "last_archived": None},
+                    "archive": {"count": 0, "recent": []},
                 },
                 indent=2,
             )
@@ -703,8 +768,7 @@ def cmd_summarize(args: argparse.Namespace) -> None:
                 active_tasks.append(_summarize_task(task_dir, author_dir.name))
 
     archived_count = 0
-    last_archived_path: Path | None = None
-    last_archived_mtime: float = -1.0
+    recent_entries: list[tuple[float, Path]] = []
 
     archive_base = hb / "task" / TASK_FOLDER_ARCHIVE
     if archive_base.exists():
@@ -715,15 +779,15 @@ def cmd_summarize(args: argparse.Namespace) -> None:
                 if not task_dir.is_dir():
                     continue
                 archived_count += 1
-                mtime = task_dir.stat().st_mtime
-                if mtime > last_archived_mtime:
-                    last_archived_mtime = mtime
-                    last_archived_path = task_dir
+                recent_entries.append((task_dir.stat().st_mtime, task_dir))
 
-    last_archived: str | None = None
-    if last_archived_path is not None:
-        tn = _parse_task_name(f"{last_archived_path.parent.name}/{last_archived_path.name}")
-        last_archived = f"{tn.author}/{tn.task_id}"
+    recent_entries.sort(key=lambda x: x[0], reverse=True)
+
+    def _archive_entry(p: Path) -> dict[str, str]:
+        tn = _parse_task_name(f"{p.parent.name}/{p.name}")
+        return {"author": tn.author, "task_id": tn.task_id, "task_folder": p.name}
+
+    recent = [_archive_entry(p) for _, p in recent_entries[:5]]
 
     print(
         json.dumps(
@@ -743,18 +807,26 @@ def cmd_summarize(args: argparse.Namespace) -> None:
                                 "has_ticket": s.has_ticket,
                                 "has_plan": s.has_plan,
                                 "has_execution": s.has_execution,
+                                "has_review": s.has_review,
+                                "status": s.status,
                             }
                             for s in t.steps
                         ],
-                        "steps_pending_execution": t.steps_pending_execution,
-                        "steps_with_ticket": t.steps_with_ticket,
+                        "steps_skeleton": t.steps_skeleton,
+                        "steps_ticketed": t.steps_ticketed,
+                        "steps_planned": t.steps_planned,
+                        "steps_executed": t.steps_executed,
+                        "steps_review_open": t.steps_review_open,
+                        "steps_reviewed": t.steps_reviewed,
+                        "steps_needs_review": t.steps_needs_review,
+                        "steps_needs_work": t.steps_needs_work,
                         "next_pending_step": t.next_pending_step,
                     }
                     for t in active_tasks
                 ],
                 "archive": {
                     "count": archived_count,
-                    "last_archived": last_archived,
+                    "recent": recent,
                 },
             },
             indent=2,

@@ -867,7 +867,7 @@ def test_summarize_not_initialized(tmp_path: Path) -> None:
     assert data["initialized"] is False
     assert data["active_tasks"] == []
     assert data["archive"]["count"] == 0
-    assert data["archive"]["last_archived"] is None
+    assert data["archive"]["recent"] == []
 
 
 def test_summarize_initialized_no_tasks(tmp_path: Path) -> None:
@@ -891,7 +891,9 @@ def test_summarize_active_task_no_steps(tmp_path: Path) -> None:
     assert t["task_folder"] == "abc-1"
     assert t["total_steps"] == 0
     assert t["steps"] == []
-    assert t["steps_pending_execution"] == 0
+    assert t["steps_skeleton"] == 0
+    assert t["steps_needs_review"] == []
+    assert t["steps_needs_work"] == []
     assert t["next_pending_step"] is None
 
 
@@ -962,7 +964,8 @@ def test_summarize_steps_pending_execution(tmp_path: Path) -> None:
     data = json.loads(result.stdout)
     t = data["active_tasks"][0]
     assert t["total_steps"] == 3
-    assert t["steps_pending_execution"] == 2
+    assert t["steps_ticketed"] == 2
+    assert t["steps_needs_work"] == ["step-1", "step-2"]
     assert t["next_pending_step"] == "step-1"
 
 
@@ -976,7 +979,8 @@ def test_summarize_all_steps_executed(tmp_path: Path) -> None:
     result = summarize(tmp_path)
     data = json.loads(result.stdout)
     t = data["active_tasks"][0]
-    assert t["steps_pending_execution"] == 0
+    assert t["steps_executed"] == 1
+    assert t["steps_needs_review"] == ["step-0"]
     assert t["next_pending_step"] is None
 
 
@@ -1039,7 +1043,7 @@ def test_summarize_last_archived_by_mtime(tmp_path: Path) -> None:
 
     result = summarize(tmp_path)
     data = json.loads(result.stdout)
-    assert data["archive"]["last_archived"] == "hasan/abc-1"
+    assert data["archive"]["recent"][0]["task_id"] == "abc-1"
 
 
 def test_summarize_last_archived_strips_flavor(tmp_path: Path) -> None:
@@ -1048,7 +1052,9 @@ def test_summarize_last_archived_strips_flavor(tmp_path: Path) -> None:
     task_archive(tmp_path, "hasan/abc-1")
     result = summarize(tmp_path)
     data = json.loads(result.stdout)
-    assert data["archive"]["last_archived"] == "hasan/abc-1"
+    recent = data["archive"]["recent"]
+    assert recent[0]["task_id"] == "abc-1"
+    assert recent[0]["task_folder"] == "abc-1-add-login"
 
 
 def test_summarize_task_path_is_absolute(tmp_path: Path) -> None:
@@ -1059,3 +1065,308 @@ def test_summarize_task_path_is_absolute(tmp_path: Path) -> None:
     p = Path(data["active_tasks"][0]["task_path"])
     assert p.is_absolute()
     assert p.is_dir()
+
+
+# ── step status field ──────────────────────────────────────────────────────────
+
+
+def test_summarize_step_status_skeleton(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "ticket.md").unlink()
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "skeleton"
+    assert step["has_review"] is False
+
+
+def test_summarize_step_status_ticketed(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "ticketed"
+
+
+def test_summarize_step_status_planned(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "plan.md").write_text("# plan")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "planned"
+
+
+def test_summarize_step_status_executed(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "executed"
+
+
+def test_summarize_step_status_review_open(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (step_path / "review.md").write_text("| ID | Status | Description |\n| --- | --- | --- |\n| R1 | open | some issue |\n")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "review-open"
+    assert step["has_review"] is True
+
+
+def test_summarize_step_status_reviewed_all_closed(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (step_path / "review.md").write_text(
+        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | addressed | fixed |\n| R2 | deferred | later |\n"
+    )
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "reviewed"
+
+
+def test_summarize_step_status_reviewed_no_rows(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (step_path / "review.md").write_text("# Review\n\nNo issues found.\n")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "reviewed"
+
+
+def test_summarize_step_status_review_case_insensitive(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (step_path / "review.md").write_text(
+        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | ADDRESSED | fixed |\n"
+    )
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "reviewed"
+
+
+def test_summarize_step_status_review_mixed(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (step_path / "review.md").write_text(
+        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | addressed | fixed |\n| R2 | open | still open |\n"
+    )
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["status"] == "review-open"
+
+
+def test_summarize_step_has_review_false_without_file(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    result = summarize(tmp_path)
+    step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
+    assert step["has_review"] is False
+    assert step["status"] == "executed"
+
+
+# ── active-task count and list fields ─────────────────────────────────────────
+
+
+def test_summarize_task_count_fields_all_zero(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert t["steps_skeleton"] == 0
+    assert t["steps_ticketed"] == 0
+    assert t["steps_planned"] == 0
+    assert t["steps_executed"] == 0
+    assert t["steps_review_open"] == 0
+    assert t["steps_reviewed"] == 0
+    assert t["steps_needs_review"] == []
+    assert t["steps_needs_work"] == []
+
+
+def test_summarize_task_count_fields_mixed(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+
+    # create 6 steps via SDK so each has a ticket
+    for _ in range(6):
+        task_step_add(tmp_path, "hasan/abc-1")
+
+    base = task_path(tmp_path, "hasan", "abc-1")
+    sp0 = base / "step-0"
+    sp1 = base / "step-1"
+    sp2 = base / "step-2"
+    sp3 = base / "step-3"
+    sp4 = base / "step-4"
+    sp5 = base / "step-5"
+
+    # step-0: skeleton — remove ticket so no files remain
+    (sp0 / "ticket.md").unlink()
+    # step-1: ticketed — already has ticket only; no changes needed
+    # step-2: planned
+    (sp2 / "plan.md").write_text("# plan")
+    # step-3: executed
+    (sp3 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    # step-4: review-open
+    (sp4 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (sp4 / "review.md").write_text("| R1 | open | x |\n")
+    # step-5: reviewed
+    (sp5 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (sp5 / "review.md").write_text("| R1 | addressed | x |\n")
+
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert t["steps_skeleton"] == 1
+    assert t["steps_ticketed"] == 1
+    assert t["steps_planned"] == 1
+    assert t["steps_executed"] == 1
+    assert t["steps_review_open"] == 1
+    assert t["steps_reviewed"] == 1
+
+
+def test_summarize_steps_needs_review_includes_executed_and_review_open(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    sp0 = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    sp1 = task_path(tmp_path, "hasan", "abc-1") / "step-1"
+    (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (sp1 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    (sp1 / "review.md").write_text("| ID | Status | Desc |\n| --- | --- | --- |\n| R1 | open | x |\n")
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert "step-0" in t["steps_needs_review"]
+    assert "step-1" in t["steps_needs_review"]
+
+
+def test_summarize_steps_needs_work_includes_skeleton_ticketed_planned(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    # create 3 steps via SDK so each has a ticket
+    for _ in range(3):
+        task_step_add(tmp_path, "hasan/abc-1")
+
+    base = task_path(tmp_path, "hasan", "abc-1")
+    # step-0: skeleton — remove ticket
+    (base / "step-0" / "ticket.md").unlink()
+    # step-1: ticketed — already has ticket, no changes needed
+    # step-2: planned
+    (base / "step-2" / "plan.md").write_text("# plan")
+
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert "step-0" in t["steps_needs_work"]
+    assert "step-1" in t["steps_needs_work"]
+    assert "step-2" in t["steps_needs_work"]
+
+
+def test_summarize_steps_needs_review_empty_when_none_qualify(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert t["steps_needs_review"] == []
+
+
+def test_summarize_steps_needs_work_empty_when_none_qualify(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    sp0 = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    result = summarize(tmp_path)
+    t = json.loads(result.stdout)["active_tasks"][0]
+    assert t["steps_needs_work"] == []
+
+
+# ── archive recent ─────────────────────────────────────────────────────────────
+
+
+def test_summarize_archive_recent_empty_when_no_archives(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path)
+    data = json.loads(result.stdout)
+    assert data["archive"]["recent"] == []
+
+
+def test_summarize_archive_recent_single_entry(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    recent = json.loads(result.stdout)["archive"]["recent"]
+    assert len(recent) == 1
+    assert set(recent[0].keys()) >= {"author", "task_id", "task_folder"}
+
+
+def test_summarize_archive_recent_sorted_by_mtime_desc(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_create(tmp_path, "hasan/abc-2")
+    task_archive(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-2")
+
+    # force abc-2 to appear older so abc-1 wins
+    p = archive_path(tmp_path, "hasan", "abc-2")
+    os.utime(p, (1_000_000, 1_000_000))
+
+    result = summarize(tmp_path)
+    recent = json.loads(result.stdout)["archive"]["recent"]
+    assert recent[0]["task_id"] == "abc-1"
+
+
+def test_summarize_archive_recent_max_five(tmp_path: Path) -> None:
+    init(tmp_path)
+    for i in range(1, 8):
+        task_create(tmp_path, f"hasan/abc-{i}")
+        task_archive(tmp_path, f"hasan/abc-{i}")
+    result = summarize(tmp_path)
+    recent = json.loads(result.stdout)["archive"]["recent"]
+    assert len(recent) == 5
+
+
+def test_summarize_archive_recent_task_folder_includes_flavor(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1-add-login")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    recent = json.loads(result.stdout)["archive"]["recent"]
+    assert recent[0]["task_folder"] == "abc-1-add-login"
+    assert recent[0]["task_id"] == "abc-1"
+
+
+def test_summarize_archive_recent_author_field(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path)
+    recent = json.loads(result.stdout)["archive"]["recent"]
+    assert recent[0]["author"] == "hasan"
