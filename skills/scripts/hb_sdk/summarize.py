@@ -1,0 +1,236 @@
+"""hb-sdk summarize command."""
+
+import argparse
+import json
+import re
+import typing
+from dataclasses import dataclass
+from pathlib import Path
+
+from .common import (
+    TASK_FOLDER_ACTIVE,
+    TASK_FOLDER_ARCHIVE,
+    _parse_task_name,
+    _path_hb,
+)
+from .task import _list_step_folders
+
+_SEPARATOR_RE = re.compile(r"^[-:]+$")
+
+
+def _parse_review_open(review_path: Path) -> bool:
+    """Return True if any Status-table row has an empty Resolution cell."""
+    text = review_path.read_text()
+    for line in text.splitlines():
+        if "|" not in line:
+            continue
+        cols = [c.strip() for c in line.split("|")]
+        if len(cols) < 4:
+            continue
+        id_val = cols[1].lower()
+        if not id_val or _SEPARATOR_RE.match(id_val) or id_val == "id":
+            continue
+        if not cols[2]:  # empty Resolution cell = open item
+            return True
+    return False
+
+
+@dataclass
+class _StepInfo:
+    name: str
+    has_ticket: bool
+    has_plan: bool
+    has_execution: bool
+    has_review: bool
+    review_open: bool
+
+    @property
+    def status(self) -> str:
+        if self.has_review:
+            return "review-open" if self.review_open else "reviewed"
+        if self.has_execution:
+            return "executed"
+        if self.has_plan:
+            return "planned"
+        if self.has_ticket:
+            return "ticketed"
+        return "skeleton"
+
+
+@dataclass
+class _TaskInfo:
+    author: str
+    task_id: str
+    task_folder: str
+    task_path: Path
+    has_ticket: bool
+    steps: list["_StepInfo"]
+
+    @property
+    def steps_skeleton(self) -> int:
+        return sum(1 for s in self.steps if s.status == "skeleton")
+
+    @property
+    def steps_ticketed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "ticketed")
+
+    @property
+    def steps_planned(self) -> int:
+        return sum(1 for s in self.steps if s.status == "planned")
+
+    @property
+    def steps_executed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "executed")
+
+    @property
+    def steps_review_open(self) -> int:
+        return sum(1 for s in self.steps if s.status == "review-open")
+
+    @property
+    def steps_reviewed(self) -> int:
+        return sum(1 for s in self.steps if s.status == "reviewed")
+
+    @property
+    def steps_needs_review(self) -> list[str]:
+        return [s.name for s in self.steps if s.status in ("executed", "review-open")]
+
+    @property
+    def steps_needs_work(self) -> list[str]:
+        return [s.name for s in self.steps if s.status in ("skeleton", "ticketed", "planned")]
+
+    @property
+    def next_pending_step(self) -> str | None:
+        for s in self.steps:
+            if not s.has_execution:
+                return s.name
+        return None
+
+
+def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
+    tn = _parse_task_name(f"{author}/{task_path.name}")
+    steps = list[_StepInfo]()
+    for step_path in _list_step_folders(task_path):
+        has_execution = any(
+            p.is_file() and p.name.startswith("execution-") and p.name.endswith(".md")
+            for p in step_path.iterdir()
+        )
+        review_path = step_path / "review.md"
+        has_review = review_path.is_file()
+        review_open = _parse_review_open(review_path) if has_review else False
+        steps.append(
+            _StepInfo(
+                name=step_path.name,
+                has_ticket=(step_path / "ticket.md").exists(),
+                has_plan=(step_path / "plan.md").exists(),
+                has_execution=has_execution,
+                has_review=has_review,
+                review_open=review_open,
+            )
+        )
+    return _TaskInfo(
+        author=tn.author,
+        task_id=tn.task_id,
+        task_folder=task_path.name,
+        task_path=task_path,
+        has_ticket=(task_path / "ticket.md").exists(),
+        steps=steps,
+    )
+
+
+def cmd_summarize(args: argparse.Namespace) -> None:
+    hb = _path_hb()
+
+    if not hb.exists():
+        print(
+            json.dumps(
+                {
+                    "initialized": False,
+                    "active_tasks": [],
+                    "archive": {"count": 0, "recent": []},
+                },
+                indent=2,
+            )
+        )
+        return
+
+    active_tasks = list[_TaskInfo]()
+    active_base = hb / "task" / TASK_FOLDER_ACTIVE
+    if active_base.exists():
+        for author_dir in sorted(active_base.iterdir()):
+            if not author_dir.is_dir():
+                continue
+            for task_dir in sorted(author_dir.iterdir()):
+                if not task_dir.is_dir():
+                    continue
+                active_tasks.append(_summarize_task(task_dir, author_dir.name))
+
+    archived_count = 0
+    recent_entries: list[tuple[float, Path]] = []
+
+    archive_base = hb / "task" / TASK_FOLDER_ARCHIVE
+    if archive_base.exists():
+        for author_dir in archive_base.iterdir():
+            if not author_dir.is_dir():
+                continue
+            for task_dir in author_dir.iterdir():
+                if not task_dir.is_dir():
+                    continue
+                archived_count += 1
+                recent_entries.append((task_dir.stat().st_mtime, task_dir))
+
+    recent_entries.sort(key=lambda x: x[0], reverse=True)
+
+    def _archive_entry(p: Path) -> dict[str, str]:
+        tn = _parse_task_name(f"{p.parent.name}/{p.name}")
+        return {"author": tn.author, "task_id": tn.task_id, "task_folder": p.name}
+
+    recent = [_archive_entry(p) for _, p in recent_entries[:5]]
+
+    print(
+        json.dumps(
+            {
+                "initialized": True,
+                "active_tasks": [
+                    {
+                        "author": t.author,
+                        "task_id": t.task_id,
+                        "task_folder": t.task_folder,
+                        "task_path": str(t.task_path.absolute()),
+                        "has_ticket": t.has_ticket,
+                        "total_steps": len(t.steps),
+                        "steps": [
+                            {
+                                "name": s.name,
+                                "has_ticket": s.has_ticket,
+                                "has_plan": s.has_plan,
+                                "has_execution": s.has_execution,
+                                "has_review": s.has_review,
+                                "status": s.status,
+                            }
+                            for s in t.steps
+                        ],
+                        "steps_skeleton": t.steps_skeleton,
+                        "steps_ticketed": t.steps_ticketed,
+                        "steps_planned": t.steps_planned,
+                        "steps_executed": t.steps_executed,
+                        "steps_review_open": t.steps_review_open,
+                        "steps_reviewed": t.steps_reviewed,
+                        "steps_needs_review": t.steps_needs_review,
+                        "steps_needs_work": t.steps_needs_work,
+                        "next_pending_step": t.next_pending_step,
+                    }
+                    for t in active_tasks
+                ],
+                "archive": {
+                    "count": archived_count,
+                    "recent": recent,
+                },
+            },
+            indent=2,
+        )
+    )
+
+
+def _def_cli_summarize(subs: typing.Any) -> None:
+    p = subs.add_parser("summarize", help="Print workspace summary as JSON for status reporting")
+    p.set_defaults(func=cmd_summarize)
