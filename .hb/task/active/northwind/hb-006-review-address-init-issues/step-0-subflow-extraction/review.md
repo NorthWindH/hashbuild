@@ -4,18 +4,29 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-0-REVIEW-1 |            |
+| STEP-0-REVIEW-1 | ✅ Addressed — new step 4 added to skill; description, CTA, and README updated |
 | STEP-0-REVIEW-2 |            |
 
 ---
 
 ## Notes
 
-### STEP-0-REVIEW-1: Add uncommitted file scanning to hb-task-step-review-address
+### STEP-0-REVIEW-1: Add uncommitted file scanning to hb-task-step-review-address — ADDRESSED
 
 - **file(s):** `skills/hb-task-step-review-address.md` (step 4 — scan commits for TODO REVIEW comments)
 - In addition to scanning commits, when `--no-todo-scan` is not provided, the skill should also scan files that have been changed but not committed for `TODO REVIEW` comments. If found, the user should be asked whether to commit those files before continuing the flow. If accepted, commit the changed files containing `TODO REVIEW` comments, then continue; if declined, just continue.
 - **source:** `TODO REVIEW` in commit `4895b102d24203269a5fcfdf64a57842aebbdcfe` — delete comment from source file after addressing
+
+**Resolution:** Added a new **step 4 — Scan working tree for TODO REVIEW comments** to `hb-task-step-review-address.md`, inserted before the existing commit-scan step (renumbered 4→5 through 9→10). The new step: runs `git status --short` to find uncommitted changed files, greps each for `TODO REVIEW`, and if any are found, prompts the user to commit them before the commit-scan step runs. Propagated the change to all call-to-action sites:
+
+| file | change |
+|------|--------|
+| `skills/hb-task-step-review-address.md` | new step 4; frontmatter description updated; `--no-todo-scan` description updated; intro paragraph updated |
+| `skills/hb-task-step-review-init.md` | CTA updated: mentions committed _and_ uncommitted |
+| `skills/hb-task-step-execute.md` | CTA updated: "committed or uncommitted" |
+| `skills/references/README.md` | Option A updated to mention uncommitted files and the commit-offer prompt |
+
+The `TODO REVIEW` comment itself was deleted from `skills/hb-task-step-review-address.md` and replaced with the new step 4 text.
 
 ---
 

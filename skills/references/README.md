@@ -136,13 +136,13 @@ Carries out `plan.md` and writes an `execution-*.md` summary recording what was 
 
 Optionally, start a code review after execution. There are two ways to begin:
 
-**Option A — `TODO REVIEW` comments (skip review-init):** add `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this duplicates logic in X`), commit them, then run review-address directly:
+**Option A — `TODO REVIEW` comments (skip review-init):** add `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this duplicates logic in X`) — committed or uncommitted — then run review-address directly:
 
 ```
 /hb-task-step-review-address author/abc-123/0
 ```
 
-The skill picks up the comments, creates `review.md` automatically, adds them as review items, addresses them, and deletes the comments from source.
+The skill picks up the comments from both committed changes and uncommitted working-tree files, creates `review.md` automatically, adds them as review items, addresses them, and deletes the comments from source. If uncommitted files contain `TODO REVIEW` comments, the skill offers to commit them before proceeding.
 
 **Option B — manual review.md:** create `review.md` first and fill in concerns by hand:
 
@@ -156,7 +156,7 @@ Then run:
 /hb-task-step-review-address author/abc-123/0
 ```
 
-Both options support `TODO REVIEW` comments — they are always scanned unless `--no-todo-scan` is passed. Pass `--commits N` to scan more than one commit.
+Both options support `TODO REVIEW` comments — they are always scanned (committed and uncommitted) unless `--no-todo-scan` is passed. Pass `--commits N` to scan more than one commit.
 
 Review is iterative — add more concerns and re-run `/hb-task-step-review-address` as needed.
 
