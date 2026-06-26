@@ -19,6 +19,8 @@ Hashbuild currently supports tasks and steps as its primary work objects. A ligh
     3. In both cases the user may expand on the content before the ticket is written, then the idea is removed via `hb-sdk idea remove`.
 6. All four skills are backed by new `hb-sdk` subcommands: `idea add`, `idea remove`, and `idea show` (accepting optional `<author>` and `<author>/<index>` args to scope the result).
 7. `hb-idea-list` output format is governed by a new `idea-list-template.md` reference file so that presentation is consistent across invocation forms.
+8. `README.md` is updated to document the four new skills (`hb-idea-add`, `hb-idea-remove`, `hb-idea-list`, `hb-idea-promote`) — purpose, arguments, and example usage.
+9. `skills/references/structure.md` is updated to document the idea file location (`.hb/idea/<author>/ideas.json`) and the structure of the ideas JSON (shape of each idea entry and the `<author>/<index>` ID scheme).
 
 ---
 
