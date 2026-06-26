@@ -10,10 +10,10 @@ from pathlib import Path
 from .common import (
     TASK_FOLDER_ACTIVE,
     TASK_FOLDER_ARCHIVE,
-    _parse_task_name,
-    _path_hb,
+    parse_task_name,
+    path_hb,
 )
-from .task import _list_step_folders
+from .task import list_step_folders
 
 _SEPARATOR_RE = re.compile(r"^[-:]+$")
 
@@ -107,9 +107,9 @@ class _TaskInfo:
 
 
 def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
-    tn = _parse_task_name(f"{author}/{task_path.name}")
+    tn = parse_task_name(f"{author}/{task_path.name}")
     steps = list[_StepInfo]()
-    for step_path in _list_step_folders(task_path):
+    for step_path in list_step_folders(task_path):
         has_execution = any(
             p.is_file() and p.name.startswith("execution-") and p.name.endswith(".md")
             for p in step_path.iterdir()
@@ -138,7 +138,7 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
 
 
 def cmd_summarize(args: argparse.Namespace) -> None:
-    hb = _path_hb()
+    hb = path_hb()
 
     if not hb.exists():
         print(
@@ -181,7 +181,7 @@ def cmd_summarize(args: argparse.Namespace) -> None:
     recent_entries.sort(key=lambda x: x[0], reverse=True)
 
     def _archive_entry(p: Path) -> dict[str, str]:
-        tn = _parse_task_name(f"{p.parent.name}/{p.name}")
+        tn = parse_task_name(f"{p.parent.name}/{p.name}")
         return {"author": tn.author, "task_id": tn.task_id, "task_folder": p.name}
 
     recent = [_archive_entry(p) for _, p in recent_entries[:5]]

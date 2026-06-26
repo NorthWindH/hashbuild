@@ -8,6 +8,7 @@
 | STEP-0-REVIEW-2 | ✅ Addressed — updated hb-sdk parser + all tests to use 2-column format |
 | STEP-0-REVIEW-3 | ✅ Addressed — hb-sdk refactored into hb_sdk/ module; tests split into 4 files |
 | STEP-0-REVIEW-4 | ✅ Addressed — renamed `_def_cli_*` → `def_cli_*` across all four modules |
+| STEP-0-REVIEW-5 | ✅ Addressed — renamed 10 private utility symbols in common.py + `_list_step_folders` in task.py |
 
 ---
 
@@ -76,6 +77,23 @@ All 129 tests pass.
 - `skills/scripts/hb_sdk/__main__.py`: updated all four imports and call sites; deleted the `TODO REVIEW` comment
 
 Grep for any remaining `_def_` usage found none after the rename. All 129 tests pass.
+
+**Disposition: Addressed**
+
+---
+
+### STEP-0-REVIEW-5: Remaining private utility symbols in common.py and task.py exported as public API
+
+- **file(s):** `skills/scripts/hb_sdk/common.py`, `skills/scripts/hb_sdk/task.py` (cross-module imports)
+- STEP-0-REVIEW-4 surfaced the `_def_cli_*` pattern; the same underscore-prefix convention was applied to the utility layer in `common.py` (`_die`, `_progress`, `_exists_or_do`, `_path_hb*`, `_parse_task_name`, `_find_matching_task_folders`) and to `_list_step_folders` in `task.py`. All of these were imported across module boundaries, making the leading underscore misleading.
+
+**Resolution:** Renamed all private utility symbols that are used by other modules in `hb_sdk/` to public names (removing the underscore prefix):
+
+- `common.py` (definitions): `_progress` → `progress`, `_die` → `die`, `_exists_or_do` → `exists_or_do`, `_path_hb` → `path_hb`, `_path_hb_git_keep` → `path_hb_git_keep`, `_path_hb_asserted` → `path_hb_asserted`, `_path_task_ticket` → `path_task_ticket`, `_path_step_ticket` → `path_step_ticket`, `_parse_task_name` → `parse_task_name`, `_find_matching_task_folders` → `find_matching_task_folders`; also removed unused `import json`
+- `task.py`: `_list_step_folders` → `list_step_folders`
+- `init_cmd.py`, `task.py`, `summarize.py`, `commit.py`: updated all import sites accordingly
+
+Grep for remaining `from .* import _` finds nothing. All 129 tests pass.
 
 **Disposition: Addressed**
 

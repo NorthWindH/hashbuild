@@ -4,16 +4,16 @@ import argparse
 import typing
 from pathlib import Path
 
-from .common import _exists_or_do, _path_hb, _path_hb_git_keep, _progress, report_paths
+from .common import exists_or_do, path_hb, path_hb_git_keep, progress, report_paths
 
 
 def cmd_init(args: argparse.Namespace) -> None:
-    _progress(f"initializing hashbuild (hb) framework directory at {_path_hb().absolute()}")
+    progress(f"initializing hashbuild (hb) framework directory at {path_hb().absolute()}")
     paths = list[Path]()
-    paths.append(_exists_or_do(_path_hb(), lambda p: p.mkdir(parents=True, exist_ok=True)))
-    paths.append(_exists_or_do(_path_hb_git_keep(), lambda p: p.touch(exist_ok=True)))
+    paths.append(exists_or_do(path_hb(), lambda p: p.mkdir(parents=True, exist_ok=True)))
+    paths.append(exists_or_do(path_hb_git_keep(), lambda p: p.touch(exist_ok=True)))
 
-    _progress("init done; created hashbuild (hb) framework directory")
+    progress("init done; created hashbuild (hb) framework directory")
     report_paths(paths)
 
 

@@ -4,7 +4,7 @@ import argparse
 import tempfile
 import typing
 
-from .common import TAG_RE, _die, _parse_task_name
+from .common import TAG_RE, die, parse_task_name
 
 
 def _commit_write_message_file(subject: str, long: str | None) -> None:
@@ -19,7 +19,7 @@ def _commit_write_message_file(subject: str, long: str | None) -> None:
 
 def _validate_tag(tag: str) -> None:
     if not TAG_RE.match(tag):
-        _die(
+        die(
             f"error: invalid --tag value '{tag}'\n"
             "  must match [a-z][a-z0-9]*(-[a-z0-9]+)*\n"
             "  (lowercase letters and digits, hyphens allowed between segments)"
@@ -31,7 +31,7 @@ def cmd_commit_wmf_plain(args: argparse.Namespace) -> None:
 
 
 def cmd_commit_wmf_task(args: argparse.Namespace) -> None:
-    tn = _parse_task_name(args.task)
+    tn = parse_task_name(args.task)
     if args.tag:
         _validate_tag(args.tag)
         _commit_write_message_file(f"{tn.task_id}: ({args.tag}) {args.short}", args.long)
@@ -40,7 +40,7 @@ def cmd_commit_wmf_task(args: argparse.Namespace) -> None:
 
 
 def cmd_commit_wmf_task_step(args: argparse.Namespace) -> None:
-    tn = _parse_task_name(args.task)
+    tn = parse_task_name(args.task)
     if args.tag:
         _validate_tag(args.tag)
         _commit_write_message_file(f"{tn.task_id}/step-{args.step}: ({args.tag}) {args.short}", args.long)
@@ -76,5 +76,7 @@ def def_cli_commit(subs: typing.Any) -> None:
     p_task_step.add_argument("--step", required=True, type=int, metavar="<n>", help="Step number")
     p_task_step.add_argument("--short", required=True, metavar="<desc>", help="One-line description")
     p_task_step.add_argument("--long", metavar="<desc>", help="Longer explanation (optional)")
-    p_task_step.add_argument("--tag", metavar="<tag>", help="Optional lifecycle tag; injected as (tag) in subject")
+    p_task_step.add_argument(
+        "--tag", metavar="<tag>", help="Optional lifecycle tag; injected as (tag) in subject"
+    )
     p_task_step.set_defaults(func=cmd_commit_wmf_task_step)
