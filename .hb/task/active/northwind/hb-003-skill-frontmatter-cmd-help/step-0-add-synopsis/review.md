@@ -10,7 +10,11 @@
 
 ## Notes
 
-###
+### STEP-0-REVIEW-1: Populate `arguments` and `argument-hint` frontmatter fields for all skills
+
+- **file(s):** `skills/hb-init.md` (frontmatter block)
+- The reviewer requests populating the `arguments` and `argument-hint` frontmatter fields (per the Claude skills frontmatter reference) in `hb-init.md` and all other skills in this directory.
+- **source:** `TODO REVIEW` in commit `1731a91` — delete comment from source file after addressing
 
 ---
 
