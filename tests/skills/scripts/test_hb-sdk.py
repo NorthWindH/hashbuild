@@ -721,6 +721,7 @@ def test_execution_slug_format(tmp_path: Path) -> None:
 
 def test_execution_slug_unique(tmp_path: Path) -> None:
     import time
+
     r1 = run(["task", "step", "execution-slug"], tmp_path)
     time.sleep(1.1)
     r2 = run(["task", "step", "execution-slug"], tmp_path)
@@ -742,7 +743,9 @@ def test_commit_write_message_file_basic(tmp_path: Path) -> None:
 def test_commit_write_message_file_with_step(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
-    result = commit_write_message_file(tmp_path, "task-step", task="hasan/abc-1", step=2, short="add login page")
+    result = commit_write_message_file(
+        tmp_path, "task-step", task="hasan/abc-1", step=2, short="add login page"
+    )
     path = Path(result.stdout.strip())
     assert path.read_text() == "abc-1/step-2: add login page\n"
 
@@ -801,14 +804,18 @@ def test_commit_wmf_task_step_requires_step(tmp_path: Path) -> None:
 
 
 def test_commit_wmf_no_mode_errors(tmp_path: Path) -> None:
-    result = run(["commit", "write-message-file", "--task", "hasan/abc-1", "--short", "x"], tmp_path, ok=False)
+    result = run(
+        ["commit", "write-message-file", "--task", "hasan/abc-1", "--short", "x"], tmp_path, ok=False
+    )
     assert result.returncode != 0
 
 
 def test_commit_wmf_task_with_tag(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
-    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", tag="step-add", short="add routes")
+    result = commit_write_message_file(
+        tmp_path, "task", task="hasan/abc-1", tag="step-add", short="add routes"
+    )
     path = Path(result.stdout.strip())
     assert path.read_text() == "abc-1: (step-add) add routes\n"
 
@@ -824,7 +831,9 @@ def test_commit_wmf_task_without_tag_unchanged(tmp_path: Path) -> None:
 def test_commit_wmf_task_step_with_tag(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
-    result = commit_write_message_file(tmp_path, "task-step", task="hasan/abc-1", step=2, tag="step-plan", short="write plan")
+    result = commit_write_message_file(
+        tmp_path, "task-step", task="hasan/abc-1", step=2, tag="step-plan", short="write plan"
+    )
     path = Path(result.stdout.strip())
     assert path.read_text() == "abc-1/step-2: (step-plan) write plan\n"
 
@@ -838,7 +847,9 @@ def test_commit_wmf_task_step_without_tag_unchanged(tmp_path: Path) -> None:
 
 
 def test_commit_wmf_plain_rejects_tag(tmp_path: Path) -> None:
-    result = run(["commit", "write-message-file", "plain", "--tag", "foo", "--short", "x"], tmp_path, ok=False)
+    result = run(
+        ["commit", "write-message-file", "plain", "--tag", "foo", "--short", "x"], tmp_path, ok=False
+    )
     assert result.returncode != 0
 
 
@@ -853,7 +864,9 @@ def test_commit_wmf_invalid_tag_uppercase(tmp_path: Path) -> None:
 def test_commit_wmf_invalid_tag_underscore(tmp_path: Path) -> None:
     init(tmp_path)
     task_create(tmp_path, "hasan/abc-1")
-    result = commit_write_message_file(tmp_path, "task", task="hasan/abc-1", tag="foo_bar", short="x", ok=False)
+    result = commit_write_message_file(
+        tmp_path, "task", task="hasan/abc-1", tag="foo_bar", short="x", ok=False
+    )
     assert result.returncode != 0
     assert "invalid" in result.stderr
 
@@ -931,7 +944,7 @@ def test_summarize_step_files(tmp_path: Path) -> None:
     data = json.loads(result.stdout)
     step = data["active_tasks"][0]["steps"][0]
     assert step["name"] == "step-0"
-    assert step["has_ticket"] is True   # default ticket written by step add
+    assert step["has_ticket"] is True  # default ticket written by step add
     assert step["has_plan"] is False
     assert step["has_execution"] is False
 
@@ -1119,7 +1132,9 @@ def test_summarize_step_status_review_open(tmp_path: Path) -> None:
     task_step_add(tmp_path, "hasan/abc-1")
     step_path = task_path(tmp_path, "hasan", "abc-1") / "step-0"
     (step_path / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
-    (step_path / "review.md").write_text("| ID | Status | Description |\n| --- | --- | --- |\n| R1 | open | some issue |\n")
+    (step_path / "review.md").write_text(
+        "| ID | Status | Description |\n| --- | --- | --- |\n| R1 | open | some issue |\n"
+    )
     result = summarize(tmp_path)
     step = json.loads(result.stdout)["active_tasks"][0]["steps"][0]
     assert step["status"] == "review-open"
@@ -1220,6 +1235,7 @@ def test_summarize_task_count_fields_mixed(tmp_path: Path) -> None:
 
     base = task_path(tmp_path, "hasan", "abc-1")
     sp0 = base / "step-0"
+    # TODO REVIEW sp1 is not accessed; consider deleting
     sp1 = base / "step-1"
     sp2 = base / "step-2"
     sp3 = base / "step-3"
@@ -1259,6 +1275,9 @@ def test_summarize_steps_needs_review_includes_executed_and_review_open(tmp_path
     sp1 = task_path(tmp_path, "hasan", "abc-1") / "step-1"
     (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     (sp1 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    # TODO REVIEW this format doesn't match actual review.md file; update this format to match real review.md files.
+    # - apply this change to all tests that test review.md parsing but don't use actual review.md format
+    # - also update hb-sdk itself as required since the only format that needs to be supported is the real format in review.md
     (sp1 / "review.md").write_text("| ID | Status | Desc |\n| --- | --- | --- |\n| R1 | open | x |\n")
     result = summarize(tmp_path)
     t = json.loads(result.stdout)["active_tasks"][0]
@@ -1370,3 +1389,17 @@ def test_summarize_archive_recent_author_field(tmp_path: Path) -> None:
     result = summarize(tmp_path)
     recent = json.loads(result.stdout)["archive"]["recent"]
     assert recent[0]["author"] == "hasan"
+
+
+# TODO REVIEW this test file has become larger than 1000 lines; hb-sdk itself is ~1000 lines.
+# it's time to refactor hb-sdk into modules.
+# since we're assuming existence of python3, refactor as follows:
+# - move and refactor content of hb-sdk into python module hb_sdk/ located adjacent to existing hb-sdk
+# - add a __init__.py file to new hb_sdk folder
+# - add a __main__.py file to new hb_sdk folder that acts as main for the module
+# - create a .py file within hb_sdk for top-level command tree
+# - refactor test_hb-sdk:
+#   - create folder tests/skills/scripts/hb_sdk
+#   - in that folder, create one test_hb_sdk_*.py file for each command tree
+#   - any top-level tests that don't fit into a command tree test can remain in tests/skills/scripts/test_hb-sdk
+#   - if no such tests, drop tests/skills/scripts/test_hb-sdk
