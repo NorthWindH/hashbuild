@@ -1,0 +1,9 @@
+{
+  "name": "northwind/hb-009-fix-interactive-mode-tmp-ticket-exists-already",
+  "author": "northwind",
+  "task_id": "hb-009",
+  "task_extra": "fix-interactive-mode-tmp-ticket-exists-already",
+  "created_at": "2026-06-26T21:58:49.434886+00:00",
+  "next_step": 0,
+  "ticket_written_at": "2026-06-26T21:58:49.434975+00:00"
+}
