@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — dual-path `/tmp/*` + `/private/tmp/*` is the correct portable strategy; no change needed |
 | STEP-1-REVIEW-2 | ✅ Addressed — corrected `/tmp/hb-ticket.md` → `/tmp/ticket.md` to match subflow output |
-| STEP-1-REVIEW-3 |            |
+| STEP-1-REVIEW-3 | ✅ Assessed — paths are system-absolute (confirmed by settings.json + no project tmp/); no change needed |
 
 ---
 
@@ -34,11 +34,21 @@ Because the harness's symlink-resolution behaviour is unspecified, the dual-path
 
 **Resolution:** Fixed both the comment and the `$WRITTEN_TICKET` assignment in `skills/hb-task-create.md` (step 2, case 3) to use `/tmp/ticket.md`, which is what `$TARGET_PATH/ticket.md` resolves to. The subflow contract (`$TARGET_PATH/ticket.md`) is unchanged; only the caller's reference was wrong. Discovered during investigation of STEP-1-REVIEW-1.
 
-### STEP-1-REVIEW-3: Verify that `/`-prepended paths in allowed-tools resolve to system root, not project root
+### STEP-1-REVIEW-3: Verify that `/`-prepended paths in allowed-tools resolve to system root, not project root — ASSESSED
 
 - **file(s):** `skills/hb-task-create.md` (`allowed-tools` frontmatter)
 - The `allowed-tools` entries use absolute-looking paths like `Write(/tmp/*)`. The question is whether Claude Code's permissions engine interprets a leading `/` as the filesystem root (required, so `/tmp` means `/tmp` on the system) or as the project root (which would make `/tmp` mean `<project-root>/tmp`, causing writes to `/tmp/ticket.md` to be denied or misrouted).
 - **source:** `TODO REVIEW` in commit `a3de474f837abf1a5ffcf4b3065d2e5737e3b429` — delete comment from source file after addressing
+
+**Resolution:** Assessed — paths are system-absolute. Three lines of evidence:
+
+| evidence | detail |
+|---|---|
+| `~/.claude/settings.json` `allow` entries | Uses system-absolute paths like `Read(//home/hkamal/repos/hashbuild/skills/**)` — clearly rooted at the filesystem root, not the project |
+| `$CLAUDE_SKILL_DIR` in `allowed-tools` | Expands to an absolute path (e.g. `/home/hkamal/.claude/skills/hb-task-create`); the permissions system accepts these expansions as system paths |
+| No `tmp/` at project root | `ls hashbuild/tmp` → does not exist; a project-relative interpretation would mean no file could ever match |
+
+A leading `/` in `allowed-tools` patterns is the filesystem root. `Write(/tmp/*)` correctly covers the system temp directory. No change needed.
 
 ---
 
