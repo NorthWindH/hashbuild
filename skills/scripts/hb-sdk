@@ -267,6 +267,10 @@ def _def_cli_task(subs: typing.Any) -> None:
     p_ta.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
     p_ta.set_defaults(func=cmd_task_archive)
 
+    p_tu = task_subs.add_parser("unarchive", help="Unarchive a task (move from archive to active)")
+    p_tu.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
+    p_tu.set_defaults(func=cmd_task_unarchive)
+
     p_tp = task_subs.add_parser("path", help="Print absolute path of a task folder")
     p_tp.add_argument("name", help="Fully-qualified task name (author/task-id[-extra])")
     p_tp.set_defaults(func=cmd_task_path)
@@ -370,6 +374,52 @@ def cmd_task_archive(args: argparse.Namespace) -> None:
         active_author_dir.rmdir()
         _progress(f"removed empty author directory: {active_author_dir.absolute()}")
         paths.append(active_author_dir)
+
+    report_paths(paths)
+
+
+# ── task unarchive ────────────────────────────────────────────────────────────
+
+
+def cmd_task_unarchive(args: argparse.Namespace) -> None:
+    tn = _parse_task_name(args.name)
+
+    matching_tasks = _find_matching_task_folders(tn)
+    if len(matching_tasks) == 0:
+        _die(f"error: task not found: {args.name}")
+    if len(matching_tasks) > 1:
+        _die(
+            "error: found multiple existing tasks with same author/task_id:\n"
+            + "\n".join(str(p.absolute()) for p, _ in matching_tasks)
+        )
+
+    task_path, _ = matching_tasks[0]
+
+    archive_base = _path_hb_asserted() / "task" / TASK_FOLDER_ARCHIVE
+    try:
+        task_path.relative_to(archive_base)
+    except ValueError:
+        _die(f"error: task is not archived: {task_path.absolute()}")
+
+    active_author_dir = _path_hb_asserted() / "task" / TASK_FOLDER_ACTIVE / tn.author
+    active_author_dir.mkdir(parents=True, exist_ok=True)
+
+    dest = active_author_dir / task_path.name
+    if dest.exists():
+        _die(f"error: destination already exists: {dest.absolute()}")
+
+    paths = list[Path]()
+    paths.append(task_path)
+
+    archive_author_dir = archive_base / tn.author
+    task_path.rename(dest)
+    _progress(f"unarchived task to {dest.absolute()}")
+    paths.append(dest)
+
+    if archive_author_dir.exists() and not any(archive_author_dir.iterdir()):
+        archive_author_dir.rmdir()
+        _progress(f"removed empty author directory: {archive_author_dir.absolute()}")
+        paths.append(archive_author_dir)
 
     report_paths(paths)
 

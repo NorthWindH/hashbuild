@@ -57,6 +57,10 @@ def task_archive(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedPro
     return run(["task", "archive", name], cwd, ok=kwargs.get("ok", True))
 
 
+def task_unarchive(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["task", "unarchive", name], cwd, ok=kwargs.get("ok", True))
+
+
 def task_path_cmd(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(["task", "path", name], cwd, ok=kwargs.get("ok", True))
 
@@ -255,6 +259,102 @@ def test_task_archive_name_by_task_id_only(tmp_path: Path) -> None:
     # resolve by task_id alone
     task_archive(tmp_path, "hasan/abc-1")
     assert archive_path(tmp_path, "hasan", "abc-1-some-flavor").is_dir()
+
+
+# ── task unarchive ───────────────────────────────────────────────────────────
+
+
+def test_task_unarchive_moves_to_active(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    task_unarchive(tmp_path, "hasan/abc-1")
+    assert task_path(tmp_path, "hasan", "abc-1").is_dir()
+    assert not archive_path(tmp_path, "hasan", "abc-1").is_dir()
+
+
+def test_task_unarchive_with_extra(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1-add-login")
+    task_archive(tmp_path, "hasan/abc-1-add-login")
+    task_unarchive(tmp_path, "hasan/abc-1-add-login")
+    assert not archive_path(tmp_path, "hasan", "abc-1-add-login").is_dir()
+    assert task_path(tmp_path, "hasan", "abc-1-add-login").is_dir()
+
+
+def test_task_unarchive_preserves_contents(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket = tmp_path / "ticket.md"
+    ticket.write_text("# My ticket")
+    task_create(tmp_path, "hasan/abc-1", ticket=ticket)
+    task_archive(tmp_path, "hasan/abc-1")
+    task_unarchive(tmp_path, "hasan/abc-1")
+    dest = task_path(tmp_path, "hasan", "abc-1")
+    assert (dest / "ticket.md").read_text() == "# My ticket"
+    assert (dest / ".hb-task.json").exists()
+
+
+def test_task_unarchive_creates_active_author_dir(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    # active/hasan/ was removed by archive (empty after move)
+    assert not (hb(tmp_path) / "task" / "active" / "hasan").exists()
+    task_unarchive(tmp_path, "hasan/abc-1")
+    assert (hb(tmp_path) / "task" / "active" / "hasan").is_dir()
+
+
+def test_task_unarchive_task_not_found(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = task_unarchive(tmp_path, "hasan/abc-99", ok=False)
+    assert "task not found" in result.stderr
+
+
+def test_task_unarchive_already_active(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = task_unarchive(tmp_path, "hasan/abc-1", ok=False)
+    assert "task is not archived" in result.stderr
+
+
+def test_task_unarchive_reports_dest_path(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = task_unarchive(tmp_path, "hasan/abc-1")
+    dest = task_path(tmp_path, "hasan", "abc-1")
+    assert str(dest.absolute()) in result.stdout
+
+
+def test_task_unarchive_name_by_task_id_only(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1-some-flavor")
+    task_archive(tmp_path, "hasan/abc-1")
+    task_unarchive(tmp_path, "hasan/abc-1")
+    assert task_path(tmp_path, "hasan", "abc-1-some-flavor").is_dir()
+
+
+def test_task_unarchive_removes_empty_archive_author_dir(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    assert (hb(tmp_path) / "task" / "archive" / "hasan").is_dir()
+    task_unarchive(tmp_path, "hasan/abc-1")
+    assert not (hb(tmp_path) / "task" / "archive" / "hasan").exists()
+
+
+def test_task_unarchive_round_trip(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket = tmp_path / "ticket.md"
+    ticket.write_text("# Round trip ticket")
+    task_create(tmp_path, "hasan/abc-1", ticket=ticket)
+    original_contents = set((task_path(tmp_path, "hasan", "abc-1")).iterdir())
+    task_archive(tmp_path, "hasan/abc-1")
+    task_unarchive(tmp_path, "hasan/abc-1")
+    restored = task_path(tmp_path, "hasan", "abc-1")
+    assert restored.is_dir()
+    assert {f.name for f in restored.iterdir()} == {f.name for f in original_contents}
+    assert (restored / "ticket.md").read_text() == "# Round trip ticket"
 
 
 # ── task path ────────────────────────────────────────────────────────────────
