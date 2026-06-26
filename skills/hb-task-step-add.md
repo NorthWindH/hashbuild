@@ -73,8 +73,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 ### 4. Commit
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this step; pass `--tag step-add`
-<!-- TODO REVIEW should not stage temporary ticket; hb-sdk will report path of permanent ticket.md file so stage that instead -->
-- when interactive mode ran (Step 2, case 3): also stage `$WRITTEN_TICKET` (the generated `ticket.md`)
+- when interactive mode ran (Step 2, case 3): also stage the permanent `ticket.md` path reported by the SDK in Step 3 (not the temporary `$WRITTEN_TICKET`)
 
 ### 5. Prompt user
 

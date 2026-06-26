@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-2-REVIEW-1 |            |
+| STEP-2-REVIEW-1 | ✅ Addressed — stage permanent `ticket.md` from SDK output, not temp `$WRITTEN_TICKET` |
 
 ---
 
@@ -13,8 +13,10 @@
 ### STEP-2-REVIEW-1: Stage permanent ticket.md path, not temporary ticket file
 
 - **file(s):** `skills/hb-task-create.md` (Step 4 — Commit), `skills/hb-task-step-add.md` (Step 4 — Commit)
-- Both skill files instruct Claude to stage `$WRITTEN_TICKET` (the temporary ticket path), but `hb-sdk` reports the permanent `ticket.md` destination path — that permanent path is what should be staged instead.
+- Both skill files instruct Claude to stage `$WRITTEN_TICKET` (the temporary `/tmp/ticket.md` path), but `hb-sdk` copies the ticket to its permanent location inside the task/step folder and reports that permanent path in its `report_paths` stdout output. Staging the temp file would either silently do nothing (git ignores files outside the repo) or stage the wrong path.
 - **source:** `TODO REVIEW` in commit `18383c6` — delete comment from source file after addressing
+
+**Resolution:** Changed Step 4 in both `skills/hb-task-create.md` and `skills/hb-task-step-add.md` to instruct Claude to stage the permanent `ticket.md` path from the SDK output captured in Step 3, not the temporary `$WRITTEN_TICKET`. The `TODO REVIEW` comment was deleted from both source files.
 
 ---
 
