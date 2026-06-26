@@ -7,7 +7,7 @@
 | STEP-0-REVIEW-1 | ✅ Addressed — deleted unused `sp1` variable |
 | STEP-0-REVIEW-2 | ✅ Addressed — updated hb-sdk parser + all tests to use 2-column format |
 | STEP-0-REVIEW-3 | ✅ Addressed — hb-sdk refactored into hb_sdk/ module; tests split into 4 files |
-| STEP-0-REVIEW-4 |            |
+| STEP-0-REVIEW-4 | ✅ Addressed — renamed `_def_cli_*` → `def_cli_*` across all four modules |
 
 ---
 
@@ -66,6 +66,18 @@ All 129 tests pass.
 - **file(s):** `skills/scripts/hb_sdk/__main__.py` (around `TODO REVIEW` marker)
 - `__main__.py` imports private symbols prefixed with `_def_` (e.g. `_def_cli_commit`, `_def_cli_init`, `_def_cli_summarize`, `_def_cli_task`). These should be renamed to remove the underscore prefix and be treated as public API. The same fix should be applied to all similar cross-module private-symbol imports across `hb_sdk/`.
 - **source:** `TODO REVIEW` in commit `85ec3b6` — delete comment from source file after addressing
+
+**Resolution:** Renamed the four CLI-definition functions from `_def_cli_*` to `def_cli_*` in their respective definition modules, and updated all references in `__main__.py`:
+
+- `skills/scripts/hb_sdk/init_cmd.py`: `_def_cli_init` → `def_cli_init`
+- `skills/scripts/hb_sdk/commit.py`: `_def_cli_commit` → `def_cli_commit`
+- `skills/scripts/hb_sdk/summarize.py`: `_def_cli_summarize` → `def_cli_summarize`
+- `skills/scripts/hb_sdk/task.py`: `_def_cli_task` → `def_cli_task`
+- `skills/scripts/hb_sdk/__main__.py`: updated all four imports and call sites; deleted the `TODO REVIEW` comment
+
+Grep for any remaining `_def_` usage found none after the rename. All 129 tests pass.
+
+**Disposition: Addressed**
 
 ---
 

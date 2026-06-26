@@ -17,6 +17,6 @@ def cmd_init(args: argparse.Namespace) -> None:
     report_paths(paths)
 
 
-def _def_cli_init(subs: typing.Any) -> None:
+def def_cli_init(subs: typing.Any) -> None:
     p_init = subs.add_parser("init", help="Initialize hashbuild in project directory (idempotent)")
     p_init.set_defaults(func=cmd_init)

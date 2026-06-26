@@ -48,7 +48,7 @@ def cmd_commit_wmf_task_step(args: argparse.Namespace) -> None:
         _commit_write_message_file(f"{tn.task_id}/step-{args.step}: {args.short}", args.long)
 
 
-def _def_cli_commit(subs: typing.Any) -> None:
+def def_cli_commit(subs: typing.Any) -> None:
     p_commit = subs.add_parser("commit", help="Commit operations")
     commit_subs = p_commit.add_subparsers(dest="commit_command", metavar="<action>")
     commit_subs.required = True

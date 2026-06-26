@@ -231,6 +231,6 @@ def cmd_summarize(args: argparse.Namespace) -> None:
     )
 
 
-def _def_cli_summarize(subs: typing.Any) -> None:
+def def_cli_summarize(subs: typing.Any) -> None:
     p = subs.add_parser("summarize", help="Print workspace summary as JSON for status reporting")
     p.set_defaults(func=cmd_summarize)

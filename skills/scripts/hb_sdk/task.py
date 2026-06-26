@@ -382,7 +382,7 @@ def cmd_task_step_execution_slug(args: argparse.Namespace) -> None:
     print(f"execution-{ts}.md")
 
 
-def _def_cli_task(subs: typing.Any) -> None:
+def def_cli_task(subs: typing.Any) -> None:
     p_task = subs.add_parser("task", help="Task operations")
     task_subs = p_task.add_subparsers(dest="task_command", metavar="<action>")
     task_subs.required = True
