@@ -10,21 +10,21 @@ Skills and their current argument surfaces (derived from each file's `## Inputs`
 |---|---|
 | `hb-init` | `/hb-init [--help]` |
 | `hb-status` | `/hb-status [--help]` |
-| `hb-task-archive` | `/hb-task-archive <author/task-id> [--help]` |
-| `hb-task-create` | `/hb-task-create <author/task-id> [--ticket <path>] [--ticket-overwrite] [--help]` |
-| `hb-task-plan` | `/hb-task-plan <author/task-id> [--help]` |
-| `hb-task-step-add` | `/hb-task-step-add <author/task-id> [--flavor <slug>] [--ticket <path>] [--ticket-overwrite] [--help]` |
-| `hb-task-step-execute` | `/hb-task-step-execute <author/task-id/step-n> [--help]` |
-| `hb-task-step-plan` | `/hb-task-step-plan <author/task-id/step-n> [--help]` |
-| `hb-task-step-review-address` | `/hb-task-step-review-address <author/task-id/step-n> [--no-todo-scan] [--commits N] [--help]` |
-| `hb-task-step-review-init` | `/hb-task-step-review-init <author/task-id/step-n> [--help]` |
+| `hb-task-archive` | `/hb-task-archive [--help] <author/task-id>` |
+| `hb-task-create` | `/hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>` |
+| `hb-task-plan` | `/hb-task-plan [--help] <author/task-id>` |
+| `hb-task-step-add` | `/hb-task-step-add [--help] [--flavor <slug>] [--ticket <path>] [--ticket-overwrite] <author/task-id>` |
+| `hb-task-step-execute` | `/hb-task-step-execute [--help] <author/task-id/step-n>` |
+| `hb-task-step-plan` | `/hb-task-step-plan [--help] <author/task-id/step-n>` |
+| `hb-task-step-review-address` | `/hb-task-step-review-address [--help] [--no-todo-scan] [--commits N] <author/task-id/step-n>` |
+| `hb-task-step-review-init` | `/hb-task-step-review-init [--help] <author/task-id/step-n>` |
 
 ---
 
 # Acceptance Criteria
 
 1. Every `skills/*.md` file has a usage synopsis as the first line of its `description` field.
-    1. The synopsis follows the form `/hb-<name> [<required-args>] [<optional-args>]`, using `<angle-brackets>` for placeholders and `[square brackets]` for optional items.
+    1. The synopsis follows the form `/hb-<name> [--help] [<other-optional-flags>] <positional-args>`, using `<angle-brackets>` for placeholders and `[square brackets]` for optional items — `--help` appears first, then any other optional flags, then required positional args last.
     2. The synopsis is separated from the existing prose description by a newline so both are visible in the harness.
     3. The synopsis matches the arg surface documented in that skill's `## Inputs` table — no args added or omitted.
 2. The existing prose description is preserved verbatim after the synopsis; only the prepended line is new content.
