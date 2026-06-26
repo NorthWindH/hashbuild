@@ -53,8 +53,6 @@ Install and uninstall actions are idempotent so you can feel free to call them r
 
 ## Skills
 
-<!-- TODO REVIEW update this table and sections below to add unarchive skill -->
-
 | Skill                          | What it does                                                         |
 | ------------------------------ | -------------------------------------------------------------------- |
 | `/hb-init`                     | Initialize `.hb/` in your project (idempotent, run once per project) |
@@ -67,6 +65,7 @@ Install and uninstall actions are idempotent so you can feel free to call them r
 | `/hb-task-step-review-init`    | Create `review.md` in a step folder                                  |
 | `/hb-task-step-review-address` | Normalize and address all open review items                          |
 | `/hb-task-archive`             | Move a completed task from active to the archive                     |
+| `/hb-task-unarchive`           | Restore an archived task back to active                              |
 
 ---
 
@@ -172,6 +171,16 @@ When all steps are done:
 ```
 
 Moves the task from `.hb/task/active/` to `.hb/task/archive/`.
+
+### Unarchive a task
+
+To restore an archived task back to active:
+
+```
+/hb-task-unarchive author/abc-123
+```
+
+Moves the task from `.hb/task/archive/` back to `.hb/task/active/`.
 
 ### Check status at any time
 
