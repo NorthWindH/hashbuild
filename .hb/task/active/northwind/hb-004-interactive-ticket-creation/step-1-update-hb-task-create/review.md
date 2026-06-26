@@ -6,6 +6,7 @@
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — dual-path `/tmp/*` + `/private/tmp/*` is the correct portable strategy; no change needed |
 | STEP-1-REVIEW-2 | ✅ Addressed — corrected `/tmp/hb-ticket.md` → `/tmp/ticket.md` to match subflow output |
+| STEP-1-REVIEW-3 |            |
 
 ---
 
@@ -32,6 +33,12 @@ Because the harness's symlink-resolution behaviour is unspecified, the dual-path
 - The subflow's Write step produces `$TARGET_PATH/ticket.md`. With `$TARGET_PATH = /tmp`, the file is written to `/tmp/ticket.md`. However, the skill set `$WRITTEN_TICKET = /tmp/hb-ticket.md` and passed that path to the SDK. The SDK call would receive a path that does not exist, causing interactive mode to silently fail or error.
 
 **Resolution:** Fixed both the comment and the `$WRITTEN_TICKET` assignment in `skills/hb-task-create.md` (step 2, case 3) to use `/tmp/ticket.md`, which is what `$TARGET_PATH/ticket.md` resolves to. The subflow contract (`$TARGET_PATH/ticket.md`) is unchanged; only the caller's reference was wrong. Discovered during investigation of STEP-1-REVIEW-1.
+
+### STEP-1-REVIEW-3: Verify that `/`-prepended paths in allowed-tools resolve to system root, not project root
+
+- **file(s):** `skills/hb-task-create.md` (`allowed-tools` frontmatter)
+- The `allowed-tools` entries use absolute-looking paths like `Write(/tmp/*)`. The question is whether Claude Code's permissions engine interprets a leading `/` as the filesystem root (required, so `/tmp` means `/tmp` on the system) or as the project root (which would make `/tmp` mean `<project-root>/tmp`, causing writes to `/tmp/ticket.md` to be denied or misrouted).
+- **source:** `TODO REVIEW` in commit `a3de474f837abf1a5ffcf4b3065d2e5737e3b429` — delete comment from source file after addressing
 
 ---
 
