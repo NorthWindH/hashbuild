@@ -4,13 +4,11 @@ Step 0 shipped a new `hb-sdk summarize` JSON shape (six lifecycle-count fields, 
 
 Source ticket: `./ticket.md`. Builds on the **shipped** step 0 (`skills/scripts/hb-sdk`) which replaced `steps_pending_execution` / `steps_with_ticket` / `last_archived` with the new fields; this plan targets the skill files as they exist **now** (pre-step-1).
 
-> **Design decision — ticket path vs. actual path.** The ticket names `skills/hb-status.md` but the file that contains the live skill instructions is `skills/hb-status/SKILL.md`. The path `skills/hb-status.md` does not exist. This plan targets `SKILL.md` (confirmed below). No resolution required — the intent is unambiguous and the file is unique.
-
 ---
 
 ## 0. Current-state facts (verified during planning)
 
-**`skills/hb-status/SKILL.md` — JSON schema (step 2, confirmed at lines 43–64):**
+**`skills/hb-status.md` — JSON schema (step 2, confirmed at lines 43–64):**
 ```
 "steps": [
   { "name": str, "has_ticket": bool, "has_plan": bool, "has_execution": bool }
@@ -27,7 +25,7 @@ and:
 ```
 Both `steps_pending_execution` and `last_archived` are now absent from the live SDK output (confirmed in step-0 execution AC 7 check); `steps_with_ticket` is also absent and was never in `SKILL.md`.
 
-**`skills/hb-status/SKILL.md` — step 4 render instructions (confirmed at lines 74–79):**
+**`skills/hb-status.md` — step 4 render instructions (confirmed at lines 74–79):**
 ```
 - **Active Tasks**: one table with columns Task, Steps pending execution, Total steps
 - **Archive**: fill `count` and `last_archived`; omit the "Last archived" row when `last_archived` is null
@@ -72,7 +70,7 @@ No existing callers of these files beyond Claude running `/hb-status`.
 Two files receive targeted edits; changes are ordered by file to avoid context-switching:
 
 1. **`skills/references/status-template.md`** — replace Active Tasks table + comment, replace Archive section, update decision tree comment
-2. **`skills/hb-status/SKILL.md`** — replace JSON schema block, replace step 4 render instructions
+2. **`skills/hb-status.md`** — replace JSON schema block, replace step 4 render instructions
 
 **Zero-as-dash rule:** count cells in the Active Tasks table show `—` when the count is zero. The `Total steps` column is exempt (always shows the raw integer, including `0`, to distinguish "no steps yet" from "all reviewed"). This rule lives in the template comment and the SKILL.md render instructions.
 
@@ -131,7 +129,7 @@ Two files receive targeted edits; changes are ordered by file to avoid context-s
 **Decision tree (lines 55–71) — update comment only:**
 Replace the two references to old field names in the column-definition comment above the Active Tasks table (already handled in §2.1 above). The decision tree body itself uses plain English conditions ("a step with ticket.md but no plan.md") — no field names appear there and no logic changes are required (ticket AC 9 says "beyond field name updates").
 
-### 2.2 `skills/hb-status/SKILL.md`
+### 2.2 `skills/hb-status.md`
 
 **JSON schema block (replaces the ` ``` ` fenced block in step 2, currently lines 43–64):**
 
@@ -189,6 +187,8 @@ Replace the two references to old field names in the column-definition comment a
 
 Both files are instruction/template files consumed only by Claude executing `/hb-status`. No call sites in executable code. No build wiring, dependency manifests, or lockfiles affected. All other hb-\* skills reference `status-template.md` indirectly (as a template example) but do not parse it programmatically; changing column names does not break them.
 
+Note: `skills/hb-status.md` is the canonical project-level source; the installed copy at `~/.claude/skills/hb-status/SKILL.md` is a deploy artifact and is not modified by this step.
+
 The step-4 render bullet currently also references `last_archived` null-check — that bullet is replaced entirely, removing the reference.
 
 ---
@@ -198,7 +198,7 @@ The step-4 render bullet currently also references `last_archived` null-check �
 | File | Change |
 |---|---|
 | `skills/references/status-template.md` | **edit** — replace Active Tasks table + comment block; replace Archive section; column-definition comment updated (decision tree body unchanged) |
-| `skills/hb-status/SKILL.md` | **edit** — replace JSON schema fenced block (step 2); replace Active Tasks and Archive bullets in step 4 render instructions |
+| `skills/hb-status.md` | **edit** — replace JSON schema fenced block (step 2); replace Active Tasks and Archive bullets in step 4 render instructions |
 
 No other files change. No dependency manifests or lockfiles.
 
@@ -212,7 +212,7 @@ No automated test suite covers instruction/template files — they are consumed 
 
 ## 6. Verification (after implementation)
 
-1. **Scope check:** `git diff --name-only` shows exactly two files — `skills/references/status-template.md` and `skills/hb-status/SKILL.md`. Nothing else.
+1. **Scope check:** `git diff --name-only` shows exactly two files — `skills/references/status-template.md` and `skills/hb-status.md`. Nothing else.
 
 2. **Schema correctness:** confirm the new JSON schema in SKILL.md exactly matches the live SDK output:
    ```bash
@@ -238,13 +238,13 @@ No automated test suite covers instruction/template files — they are consumed 
 
 4. **AC C.3 — Archive section:** confirm the Archive section in status-template.md has no `Last archived` row and includes a bulleted list placeholder for `author/task_folder`.
 
-5. **AC D.1 — SKILL.md schema:** `skills/hb-status/SKILL.md` fenced block contains `steps_skeleton` through `steps_reviewed`, `steps_needs_review`, `steps_needs_work`, `has_review`, `status`, and `archive.recent`; does not contain `steps_pending_execution`, `steps_with_ticket`, or `last_archived`.
+5. **AC D.1 — schema:** `skills/hb-status.md` fenced block contains `steps_skeleton` through `steps_reviewed`, `steps_needs_review`, `steps_needs_work`, `has_review`, `status`, and `archive.recent`; does not contain `steps_pending_execution`, `steps_with_ticket`, or `last_archived`.
 
-6. **AC D.1 render instructions:** step 4 bullet in SKILL.md names the nine columns and mentions the `—` rule and the two sublists. The Archive bullet references `archive.recent` and not `last_archived`.
+6. **AC D.1 render instructions:** step 4 bullet in `skills/hb-status.md` names the nine columns and mentions the `—` rule and the two sublists. The Archive bullet references `archive.recent` and not `last_archived`.
 
-7. **AC D.2 — decision tree field names:** neither `status-template.md` nor `SKILL.md` contains the strings `steps_pending_execution` or `steps_with_ticket` anywhere.
+7. **AC D.2 — decision tree field names:** neither `status-template.md` nor `hb-status.md` contains the strings `steps_pending_execution` or `steps_with_ticket` anywhere.
    ```bash
-   grep -rn "steps_pending_execution\|steps_with_ticket" skills/hb-status/SKILL.md skills/references/status-template.md
+   grep -rn "steps_pending_execution\|steps_with_ticket" skills/hb-status.md skills/references/status-template.md
    # expect: no output
    ```
 
@@ -260,10 +260,10 @@ No automated test suite covers instruction/template files — they are consumed 
 | B4 — Needs review/work sublists | §2.1, §2.2 render, §6.3 | Omit when empty |
 | C.3 — archive.recent list | §2.1, §6.4 | Omit section when recent is empty |
 | C.3 — Last archived row removed | §2.1, §6.4 | Replaced by recent list |
-| D.1 — schema updated (remove old) | §2.2, §6.5 | steps_pending_execution, steps_with_ticket, last_archived absent |
+| D.1 — schema updated (remove old) | §2.2, §6.5 | steps_pending_execution, steps_with_ticket, last_archived absent from hb-status.md |
 | D.1 — schema updated (add new) | §2.2, §6.5 | Six count fields, two list fields, status, archive.recent |
 | D.1 — render instructions updated | §2.2, §6.6 | New column names, dash rule, sublists, archive.recent |
-| D.2 — decision tree field names | §2.1, §6.7 | Strings absent from both files |
+| D.2 — decision tree field names | §2.1, §6.7 | Strings absent from hb-status.md and status-template.md |
 
 ---
 
