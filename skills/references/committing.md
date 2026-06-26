@@ -54,11 +54,10 @@ To generate a commit message, use `${CLAUDE_SKILL_DIR}/scripts/hb-sdk`.
        - try again starting at `2. [CHECK]`
 
 3. [COMMITREQUIRED]
-
-- if no relevant files have changed:
-  - NOTIFY USER THEN END THIS SUBFLOW WITHOUT COMMITTING
-  - RETURN TO CALLING FLOW
-- otherwise, proceed
+   - if no relevant files have changed:
+     - NOTIFY USER THEN END THIS SUBFLOW WITHOUT COMMITTING
+     - RETURN TO CALLING FLOW
+   - otherwise, proceed
 
 4. [ADD] add modifications to relevant files to stage:
    - for each relevant file:
@@ -66,24 +65,40 @@ To generate a commit message, use `${CLAUDE_SKILL_DIR}/scripts/hb-sdk`.
 
 ### 2. Generate commit message
 
-Invoke `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` as follows to generate a commit message:
+Invoke `${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file <MODE>` to generate a commit message.
+Choose the mode that matches the current context:
+
+| Mode        | When to use                                               | Required flags                | Forbidden flags    | Subject format                |
+| ----------- | --------------------------------------------------------- | ----------------------------- | ------------------ | ----------------------------- |
+| `plain`     | Framework bootstrap commits with no task (e.g. `hb-init`) | `--short`                     | `--task`, `--step` | `hb: <short>`                 |
+| `task`      | Task-level commits (skill operates on a task, not a step) | `--task`, `--short`           | `--step`           | `<task_id>: <short>`          |
+| `task-step` | Step-level commits (skill operates on a specific step)    | `--task`, `--step`, `--short` | —                  | `<task_id>/step-<n>: <short>` |
+
+All modes accept an optional `--long <desc>` for a longer explanation of why the change was made (only include when the why is non-obvious). Wrap `--short` and `--long` values in `""` to avoid shell issues.
+
+Returns the path to the commit message file on stdout. Returns error messages on stderr. If any error occurs, surface verbatim to the user or fix automatically if possible.
+
+**Examples:**
 
 ```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file --task <task> --step <step> --short <short_description> --long <long_description>
-```
+# plain — hb-init bootstrap commit
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file plain \
+  --short "initialize hashbuild"
+# → subject: hb: initialize hashbuild
 
-- args:
-  - required:
-    - `--task <task>`: fully qualified name of task eg `author/abc-123-some-flavor`
-    - `--short <short_desccription>`: one-line description of what the commit does; should complete the sentence: "This commit will..."
-      - should be wrapped in `""` to avoid shell issues
-  - optional:
-    - `--step <step>`: step number, e.g. 1, 2; only include if operating on a step
-    - `--long <long_description>`: longer explanation of why change was made; only use when the why isn't obvious
-      - should be wrapped in `""` to avoid shell issues
-- returns path to file that contains commit message on stdout
-- returns error messages on stderr
-- if any error occurs, present verbatim to the user or fix automatically if possible
+# task — operating on a task (no step)
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task \
+  --task northwind/hb-001-init-commit-support \
+  --short "add step-1 ticket"
+# → subject: hb-001: add step-1 ticket
+
+# task-step — operating on a specific step
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file task-step \
+  --task northwind/hb-001-init-commit-support \
+  --step 1 \
+  --short "wire hb-init to plain mode"
+# → subject: hb-001/step-1: wire hb-init to plain mode
+```
 
 ### 3. Commit
 

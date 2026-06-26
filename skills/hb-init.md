@@ -31,7 +31,15 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk init
 
 ### 3. Commit
 
-- create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task
+1. Stage relevant files by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) §1 (IDENTIFY → CHECK → COMMITREQUIRED → ADD), including any new or changed files related to the init.
+
+2. Generate commit message:
+   ```bash
+   ${CLAUDE_SKILL_DIR}/scripts/hb-sdk commit write-message-file plain --short "initialize hashbuild"
+   ```
+   Capture the printed path as `$MSG_FILE`.
+
+3. Commit: `git commit -F $MSG_FILE`
 
 ### 4. Prompt user to create their first task
 
