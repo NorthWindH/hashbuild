@@ -12,13 +12,13 @@ Specifically: add a `status` field to each step object (one of six lifecycle val
 
 1. `_StepInfo` gains a `has_review` bool: true when a file named `review.md` exists in the step folder.
 2. Each step object in the JSON output gains a `status` field with one of six values, computed in priority order:
-   - `reviewed` — has a review file and all parsed status-table items are closed (status in {`addressed`, `deferred`}), or the review file exists but contains no status-table rows
-   - `review-open` — has a review file with at least one item whose status is not `addressed` or `deferred`
+   - `reviewed` — has a review file and all parsed status-table items are closed (status in {`addressed`, `assessed`, `deferred`}), or the review file exists but contains no status-table rows
+   - `review-open` — has a review file with at least one item whose status is not `addressed`, `assessed`, or `deferred`
    - `executed` — has at least one `execution-*.md` file; no review file present
    - `planned` — has `plan.md`; no execution file present
    - `ticketed` — has `ticket.md`; no plan, no execution
    - `skeleton` — none of the above
-3. Review-file parsing: scan `review.md` for Markdown table rows whose second pipe-delimited column matches a status value (case-insensitive). Any row with a status not in {`addressed`, `deferred`} counts as open.
+3. Review-file parsing: scan `review.md` for Markdown table rows whose second pipe-delimited column matches a status value (case-insensitive). Any row with a status not in {`addressed`, `assessed`, `deferred`} counts as open.
 
 ## Active-task count and list fields
 
