@@ -91,6 +91,8 @@ Capture the user's response as `$USER_INPUT`. Do not restate or summarize the in
 
 ### 2.4 Section C — Transform step
 
+Read `${CLAUDE_SKILL_DIR}/references/ticket-template.md` before applying any transform rules. Use it as the authoritative structural reference for heading names, section order, list format, and prose guidance when shaping the output.
+
 Apply these rules to convert `$USER_INPUT` into the standard three-section `ticket.md` structure.
 
 **Rule 1 — Near-perfect match (transcribe):**
@@ -166,7 +168,7 @@ N/A — the hashbuild skills framework uses no automated test suite for referenc
 2. Confirm the file opens with a blockquote header that names `hb-task-create` and `hb-task-step-add` as consumers and states "no side effects."
 3. Confirm Section A is present and covers both guard conditions: `$TICKET_SUPPLIED` and `$NO_INTERACTIVE`.
 4. Confirm Section B is present and instructs asking the user for content in any form (freeform prose, bullet list, structured draft, fully-formed three-section).
-5. Confirm Section C is present with Rule 1 (near-perfect → transcribe) and Rule 2 (freeform → derive), and that "Out of scope" is marked as omit-if-absent.
+5. Confirm Section C instructs reading `ticket-template.md` before transforming, and contains Rule 1 (near-perfect → transcribe) and Rule 2 (freeform → derive), and that "Out of scope" is marked as omit-if-absent.
 6. Confirm Section D is present and targets `$TARGET_PATH/ticket.md` with the standard three-section structure.
 7. Confirm `skills/references/references-toc.md` has a new row for `interactive-ticket-subflow.md` with a description consistent with the `review-init-subflow.md` row style.
 8. Confirm no other files were modified: `git diff --name-only` lists only the two files above.
