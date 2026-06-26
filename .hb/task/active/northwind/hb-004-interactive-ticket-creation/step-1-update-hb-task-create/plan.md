@@ -58,8 +58,8 @@ precedence:  --ticket  ≥  --no-interactive  ≥  interactive (default)
 The block is inserted as **Step 2**; existing steps are renumbered Step 2 → 3, Step 3 → 4, Step 4 → 5. No logic in the renamed steps is removed — only the commit step (§4) and prompt step (§5) gain interactive-mode branches.
 
 **Interactive mode sequence (tier 3) in detail:**
-1. Set `$TARGET_PATH = ${TMPDIR:-/tmp}`. Follow `interactive-ticket-subflow.md` with `$TARGET_PATH`, `$TICKET_SUPPLIED=false`, `$NO_INTERACTIVE=false`. Subflow writes `${TMPDIR:-/tmp}/hb-ticket.md`.
-2. Set `$WRITTEN_TICKET = ${TMPDIR:-/tmp}/hb-ticket.md`.
+1. Set `$TARGET_PATH = /tmp`. Follow `interactive-ticket-subflow.md` with `$TARGET_PATH`, `$TICKET_SUPPLIED=false`, `$NO_INTERACTIVE=false`. Subflow writes `/tmp/hb-ticket.md`.
+2. Set `$WRITTEN_TICKET = /tmp/hb-ticket.md`.
 3. Proceed to Step 3 (SDK call) with `--ticket $WRITTEN_TICKET`. The SDK creates the task folder and skeleton, seeding `ticket.md` from the temp file.
 
 **Alternatives considered and rejected:**
@@ -78,7 +78,7 @@ The block is inserted as **Step 2**; existing steps are renumbered Step 2 → 3,
 |---|---|---|
 | `argument-hint` | `"[--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>"` | `"[--help] [--ticket <path>] [--ticket-overwrite] [--no-interactive] <author/task-id>"` |
 | `description` (usage line) | `/hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] <author/task-id>` | `/hb-task-create [--help] [--ticket <path>] [--ticket-overwrite] [--no-interactive] <author/task-id>` |
-| `allowed-tools` | `Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)` | `Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(/tmp/*) Read(/tmp/*) Edit(/tmp/*)` — covers Linux/MinGW; on macOS `$TMPDIR` resolves to `/var/folders/…/T/` so a broader pattern or one-time prompt applies |
+| `allowed-tools` | `Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *)` | `Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Bash(git *) Write(/tmp/*) Write(/private/tmp/*) Read(/tmp/*) Read(/private/tmp/*) Edit(/tmp/*) Edit(/private/tmp/*)` |
 
 The `description` prose line ("Idempotent. Ensure a task skeleton exists…") is unchanged — it remains accurate.
 
@@ -106,14 +106,14 @@ Evaluate in order (first match wins):
 1. **`$TICKET_SUPPLIED` is `true`** — proceed to Step 3; pass `--ticket <ticket_path>` to the SDK as today.
 2. **`$NO_INTERACTIVE` is `true`** — skeleton-only mode; proceed to Step 3 without a ticket.
 3. **Neither flag** — interactive mode:
-   a. Set `$TARGET_PATH` = `${TMPDIR:-/tmp}`.
+   a. Set `$TARGET_PATH` = `/tmp`.
    b. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](references/interactive-ticket-subflow.md) with:
-      - `$TARGET_PATH` = `${TMPDIR:-/tmp}`
+      - `$TARGET_PATH` = `/tmp`
       - `$TICKET_SUPPLIED` = `false`
       - `$NO_INTERACTIVE` = `false`
 
-      The subflow writes `ticket.md` to `${TMPDIR:-/tmp}/hb-ticket.md`.
-   c. Set `$WRITTEN_TICKET` = `${TMPDIR:-/tmp}/hb-ticket.md`.
+      The subflow writes `ticket.md` to `/tmp/hb-ticket.md`.
+   c. Set `$WRITTEN_TICKET` = `/tmp/hb-ticket.md`.
    d. Proceed to Step 3 with `--ticket $WRITTEN_TICKET`.
 ```
 
@@ -150,7 +150,7 @@ Replace the single static prompt with two conditional variants:
 
 - Single file changed: `skills/hb-task-create.md`.
 - The subflow is invoked by reference (Claude reads and follows it); no import mechanism or shell call needed.
-- Interactive mode writes a temp ticket to `${TMPDIR:-/tmp}/hb-ticket.md` using the `Write` tool; the `allowed-tools` frontmatter must grant `Write(/tmp/*)`, `Read(/tmp/*)`, and `Edit(/tmp/*)` for Linux/MinGW. On macOS `$TMPDIR` resolves under `/var/folders/…/T/` — a broader pattern would be needed, or the user accepts a one-time prompt.
+- Interactive mode writes a temp ticket to `/tmp/hb-ticket.md` using the `Write` tool. On macOS `/tmp` is a symlink to `/private/tmp`; the `allowed-tools` frontmatter includes both `/tmp/*` and `/private/tmp/*` patterns to cover the symlink regardless of whether the harness resolves it before matching.
 - Public signature of the skill (user-facing flags and step output) is extended, not broken. Existing callers passing `--ticket` or `--help` see identical behavior.
 - `references-toc.md` already contains the `interactive-ticket-subflow.md` row (added in step-0). The `! cat references-toc.md` expansion in `hb-task-create.md` will automatically include it — no change needed there.
 - No new runtime dependencies; no lockfile effects.
