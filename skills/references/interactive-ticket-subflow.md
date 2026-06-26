@@ -3,6 +3,7 @@
 > notification beyond the prompt itself).
 
 **Caller contract.** Before injecting this subflow, the calling skill must have resolved:
+
 - `$TARGET_PATH` — absolute path to the folder where `ticket.md` will be written
 - `$TICKET_SUPPLIED` — set to `true` if `--ticket <path>` was passed; otherwise unset or `false`
 - `$NO_INTERACTIVE` — set to `true` if `--no-interactive` was passed; otherwise unset or `false`
@@ -30,6 +31,7 @@ Apply these rules to convert `$USER_INPUT` into the standard three-section `tick
 **Rule 1 — Near-perfect match (transcribe):**
 
 If `$USER_INPUT` already contains recognizable Background and Acceptance Criteria sections (exact or near-exact heading names, in any order):
+
 - Transcribe verbatim.
 - Apply only minimal conforming adjustments: normalize heading levels to `#`, capitalize section names (`Background`, `Acceptance Criteria`, `Out of scope`), and normalize list markers to `- ` or `1. ` as appropriate.
 - Do not paraphrase or restructure.
@@ -38,11 +40,11 @@ If `$USER_INPUT` already contains recognizable Background and Acceptance Criteri
 
 If `$USER_INPUT` is prose, bullets, or a partial draft that does not match Rule 1:
 
-| Section | Derived from |
-|---|---|
-| `# Background` | The "why": motivation, context, and the problem being solved. Narrative prose, 1–3 sentences. |
+| Section                 | Derived from                                                                                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `# Background`          | The "why": motivation, context, and the problem being solved. Narrative prose, 1–3 sentences.                                                          |
 | `# Acceptance Criteria` | Discrete checkable conditions. Numbered list. Extract explicit requirements; infer additional criteria only when clearly implied by the user's intent. |
-| `# Out of scope` | Explicit exclusions stated by the user. **Omit this section entirely if the user stated no exclusions.** |
+| `# Out of scope`        | Explicit exclusions stated by the user. **Omit this section entirely if the user stated no exclusions and none are inferred from the content.**        |
 
 **Ambiguity rule:** When content could belong in either Background or Acceptance Criteria, prefer Background for narrative/context statements and Acceptance Criteria for conditions that can be verified true or false.
 
