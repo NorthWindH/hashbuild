@@ -4,17 +4,32 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-1-REVIEW-1 |            |
+| STEP-1-REVIEW-1 | ✅ Assessed — dual-path `/tmp/*` + `/private/tmp/*` is the correct portable strategy; no change needed |
+| STEP-1-REVIEW-2 |            |
 
 ---
 
 ## Notes
 
-### STEP-1-REVIEW-1: Verify /tmp and /private/tmp path resolution in allowed-tools
+### STEP-1-REVIEW-1: Verify /tmp and /private/tmp path resolution in allowed-tools — ASSESSED
 
-- **file(s):** `skills/hb-task-create.md` (around `TODO REVIEW` marker)
+- **file(s):** `skills/hb-task-create.md` (`allowed-tools` frontmatter)
 - The `allowed-tools` frontmatter uses both `/tmp/*` and `/private/tmp/*` paths. On macOS, `/tmp` is a symlink to `/private/tmp`, so listing both may be redundant or one may be ineffective depending on how the permissions engine resolves paths. Assess whether both entries are necessary and correctly cover the actual system temp paths across platforms.
 - **source:** `TODO REVIEW` in commit `c92dfb755ea92cde0e17b3c1f1b09fb244ef3e1c` — delete comment from source file after addressing
+
+**Resolution:** Investigated path resolution on this Linux host and evaluated the macOS case:
+
+| platform | `/tmp` status | `/private/tmp` status | verdict |
+|---|---|---|---|
+| Linux (this host) | native directory (`readlink /tmp` → not a symlink) | does not exist | `/tmp/*` matches; `/private/tmp/*` unused but harmless |
+| macOS | symlink → `/private/tmp` | real directory | harness may use raw path or resolved path — unclear without source access |
+
+Because the harness's symlink-resolution behaviour is unspecified, the dual-path approach is the correct defensive strategy: `Write(/tmp/*)` covers the raw path on both platforms, and `Write(/private/tmp/*)` covers the resolved path on macOS. Neither entry is redundant in a portability context. No change needed. The rationale was already recorded in plan commit `3e9a7ff`.
+
+### STEP-1-REVIEW-2: Ticket filename mismatch between subflow output and skill expectation
+
+- **file(s):** `skills/hb-task-create.md` (step 2, case 3) and `skills/references/interactive-ticket-subflow.md` (section D)
+- The subflow's Write step produces `$TARGET_PATH/ticket.md`. With `$TARGET_PATH = /tmp`, the file is written to `/tmp/ticket.md`. However, the skill sets `$WRITTEN_TICKET = /tmp/hb-ticket.md` and passes that path to the SDK. The SDK call will receive a path that does not exist, causing interactive mode to silently fail or error.
 
 ---
 
