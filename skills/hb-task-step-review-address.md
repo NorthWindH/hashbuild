@@ -81,7 +81,6 @@ Skip this step entirely if `--no-todo-scan` was passed.
 3. If any files contain `TODO REVIEW` comments, list them to the user and ask:
 
    > The following uncommitted file(s) contain `TODO REVIEW` comments: [list files]. Commit them now so their comments are picked up as review items?
-
    - If user accepts:
      - Commit only the files containing `TODO REVIEW` comments by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md). Use a short description such as "add TODO REVIEW comments for review pickup".
      - The next step will scan this newly committed change and pick up the comments automatically.
@@ -206,6 +205,8 @@ Repeat 9a–9e for the next unresolved item.
 ### 10. Prompt user
 
 Tell the user:
+
+<!-- TODO REVIEW update call to action below to mention committed or uncommitted TODO REVIEW comments -->
 
 > Review is iterative — you can add more concerns to `review.md` or add and commit more TODO REVIEW comments and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
 
