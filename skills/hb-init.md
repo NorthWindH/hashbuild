@@ -1,5 +1,7 @@
 ---
 name: hb-init
+# TODO REVIEW also populate `arguments` and `argument-hint` frontmatter fields; see reference here https://code.claude.com/docs/en/skills#frontmatter-reference
+# Do this for all skills located in this directory
 description: >
   /hb-init [--help]
 
