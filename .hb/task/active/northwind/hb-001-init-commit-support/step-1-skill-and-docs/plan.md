@@ -178,7 +178,7 @@ No dependency manifests. No lockfile changes. No new files.
 
 No new tests. This step makes no SDK changes — the SDK behavior was locked by step-0's 12 added tests (see `tests/skills/scripts/test_hb-sdk.py`). The skill markdown files are not unit-tested. The verification steps below substitute for automated tests.
 
-**Non-regression:** The full test suite (100 tests) must pass unchanged after this step — no SDK code touched.
+**Non-regression:** `make test` must pass unchanged after this step — no SDK code touched.
 
 ---
 
@@ -186,7 +186,7 @@ No new tests. This step makes no SDK changes — the SDK behavior was locked by 
 
 1. **Full test suite clean:**
    ```bash
-   python -m pytest tests/ -q
+   make test
    ```
    Expect: 100 passed, 0 failed.
 
