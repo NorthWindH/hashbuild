@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from typing import Any
 
 from .common import die, path_hb_asserted
 
@@ -62,6 +63,7 @@ def cmd_idea_show(args: argparse.Namespace) -> None:
     target = args.target
     hb_path = path_hb_asserted()
 
+    results: list[dict[str, Any]]
     if target is None:
         results = []
         idea_root = hb_path / "idea"
@@ -96,7 +98,7 @@ def cmd_idea_set_content(args: argparse.Namespace) -> None:
     _save_idea_file(author, data)
 
 
-def def_cli_idea(subs: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
+def def_cli_idea(subs: Any) -> None:
     p_idea = subs.add_parser("idea", help="Idea operations")
     idea_subs = p_idea.add_subparsers(dest="idea_command", metavar="<action>")
     idea_subs.required = True
