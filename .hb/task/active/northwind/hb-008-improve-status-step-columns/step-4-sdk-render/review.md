@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-4-REVIEW-1 |            |
+| STEP-4-REVIEW-1 | ✅ Addressed — annotated bare `dict` params/returns as `dict[str, typing.Any]`; deleted TODO comment |
 
 ---
 
@@ -15,6 +15,10 @@
 - **file(s):** `skills/scripts/hb_sdk/summarize.py` (all module-level functions)
 - Add full type annotations to all parameters and return types across the module.
 - **source:** `TODO REVIEW` in commit `ded492d` — delete comment from source file after addressing
+
+**Resolution:** Three functions used bare `dict` without type parameters: `_next_action`, `_render_md`, and `_build_data`. All other module-level functions already had full annotations. Annotated the three bare `dict` usages as `dict[str, typing.Any]`, consistent with the `typing.Any` style already in the file (see `def_cli_summarize`). Deleted the `TODO REVIEW` comment from the source file.
+
+Disposition: **Addressed**
 
 ---
 

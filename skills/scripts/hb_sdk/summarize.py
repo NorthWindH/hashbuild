@@ -137,8 +137,7 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
-# TODO REVIEW add full type annotations to all parameters and return types
-def _next_action(data: dict) -> str:
+def _next_action(data: dict[str, typing.Any]) -> str:
     if not data["initialized"]:
         return "Run `/hb-init` to initialize the workspace."
 
@@ -183,7 +182,7 @@ def _next_action(data: dict) -> str:
     return "Review workspace state."
 
 
-def _render_md(data: dict) -> str:
+def _render_md(data: dict[str, typing.Any]) -> str:
     def _cell(v: int) -> str:
         return "—" if v == 0 else str(v)
 
@@ -257,7 +256,7 @@ def _render_md(data: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
-def _build_data(hb: Path) -> dict:
+def _build_data(hb: Path) -> dict[str, typing.Any]:
     if not hb.exists():
         return {"initialized": False, "active_tasks": [], "archive": {"count": 0, "recent": []}}
 
