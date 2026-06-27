@@ -15,6 +15,13 @@ def path_idea_file(author: str) -> Path:
     return path_hb_asserted() / "idea" / author / "ideas.json"
 
 
+# TODO REVIEW
+# - find all function definitions in this file
+# - ensure that every function definition has full type annotations on args and return values
+
+# TODO REVIEW add type annotations to return types below
+
+
 def _load_idea_file(author: str) -> dict:
     p = path_idea_file(author)
     if not p.exists():
