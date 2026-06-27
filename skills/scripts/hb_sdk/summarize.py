@@ -137,6 +137,7 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
+# TODO REVIEW add full type annotations to all parameters and return types
 def _next_action(data: dict) -> str:
     if not data["initialized"]:
         return "Run `/hb-init` to initialize the workspace."
@@ -149,9 +150,7 @@ def _next_action(data: dict) -> str:
             return f"Add `ticket.md` to `{ref}` with Background and Acceptance Criteria."
 
     for t in active_tasks:
-        if t["has_ticket"] and (
-            t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"])
-        ):
+        if t["has_ticket"] and (t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"])):
             ref = f"{t['author']}/{t['task_folder']}"
             return f"Add steps to `{ref}` with `/hb-task-plan {ref}` or `/hb-task-step-add {ref}`."
 
@@ -225,9 +224,7 @@ def _render_md(data: dict) -> str:
                 f" | {t['total_steps']} |"
             )
 
-        has_details = any(
-            t["steps_needs_review"] or t["steps_needs_work"] for t in active_tasks
-        )
+        has_details = any(t["steps_needs_review"] or t["steps_needs_work"] for t in active_tasks)
         if has_details:
             lines.append("")
             lines.append("### Task Details")
@@ -240,13 +237,9 @@ def _render_md(data: dict) -> str:
                 lines.append("")
                 lines.append(f"- `{ref}`:")
                 if needs_review:
-                    lines.append(
-                        "  - **Needs review:** " + ", ".join(f"`{s}`" for s in needs_review)
-                    )
+                    lines.append("  - **Needs review:** " + ", ".join(f"`{s}`" for s in needs_review))
                 if needs_work:
-                    lines.append(
-                        "  - **Needs work:** " + ", ".join(f"`{s}`" for s in needs_work)
-                    )
+                    lines.append("  - **Needs work:** " + ", ".join(f"`{s}`" for s in needs_work))
 
     archive = data["archive"]
     if archive["recent"]:
