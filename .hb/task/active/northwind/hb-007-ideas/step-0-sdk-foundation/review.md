@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — added `argparse.Namespace` to 4 `cmd_*` args and `_SubParsersAction` to `def_cli_idea`; removed TODO comment |
-| STEP-0-REVIEW-2 |            |
+| STEP-0-REVIEW-2 | ✅ Addressed — tightened bare `dict` to `dict[str, list[dict[str, str]]]` in `_load_idea_file` and `_save_idea_file`; removed both TODO blocks |
 
 ---
 
@@ -25,11 +25,13 @@
 
 ---
 
-### STEP-0-REVIEW-2: Type annotations may still be incomplete in idea.py
+### STEP-0-REVIEW-2: Type annotations may still be incomplete in idea.py — ADDRESSED
 
 - **file(s):** `skills/scripts/hb_sdk/idea.py` (all function definitions)
 - Two related concerns: (1) verify every function has full type annotations on args and return values; (2) return types below the comment block may be missing or too generic (e.g. bare `dict`).
 - **source:** `TODO REVIEW` (grouped, 2 comments) in commit `fdafd82c46631842a1c54b9e97259569319ebdc3` — delete both comment blocks from source file after addressing
+
+**Resolution:** Audited all 10 functions. All args and return types were annotated from STEP-0-REVIEW-1 except for `_load_idea_file` (`-> dict`) and `_save_idea_file` (`data: dict`) which used bare `dict`. The on-disk format is `{"ideas": [{"content": "..."}]}`, so tightened both to `dict[str, list[dict[str, str]]]`. Removed both `TODO REVIEW` blocks (the multi-line block and the single-line "return types" comment).
 
 ---
 

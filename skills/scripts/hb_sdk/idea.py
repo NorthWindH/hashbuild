@@ -15,21 +15,14 @@ def path_idea_file(author: str) -> Path:
     return path_hb_asserted() / "idea" / author / "ideas.json"
 
 
-# TODO REVIEW
-# - find all function definitions in this file
-# - ensure that every function definition has full type annotations on args and return values
-
-# TODO REVIEW add type annotations to return types below
-
-
-def _load_idea_file(author: str) -> dict:
+def _load_idea_file(author: str) -> dict[str, list[dict[str, str]]]:
     p = path_idea_file(author)
     if not p.exists():
         return {"ideas": []}
     return json.loads(p.read_text())
 
 
-def _save_idea_file(author: str, data: dict) -> None:
+def _save_idea_file(author: str, data: dict[str, list[dict[str, str]]]) -> None:
     d = path_idea_dir(author)
     d.mkdir(parents=True, exist_ok=True)
     (d / "ideas.json").write_text(json.dumps(data, indent=2) + "\n")
