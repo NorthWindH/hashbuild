@@ -137,6 +137,17 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
+# TODO REVIEW
+# - instead of returning one next action, return all valid next actions
+# - return as a markdown bullet list encoded as a string
+# - example:
+#   ```python
+#   """
+#   - first action
+#   - second action
+#   - ...
+#   """
+#   ```
 def _next_action(data: dict[str, typing.Any]) -> str:
     if not data["initialized"]:
         return "Run `/hb-init` to initialize the workspace."
