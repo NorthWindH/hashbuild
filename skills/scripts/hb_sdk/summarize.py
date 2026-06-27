@@ -137,60 +137,39 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
-# TODO REVIEW
-# - instead of returning one next action, return all valid next actions
-# - return as a markdown bullet list encoded as a string
-# - example:
-#   ```python
-#   """
-#   - first action
-#   - second action
-#   - ...
-#   """
-#   ```
 def _next_action(data: dict[str, typing.Any]) -> str:
     if not data["initialized"]:
-        return "Run `/hb-init` to initialize the workspace."
+        return "- Run `/hb-init` to initialize the workspace."
 
     active_tasks = data["active_tasks"]
 
-    for t in active_tasks:
-        if not t["has_ticket"]:
-            ref = f"{t['author']}/{t['task_folder']}"
-            return f"Add `ticket.md` to `{ref}` with Background and Acceptance Criteria."
-
-    for t in active_tasks:
-        if t["has_ticket"] and (t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"])):
-            ref = f"{t['author']}/{t['task_folder']}"
-            return f"Add steps to `{ref}` with `/hb-task-plan {ref}` or `/hb-task-step-add {ref}`."
-
-    for t in active_tasks:
-        for s in t["steps"]:
-            if not s["has_ticket"]:
-                ref = f"{t['author']}/{t['task_folder']}"
-                return f"Add `ticket.md` to `{ref}/{s['name']}` or run `/hb-task-step-add {ref}`."
-
-    for t in active_tasks:
-        for s in t["steps"]:
-            if s["has_ticket"] and not s["has_plan"]:
-                ref = f"{t['author']}/{t['task_folder']}"
-                return f"Run `/hb-task-step-plan {ref}/{s['name']}` to plan the next step."
-
-    for t in active_tasks:
-        for s in t["steps"]:
-            if s["has_plan"] and not s["has_execution"]:
-                ref = f"{t['author']}/{t['task_folder']}"
-                return f"Run `/hb-task-step-execute {ref}/{s['name']}` to execute the plan."
-
-    for t in active_tasks:
-        if t["total_steps"] > 0 and all(s["has_execution"] for s in t["steps"]):
-            ref = f"{t['author']}/{t['task_folder']}"
-            return f"All steps executed for `{ref}` — review steps, archive task, or add more steps."
-
     if not active_tasks:
-        return "Start a new task with `/hb-task-create <author/task-id>`."
+        return "- Start a new task with `/hb-task-create <author/task-id>`."
 
-    return "Review workspace state."
+    actions: list[str] = []
+    for t in active_tasks:
+        ref = f"{t['author']}/{t['task_folder']}"
+        if not t["has_ticket"]:
+            actions.append(f"Add `ticket.md` to `{ref}` with Background and Acceptance Criteria.")
+            continue
+        if t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"]):
+            actions.append(f"Add steps to `{ref}` with `/hb-task-plan {ref}` or `/hb-task-step-add {ref}`.")
+            continue
+        for s in t["steps"]:
+            step_ref = f"{ref}/{s['name']}"
+            if not s["has_ticket"]:
+                actions.append(f"Add `ticket.md` to `{step_ref}` or run `/hb-task-step-add {ref}`.")
+            elif not s["has_plan"]:
+                actions.append(f"Run `/hb-task-step-plan {step_ref}` to plan the next step.")
+            elif not s["has_execution"]:
+                actions.append(f"Run `/hb-task-step-execute {step_ref}` to execute the plan.")
+        if t["total_steps"] > 0 and all(s["has_execution"] for s in t["steps"]):
+            actions.append(f"All steps executed for `{ref}` — review steps, archive task, or add more steps.")
+
+    if not actions:
+        return "- Review workspace state."
+
+    return "\n".join(f"- {a}" for a in actions)
 
 
 def _render_md(data: dict[str, typing.Any]) -> str:

@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — annotated bare `dict` params/returns as `dict[str, typing.Any]`; deleted TODO comment |
-| STEP-4-REVIEW-2 |            |
+| STEP-4-REVIEW-2 | ✅ Addressed — rewrote `_next_action` to collect all valid actions per task and return as bullet list |
 
 ---
 
@@ -28,6 +28,10 @@ Disposition: **Addressed**
 - **file(s):** `skills/scripts/hb_sdk/summarize.py` (`_next_action`)
 - Instead of returning the first matching next action and stopping, collect all valid next actions across all active tasks and return them as a markdown bullet list string.
 - **source:** `TODO REVIEW` in commit `dd12235` — delete comment from source file after addressing
+
+**Resolution:** Rewrote `_next_action` to iterate all tasks and collect actions into a `list[str]`, then return `"\n".join(f"- {a}" for a in actions)`. Per-task dependency order is preserved with `continue` guards (no ticket → skip step-level checks; no steps → skip step iteration). Early returns for the two singleton states (not initialized, no active tasks) now also return bullet-prefixed strings for consistency. Deleted the `TODO REVIEW` comment block from the source file.
+
+Disposition: **Addressed**
 
 ---
 
