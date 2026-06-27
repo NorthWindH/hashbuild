@@ -5,6 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — annotated bare `dict` params/returns as `dict[str, typing.Any]`; deleted TODO comment |
+| STEP-4-REVIEW-2 |            |
 
 ---
 
@@ -19,6 +20,14 @@
 **Resolution:** Three functions used bare `dict` without type parameters: `_next_action`, `_render_md`, and `_build_data`. All other module-level functions already had full annotations. Annotated the three bare `dict` usages as `dict[str, typing.Any]`, consistent with the `typing.Any` style already in the file (see `def_cli_summarize`). Deleted the `TODO REVIEW` comment from the source file.
 
 Disposition: **Addressed**
+
+---
+
+### STEP-4-REVIEW-2: Return all valid next actions as a bullet list
+
+- **file(s):** `skills/scripts/hb_sdk/summarize.py` (`_next_action`)
+- Instead of returning the first matching next action and stopping, collect all valid next actions across all active tasks and return them as a markdown bullet list string.
+- **source:** `TODO REVIEW` in commit `dd12235` — delete comment from source file after addressing
 
 ---
 
