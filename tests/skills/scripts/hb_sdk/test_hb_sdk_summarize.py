@@ -536,3 +536,153 @@ def test_summarize_archive_recent_author_field(tmp_path: Path) -> None:
     result = summarize(tmp_path)
     recent = json.loads(result.stdout)["archive"]["recent"]
     assert recent[0]["author"] == "hasan"
+
+
+# ── --format flag ──────────────────────────────────────────────────────────────
+
+
+def test_summarize_format_default_is_json(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path)
+    json.loads(result.stdout)  # must not raise
+
+
+def test_summarize_format_json_explicit(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="json")
+    data = json.loads(result.stdout)
+    assert "initialized" in data
+    assert "active_tasks" in data
+    assert "archive" in data
+
+
+def test_summarize_format_md_returns_non_json(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="md")
+    try:
+        json.loads(result.stdout)
+        raise AssertionError("expected non-JSON output")
+    except json.JSONDecodeError:
+        pass
+
+
+def test_summarize_format_invalid_exits_nonzero(tmp_path: Path) -> None:
+    result = summarize(tmp_path, format="xml", ok=False)
+    assert result.returncode != 0
+
+
+def test_summarize_format_md_not_initialized(tmp_path: Path) -> None:
+    result = summarize(tmp_path, format="md")
+    assert "`.hb/` not found" in result.stdout
+
+
+def test_summarize_format_md_initialized(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="md")
+    assert "`.hb/` initialized" in result.stdout
+
+
+def test_summarize_format_md_no_active_tasks_section_absent(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="md")
+    assert "## Active Tasks" not in result.stdout
+
+
+def test_summarize_format_md_active_task_in_table(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "hasan/abc-1" in result.stdout
+
+
+def test_summarize_format_md_count_dash_when_zero(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "| — |" in result.stdout
+
+
+def test_summarize_format_md_count_nonzero(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "| 1 |" in result.stdout
+
+
+def test_summarize_format_md_needs_review_in_details(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_step_add(tmp_path, "hasan/abc-1")
+    sp0 = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    result = summarize(tmp_path, format="md")
+    assert "Needs review" in result.stdout
+
+
+def test_summarize_format_md_archive_section_present(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    task_archive(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "## Archive" in result.stdout
+
+
+def test_summarize_format_md_archive_section_absent(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="md")
+    assert "## Archive" not in result.stdout
+
+
+def test_summarize_format_md_next_action_not_initialized(tmp_path: Path) -> None:
+    result = summarize(tmp_path, format="md")
+    assert "## Next Action" in result.stdout
+    assert "/hb-init" in result.stdout
+
+
+def test_summarize_format_md_next_action_no_tasks(tmp_path: Path) -> None:
+    init(tmp_path)
+    result = summarize(tmp_path, format="md")
+    assert "/hb-task-create" in result.stdout
+
+
+def test_summarize_format_md_next_action_task_no_ticket(tmp_path: Path) -> None:
+    init(tmp_path)
+    task_create(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "ticket.md" in result.stdout
+
+
+def test_summarize_format_md_next_action_step_needs_plan(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket_file = tmp_path / "t.md"
+    ticket_file.write_text("# ticket")
+    task_create(tmp_path, "hasan/abc-1", ticket=ticket_file)
+    task_step_add(tmp_path, "hasan/abc-1")
+    result = summarize(tmp_path, format="md")
+    assert "/hb-task-step-plan" in result.stdout
+
+
+def test_summarize_format_md_next_action_step_needs_execution(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket_file = tmp_path / "t.md"
+    ticket_file.write_text("# ticket")
+    task_create(tmp_path, "hasan/abc-1", ticket=ticket_file)
+    task_step_add(tmp_path, "hasan/abc-1")
+    sp0 = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (sp0 / "plan.md").write_text("# plan")
+    result = summarize(tmp_path, format="md")
+    assert "/hb-task-step-execute" in result.stdout
+
+
+def test_summarize_format_md_next_action_all_steps_executed(tmp_path: Path) -> None:
+    init(tmp_path)
+    ticket_file = tmp_path / "t.md"
+    ticket_file.write_text("# ticket")
+    task_create(tmp_path, "hasan/abc-1", ticket=ticket_file)
+    task_step_add(tmp_path, "hasan/abc-1")
+    sp0 = task_path(tmp_path, "hasan", "abc-1") / "step-0"
+    (sp0 / "plan.md").write_text("# plan")
+    (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
+    result = summarize(tmp_path, format="md")
+    assert "review steps, archive task, or add more steps" in result.stdout

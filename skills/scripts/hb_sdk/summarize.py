@@ -137,21 +137,136 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
-def cmd_summarize(args: argparse.Namespace) -> None:
-    hb = path_hb()
+def _next_action(data: dict) -> str:
+    if not data["initialized"]:
+        return "Run `/hb-init` to initialize the workspace."
 
-    if not hb.exists():
-        print(
-            json.dumps(
-                {
-                    "initialized": False,
-                    "active_tasks": [],
-                    "archive": {"count": 0, "recent": []},
-                },
-                indent=2,
-            )
+    active_tasks = data["active_tasks"]
+
+    for t in active_tasks:
+        if not t["has_ticket"]:
+            ref = f"{t['author']}/{t['task_folder']}"
+            return f"Add `ticket.md` to `{ref}` with Background and Acceptance Criteria."
+
+    for t in active_tasks:
+        if t["has_ticket"] and (
+            t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"])
+        ):
+            ref = f"{t['author']}/{t['task_folder']}"
+            return f"Add steps to `{ref}` with `/hb-task-plan {ref}` or `/hb-task-step-add {ref}`."
+
+    for t in active_tasks:
+        for s in t["steps"]:
+            if not s["has_ticket"]:
+                ref = f"{t['author']}/{t['task_folder']}"
+                return f"Add `ticket.md` to `{ref}/{s['name']}` or run `/hb-task-step-add {ref}`."
+
+    for t in active_tasks:
+        for s in t["steps"]:
+            if s["has_ticket"] and not s["has_plan"]:
+                ref = f"{t['author']}/{t['task_folder']}"
+                return f"Run `/hb-task-step-plan {ref}/{s['name']}` to plan the next step."
+
+    for t in active_tasks:
+        for s in t["steps"]:
+            if s["has_plan"] and not s["has_execution"]:
+                ref = f"{t['author']}/{t['task_folder']}"
+                return f"Run `/hb-task-step-execute {ref}/{s['name']}` to execute the plan."
+
+    for t in active_tasks:
+        if t["total_steps"] > 0 and all(s["has_execution"] for s in t["steps"]):
+            ref = f"{t['author']}/{t['task_folder']}"
+            return f"All steps executed for `{ref}` — review steps, archive task, or add more steps."
+
+    if not active_tasks:
+        return "Start a new task with `/hb-task-create <author/task-id>`."
+
+    return "Review workspace state."
+
+
+def _render_md(data: dict) -> str:
+    def _cell(v: int) -> str:
+        return "—" if v == 0 else str(v)
+
+    lines: list[str] = []
+    lines.append("# Hashbuild Status")
+    lines.append("")
+    lines.append("## Initialization")
+    lines.append("")
+    if data["initialized"]:
+        lines.append("`.hb/` initialized")
+    else:
+        lines.append("`.hb/` not found — run `/hb-init` to set up")
+
+    active_tasks = data["active_tasks"]
+    if active_tasks:
+        lines += ["", "---", "", "## Active Tasks", ""]
+        lines.append("**Legend:**")
+        lines.append("")
+        lines.append("Step count in each status:")
+        lines.append("")
+        lines.append(
+            "> S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed"
         )
-        return
+        lines.append("")
+        lines.append("| Task | Ticket | S | T | P | E | RO | R | Total |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+        for t in active_tasks:
+            ref = f"{t['author']}/{t['task_folder']}"
+            ticket = "✓" if t["has_ticket"] else "✗"
+            lines.append(
+                f"| `{ref}` | {ticket}"
+                f" | {_cell(t['steps_skeleton'])}"
+                f" | {_cell(t['steps_ticketed'])}"
+                f" | {_cell(t['steps_planned'])}"
+                f" | {_cell(t['steps_executed'])}"
+                f" | {_cell(t['steps_review_open'])}"
+                f" | {_cell(t['steps_reviewed'])}"
+                f" | {t['total_steps']} |"
+            )
+
+        has_details = any(
+            t["steps_needs_review"] or t["steps_needs_work"] for t in active_tasks
+        )
+        if has_details:
+            lines.append("")
+            lines.append("### Task Details")
+            for t in active_tasks:
+                needs_review = t["steps_needs_review"]
+                needs_work = t["steps_needs_work"]
+                if not needs_review and not needs_work:
+                    continue
+                ref = f"{t['author']}/{t['task_folder']}"
+                lines.append("")
+                lines.append(f"- `{ref}`:")
+                if needs_review:
+                    lines.append(
+                        "  - **Needs review:** " + ", ".join(f"`{s}`" for s in needs_review)
+                    )
+                if needs_work:
+                    lines.append(
+                        "  - **Needs work:** " + ", ".join(f"`{s}`" for s in needs_work)
+                    )
+
+    archive = data["archive"]
+    if archive["recent"]:
+        lines += ["", "---", "", "## Archive", ""]
+        lines.append(f"**Archived Tasks:** `{archive['count']}`")
+        lines.append("")
+        lines.append("**Recently Archived Tasks:**")
+        lines.append("")
+        for entry in archive["recent"]:
+            lines.append(f"- `{entry['author']}/{entry['task_folder']}`")
+
+    lines += ["", "---", "", "## Next Action", ""]
+    lines.append(_next_action(data))
+
+    return "\n".join(lines) + "\n"
+
+
+def _build_data(hb: Path) -> dict:
+    if not hb.exists():
+        return {"initialized": False, "active_tasks": [], "archive": {"count": 0, "recent": []}}
 
     active_tasks = list[_TaskInfo]()
     active_base = hb / "task" / TASK_FOLDER_ACTIVE
@@ -186,51 +301,60 @@ def cmd_summarize(args: argparse.Namespace) -> None:
 
     recent = [_archive_entry(p) for _, p in recent_entries[:5]]
 
-    print(
-        json.dumps(
+    return {
+        "initialized": True,
+        "active_tasks": [
             {
-                "initialized": True,
-                "active_tasks": [
+                "author": t.author,
+                "task_id": t.task_id,
+                "task_folder": t.task_folder,
+                "task_path": str(t.task_path.absolute()),
+                "has_ticket": t.has_ticket,
+                "total_steps": len(t.steps),
+                "steps": [
                     {
-                        "author": t.author,
-                        "task_id": t.task_id,
-                        "task_folder": t.task_folder,
-                        "task_path": str(t.task_path.absolute()),
-                        "has_ticket": t.has_ticket,
-                        "total_steps": len(t.steps),
-                        "steps": [
-                            {
-                                "name": s.name,
-                                "has_ticket": s.has_ticket,
-                                "has_plan": s.has_plan,
-                                "has_execution": s.has_execution,
-                                "has_review": s.has_review,
-                                "status": s.status,
-                            }
-                            for s in t.steps
-                        ],
-                        "steps_skeleton": t.steps_skeleton,
-                        "steps_ticketed": t.steps_ticketed,
-                        "steps_planned": t.steps_planned,
-                        "steps_executed": t.steps_executed,
-                        "steps_review_open": t.steps_review_open,
-                        "steps_reviewed": t.steps_reviewed,
-                        "steps_needs_review": t.steps_needs_review,
-                        "steps_needs_work": t.steps_needs_work,
-                        "next_pending_step": t.next_pending_step,
+                        "name": s.name,
+                        "has_ticket": s.has_ticket,
+                        "has_plan": s.has_plan,
+                        "has_execution": s.has_execution,
+                        "has_review": s.has_review,
+                        "status": s.status,
                     }
-                    for t in active_tasks
+                    for s in t.steps
                 ],
-                "archive": {
-                    "count": archived_count,
-                    "recent": recent,
-                },
-            },
-            indent=2,
-        )
-    )
+                "steps_skeleton": t.steps_skeleton,
+                "steps_ticketed": t.steps_ticketed,
+                "steps_planned": t.steps_planned,
+                "steps_executed": t.steps_executed,
+                "steps_review_open": t.steps_review_open,
+                "steps_reviewed": t.steps_reviewed,
+                "steps_needs_review": t.steps_needs_review,
+                "steps_needs_work": t.steps_needs_work,
+                "next_pending_step": t.next_pending_step,
+            }
+            for t in active_tasks
+        ],
+        "archive": {
+            "count": archived_count,
+            "recent": recent,
+        },
+    }
+
+
+def cmd_summarize(args: argparse.Namespace) -> None:
+    data = _build_data(path_hb())
+    if args.format == "md":
+        print(_render_md(data))
+    else:
+        print(json.dumps(data, indent=2))
 
 
 def def_cli_summarize(subs: typing.Any) -> None:
     p = subs.add_parser("summarize", help="Print workspace summary as JSON for status reporting")
     p.set_defaults(func=cmd_summarize)
+    p.add_argument(
+        "--format",
+        choices=["json", "md"],
+        default="json",
+        help="Output format: json (default) or md (rendered markdown)",
+    )

@@ -66,7 +66,10 @@ def task_step_list(cwd: Path, name: str, **kwargs: Any) -> subprocess.CompletedP
 
 
 def summarize(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
-    return run(["summarize"], cwd, ok=kwargs.get("ok", True))
+    args = ["summarize"]
+    if fmt := kwargs.get("format"):
+        args += ["--format", fmt]
+    return run(args, cwd, ok=kwargs.get("ok", True))
 
 
 def commit_write_message_file(cwd: Path, mode: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:

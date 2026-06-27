@@ -9,7 +9,6 @@
 | `${CLAUDE_SKILL_DIR}/references/execution-template.md`        | Execution summary structure; read when writing `execution-*.md` after a step.                                                            |
 | `${CLAUDE_SKILL_DIR}/references/review-template.md`           | Review file structure; read when creating or addressing `review.md`.                                                                     |
 | `${CLAUDE_SKILL_DIR}/references/review-init-subflow.md`       | Shared subflow for `review.md` file creation (resolve, check, write); injected via `!` by `review-init` and `review-address`.            |
-| `${CLAUDE_SKILL_DIR}/references/status-template.md`           | Status report template and Next Action decision tree; read when rendering `/hb-status`.                                                  |
 | `${CLAUDE_SKILL_DIR}/references/git-status-short-format.adoc` | Git `XY` status codes; read when `git status --short` shows an unfamiliar code.                                                          |
 | `${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md` | Shared subflow for `ticket.md` interactive creation (guard, prompt, transform, write); injected via `!` by `hb-task-create` and `hb-task-step-add`. |
 | `${CLAUDE_SKILL_DIR}/hb-task-unarchive.md`                    | Unarchive skill; read when the user asks about restoring an archived task.                                                               |
