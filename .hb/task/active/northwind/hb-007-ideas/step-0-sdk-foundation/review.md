@@ -6,6 +6,7 @@
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — added `argparse.Namespace` to 4 `cmd_*` args and `_SubParsersAction` to `def_cli_idea`; removed TODO comment |
 | STEP-0-REVIEW-2 | ✅ Addressed — tightened bare `dict` to `dict[str, list[dict[str, str]]]` in `_load_idea_file` and `_save_idea_file`; removed both TODO blocks |
+| STEP-0-REVIEW-3 | ✅ Addressed — local var annotation and `subs: Any` both correct; committed |
 
 ---
 
@@ -32,6 +33,15 @@
 - **source:** `TODO REVIEW` (grouped, 2 comments) in commit `fdafd82c46631842a1c54b9e97259569319ebdc3` — delete both comment blocks from source file after addressing
 
 **Resolution:** Audited all 10 functions. All args and return types were annotated from STEP-0-REVIEW-1 except for `_load_idea_file` (`-> dict`) and `_save_idea_file` (`data: dict`) which used bare `dict`. The on-disk format is `{"ideas": [{"content": "..."}]}`, so tightened both to `dict[str, list[dict[str, str]]]`. Removed both `TODO REVIEW` blocks (the multi-line block and the single-line "return types" comment).
+
+---
+
+### STEP-0-REVIEW-3: Additional type annotations added by linter — ADDRESSED
+
+- **file(s):** `skills/scripts/hb_sdk/idea.py` (`cmd_idea_show`, `def_cli_idea`)
+- Two changes introduced: (1) local variable annotation `results: list[dict[str, Any]]` in `cmd_idea_show`; (2) `subs` parameter type changed from `"argparse._SubParsersAction[argparse.ArgumentParser]"` to `Any`.
+
+**Resolution:** Verified both changes are correct. (1) `results` accumulates `{"index": i, "author": author, **entry}` where `index` is `int` and other values are `str` — heterogeneous values make `dict[str, Any]` the right type. (2) `Any` for `subs` avoids a dependency on `argparse`'s private `_SubParsersAction` type; a pragmatic and commonly accepted trade-off. Both changes and the `from typing import Any` import were committed in `9b5c3ab`.
 
 ---
 
