@@ -207,7 +207,7 @@ return "\n".join(lines) + "\n"
 6. any step has plan.md but no execution-*.md
                               → "Run `/hb-task-step-execute <ref>/<step>` to execute the plan."
 7. all steps of any active task have executions
-                              → "All steps executed for `<ref>` — archive with `/hb-task-archive <author>/<task_id>` or add more steps with `/hb-task-step-add <ref>`."
+                              → "All steps executed for `<ref>` — review steps, archive task, or add more steps."
 8. no active tasks            → "Start a new task with `/hb-task-create <author/task-id>`."
 fallback                      → "Review workspace state."
 ```
@@ -288,6 +288,7 @@ def summarize(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
 | `test_summarize_format_md_next_action_task_no_ticket` | init + task (no ticket), `--format md`; "ticket.md" in stdout |
 | `test_summarize_format_md_next_action_step_needs_plan` | init + task + ticketed step (no plan), `--format md`; "/hb-task-step-plan" in stdout |
 | `test_summarize_format_md_next_action_step_needs_execution` | init + task + planned step (no exec), `--format md`; "/hb-task-step-execute" in stdout |
+| `test_summarize_format_md_next_action_all_steps_executed` | init + task + executed step, `--format md`; "review steps, archive task, or add more steps" in stdout |
 
 **Non-regression:** all 31 existing summarize tests use `summarize(cwd)` (no `format` kwarg) — they exercise the default JSON path and remain fully intact.
 
