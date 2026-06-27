@@ -1,5 +1,6 @@
 """Idea subcommands for hb-sdk."""
 
+import argparse
 import json
 from pathlib import Path
 
@@ -12,9 +13,6 @@ def path_idea_dir(author: str) -> Path:
 
 def path_idea_file(author: str) -> Path:
     return path_hb_asserted() / "idea" / author / "ideas.json"
-
-
-# TODO REVIEW add full type annotations to all args and return values for everything in this file
 
 
 def _load_idea_file(author: str) -> dict:
@@ -43,14 +41,14 @@ def _parse_idea_ref(ref: str) -> tuple[str, int]:
     return author, idx
 
 
-def cmd_idea_add(args) -> None:
+def cmd_idea_add(args: argparse.Namespace) -> None:
     data = _load_idea_file(args.author)
     data["ideas"].append({"content": args.content})
     _save_idea_file(args.author, data)
     print(f"{args.author}/{len(data['ideas']) - 1}")
 
 
-def cmd_idea_remove(args) -> None:
+def cmd_idea_remove(args: argparse.Namespace) -> None:
     author, idx = _parse_idea_ref(args.idea_ref)
     data = _load_idea_file(author)
     ideas = data["ideas"]
@@ -60,7 +58,7 @@ def cmd_idea_remove(args) -> None:
     _save_idea_file(author, data)
 
 
-def cmd_idea_show(args) -> None:
+def cmd_idea_show(args: argparse.Namespace) -> None:
     target = args.target
     hb_path = path_hb_asserted()
 
@@ -88,7 +86,7 @@ def cmd_idea_show(args) -> None:
         print(json.dumps(results, indent=2))
 
 
-def cmd_idea_set_content(args) -> None:
+def cmd_idea_set_content(args: argparse.Namespace) -> None:
     author, idx = _parse_idea_ref(args.idea_ref)
     data = _load_idea_file(author)
     ideas = data["ideas"]
@@ -98,7 +96,7 @@ def cmd_idea_set_content(args) -> None:
     _save_idea_file(author, data)
 
 
-def def_cli_idea(subs) -> None:
+def def_cli_idea(subs: "argparse._SubParsersAction[argparse.ArgumentParser]") -> None:
     p_idea = subs.add_parser("idea", help="Idea operations")
     idea_subs = p_idea.add_subparsers(dest="idea_command", metavar="<action>")
     idea_subs.required = True
