@@ -33,9 +33,11 @@
     - Needs work   — step folder names from steps_needs_work
 -->
 
-| Task                     | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total |
-| ------------------------ | ------ | -------- | -------- | ------- | -------- | ----------- | -------- | ----- |
-| `<author>/<task_folder>` | ✓/✗   | `<—/n>`  | `<—/n>`  | `<—/n>` | `<—/n>`  | `<—/n>`     | `<—/n>`  | `<n>` |
+**Legend:** S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed
+
+| Task                     | Ticket | S       | T       | P       | E       | RO      | R       | Total |
+| ------------------------ | ------ | ------- | ------- | ------- | ------- | ------- | ------- | ----- |
+| `<author>/<task_folder>` | ✓/✗   | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<n>` |
 
   - **Needs review:** `<step-folder>`, …
   - **Needs work:** `<step-folder>`, …

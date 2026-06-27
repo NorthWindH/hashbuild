@@ -90,7 +90,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize
 Produce the report by filling the template with data from the summary JSON:
 
 - **Initialization**: "`.hb/` initialized" if `initialized` is true; otherwise "`.hb/` not found — run `/hb-init`"
-- **Active Tasks**: one table with columns Task | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total — one row per entry in `active_tasks` using `author/task_folder`; show `—` for any count column that is zero (Total column always shows the raw integer); below each row render two indented lists (each omitted when the corresponding array is empty): **Needs review** (names from `steps_needs_review`) and **Needs work** (names from `steps_needs_work`); omit the section entirely when `active_tasks` is empty
+- **Active Tasks**: one table with columns Task | Ticket | S | T | P | E | RO | R | Total — one row per entry in `active_tasks` using `author/task_folder`; show `—` for any count column that is zero (Total column always shows the raw integer); below each row render two indented lists (each omitted when the corresponding array is empty): **Needs review** (names from `steps_needs_review`) and **Needs work** (names from `steps_needs_work`); omit the section entirely when `active_tasks` is empty
 - **Archive**: render a count-only row (`Archived tasks | <count>`) then a bulleted list of `author/task_folder` from `archive.recent` (up to 5 entries); omit the section entirely when `archive.recent` is empty
 - **Next Action**: apply the decision tree from the template's `## Next Action` comment — evaluate conditions in order and output the first that applies
 
