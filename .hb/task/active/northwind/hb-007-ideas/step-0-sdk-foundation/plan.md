@@ -13,15 +13,17 @@ see the expected JSON at each stage.
 Source ticket: `./ticket.md`. No prior steps — this is step 0, starting from
 the current SDK state (confirmed below).
 
-> **Design decision — `next_index` counter in the ideas file vs. derived from
-> existing entries.** AC 2 requires that `index` is monotonically increasing and
-> *never reused*. Deriving the next index as `max(existing) + 1` is wrong after
-> all entries are removed (empty list → no max) and after deletion of the highest
-> entry (would reuse). The chosen resolution: store `next_index` as a top-level
-> field in `ideas.json` alongside the `ideas` array. On `add`, use `next_index`
-> then increment it; on `remove`, leave `next_index` unchanged. The guard is that
-> `next_index` is the only mutable counter touched by `add` — no other command
-> reads or writes it. See §2 (data model) and AC-traceability table (§7).
+> **Design decision — positional index (array position) vs. stored monotonic
+> counter.** The index of an idea is its 0-based position in the `ideas` array;
+> it is not stored in the JSON entry and not tracked by a separate counter field.
+> `add` appends and the new idea's index is `len(ideas) - 1` after append.
+> `remove <author>/<n>` splices the entry out; all entries above position `n`
+> shift down by one — their effective indices change. `show`, `remove`, and
+> `set-content` bounds-check `n` against the array length and `die()` if out of
+> range. This makes the file format minimal and removes any sync obligation between
+> stored index values and array positions. The trade-off is that a caller must
+> re-fetch indices after any removal. See §2 (data model) and AC-traceability
+> table (§7).
 
 ---
 
@@ -110,14 +112,19 @@ scoped to a single author.
 ```python
 # On-disk representation inside ideas.json
 IdeaFile = {
-    "next_index": int,          # monotonically increasing counter; never decremented
-    "ideas": list[IdeaEntry],   # only live entries; removed entries are absent
+    "ideas": list[IdeaEntry],   # live entries; physical position is the index
 }
 
 IdeaEntry = {
-    "index": int,       # permanent ID assigned at add time
+    # "index" is NOT stored — it is derived from array position at read time
     "content": str,     # the idea text; mutable via set-content
     # additional metadata fields are allowed (not required by this step)
+}
+
+# Runtime representation (what callers receive from show commands)
+IdeaView = {
+    "index": int,   # 0-based position in the array; injected at output time
+    "content": str,
 }
 ```
 
@@ -137,18 +144,17 @@ Both call `path_hb_asserted()` to guard against uninitialised `.hb/`.
 
 ```python
 def _load_idea_file(author: str) -> dict:
-    # Reads and parses ideas.json; returns {"next_index": 0, "ideas": []} if file absent.
+    # Reads and parses ideas.json; returns {"ideas": []} if file absent.
     # Calls path_hb_asserted() (raises die() if .hb/ absent).
 
 def _save_idea_file(author: str, data: dict) -> None:
-    # Creates .hb/idea/<author>/ if absent, then writes ideas.json atomically.
+    # Creates .hb/idea/<author>/ if absent, then writes ideas.json.
     # Indent: 2 spaces, trailing newline.
 ```
 
-**Failure contract for `_load_idea_file`**: file absent → return empty
-`{"next_index": 0, "ideas": []}` (not an error). `.hb/` absent → `die()`.
-Malformed JSON → propagate `json.JSONDecodeError` (crash loudly — indicates
-filesystem corruption, not a user error).
+**Failure contract for `_load_idea_file`**: file absent → return `{"ideas": []}`
+(not an error). `.hb/` absent → `die()`. Malformed JSON → propagate
+`json.JSONDecodeError` (crash loudly — filesystem corruption, not a user error).
 
 ### 2.4 ID parsing (new, internal)
 
@@ -162,22 +168,24 @@ def _parse_idea_ref(ref: str) -> tuple[str, int]:
 
 | Function | Signature | Contract | Status |
 |---|---|---|---|
-| `cmd_idea_add` | `(args: Namespace) -> None` | reads `.ideas.json`, appends new entry with `next_index`, increments counter, saves, prints `<author>/<index>` to stdout | new |
-| `cmd_idea_remove` | `(args: Namespace) -> None` | loads file, finds entry by index, removes it, saves; `die()` if not found | new |
-| `cmd_idea_show` | `(args: Namespace) -> None` | three modes depending on `args.target` (see §2.6); prints JSON to stdout | new |
-| `cmd_idea_set_content` | `(args: Namespace) -> None` | loads file, finds entry, replaces `content`, saves; `die()` if not found | new |
+| `cmd_idea_add` | `(args: Namespace) -> None` | loads file, appends `{"content": content}`, saves; prints `<author>/<len-1>` to stdout | new |
+| `cmd_idea_remove` | `(args: Namespace) -> None` | loads file, bounds-checks index, splices entry out, saves; `die()` if out of range | new |
+| `cmd_idea_show` | `(args: Namespace) -> None` | three modes (§2.6); injects `"index"` into each entry before printing JSON to stdout | new |
+| `cmd_idea_set_content` | `(args: Namespace) -> None` | loads file, bounds-checks index, replaces `content`, saves; `die()` if out of range | new |
 
 ### 2.6 `idea show` dispatch logic
 
 ```
-args.target is None       → glob .hb/idea/*/ideas.json, collect all "ideas" arrays, print combined list
-args.target == "<author>" → load single author file, print "ideas" array
-args.target == "<author>/<index>" → load single author file, find by index, print single object; die() if absent
+args.target is None         → glob .hb/idea/*/ideas.json, collect all entries,
+                              inject {"index": pos, "author": author, ...} per entry, print combined list
+args.target == "<author>"   → load single author file, inject "index" field = array position, print list
+args.target == "<author>/<n>" → load author file, bounds-check n, return ideas[n] with "index" injected;
+                                die() if n >= len(ideas)
 ```
 
-Disambiguation: `args.target` contains a `/` → parsed as `<author>/<index>`;
-no `/` → treated as `<author>`. Author names cannot contain `/` (same constraint
-as task author field in `common.py`).
+Disambiguation: `args.target` contains a `/` → parsed as `<author>/<n>` where
+`n` must be a non-negative integer; no `/` → treated as `<author>`. Author names
+cannot contain `/` (same constraint as task author in `common.py`).
 
 ### 2.7 CLI registration (new)
 
@@ -266,8 +274,8 @@ def idea_set_content(cwd, idea_ref, new_content, *, ok=True) -> CompletedProcess
 
 | Test | Asserts |
 |---|---|
-| `test_idea_add_basic` | returns `<author>/0` on stdout; `ideas.json` created with one entry `index=0`; `next_index=1` |
-| `test_idea_add_sequential_indices` | three adds produce indices 0, 1, 2 in order; `next_index=3` |
+| `test_idea_add_basic` | returns `<author>/0` on stdout; `ideas.json` created with one entry; `show` returns `index=0` |
+| `test_idea_add_sequential_indices` | three adds produce stdout `0`, `1`, `2`; `show` returns array of length 3 |
 | `test_idea_add_creates_parent_dir` | `.hb/idea/<author>/` dir is created if absent |
 | `test_idea_add_no_hb` | without `init()`, exits non-zero with `.hb/` error message |
 
@@ -275,9 +283,9 @@ def idea_set_content(cwd, idea_ref, new_content, *, ok=True) -> CompletedProcess
 
 | Test | Asserts |
 |---|---|
-| `test_idea_remove_basic` | entry removed from `ideas` array; file still exists; `next_index` unchanged |
-| `test_idea_remove_not_found` | exits non-zero with clear error; `ideas` array unchanged |
-| `test_idea_remove_index_not_reused` | add two ideas, remove index 0, add again → new idea gets index 2 (not 0) |
+| `test_idea_remove_basic` | entry removed from `ideas` array; remaining entries shift down; file still exists |
+| `test_idea_remove_shifts_indices` | add 3 ideas (0,1,2); remove index 1; `show` now returns entries with indices 0,1; content of former index 2 is at index 1 |
+| `test_idea_remove_out_of_range` | exits non-zero with clear error; `ideas` array unchanged |
 | `test_idea_remove_no_hb` | without `init()`, exits non-zero |
 
 ### Test cases — `idea show`
@@ -355,7 +363,7 @@ touched — so no regression is possible from the wiring change.
 | AC | Satisfied by | Note |
 |---|---|---|
 | 1 — storage at `.hb/idea/<author>/ideas.json`; created on first write | §2.3 `_save_idea_file`; §2.5 `cmd_idea_add` | Verified in §6 AC-1 check |
-| 2 — `index` (int, monotonic, never reused) + `content` (str) fields | §2.1 data model; §2.3 `_load_idea_file` / `_save_idea_file`; §2.5 `cmd_idea_add` | Design decision justification in preamble; test `test_idea_remove_index_not_reused` |
+| 2 — `index` (int) + `content` (str) fields visible on output | §2.1 data model (`IdeaView`); `index` injected at output time = array position; `content` stored in entry | Design decision in preamble; tests `test_idea_add_basic`, `test_idea_remove_shifts_indices` |
 | 3 — `idea add <author> <content>` prints `<author>/<index>` | §2.5 `cmd_idea_add`; §2.7 CLI | Test `test_idea_add_basic`; §6 AC-3 |
 | 4 — `idea remove` exits non-zero on missing ID | §2.5 `cmd_idea_remove`; `die()` path | Test `test_idea_remove_not_found`; §6 AC-4 |
 | 5 — `idea show` three forms | §2.5 `cmd_idea_show`; §2.6 dispatch | Tests `test_idea_show_*`; §6 AC-5a/5b/5c |
