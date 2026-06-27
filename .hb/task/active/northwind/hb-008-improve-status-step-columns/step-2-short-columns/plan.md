@@ -19,12 +19,14 @@ first (and only) implementation step. The plan targets the code as it exists now
 ## 0. Current-state facts (verified during planning)
 
 **Files inspected:**
+
 - `skills/references/status-template.md` — defines the Markdown table structure and
   column names rendered by `/hb-status`
 - `skills/hb-status.md` — Step 4 hardcodes the same column names in its prose
   description of how to render the Active Tasks table
 
 **Current table header (status-template.md:36–38):**
+
 ```
 | Task                     | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total |
 | ------------------------ | ------ | -------- | -------- | ------- | -------- | ----------- | -------- | ----- |
@@ -32,6 +34,7 @@ first (and only) implementation step. The plan targets the code as it exists now
 ```
 
 **Current prose in hb-status.md Step 4 (line 93):**
+
 > "…one table with columns Task | Ticket | Skeleton | Ticketed | Planned | Executed | Review open | Reviewed | Total…"
 
 **Blast radius:** Only `/hb-status` reads `status-template.md` and uses Step 4's prose.
@@ -42,30 +45,30 @@ no other file references the string "Skeleton" or "Review open" as column header
 
 ### 0.1 Impact (before → after)
 
-| Element | Before | After |
-|---|---|---|
-| Column header: Skeleton | `Skeleton` | `S` |
-| Column header: Ticketed | `Ticketed` | `T` |
-| Column header: Planned | `Planned` | `P` |
-| Column header: Executed | `Executed` | `E` |
-| Column header: Review open | `Review open` | `RO` |
-| Column header: Reviewed | `Reviewed` | `R` |
-| Legend block | absent | added immediately after the table |
-| All other columns/rows | unchanged | unchanged |
+| Element                    | Before        | After                             |
+| -------------------------- | ------------- | --------------------------------- |
+| Column header: Skeleton    | `Skeleton`    | `S`                               |
+| Column header: Ticketed    | `Ticketed`    | `T`                               |
+| Column header: Planned     | `Planned`     | `P`                               |
+| Column header: Executed    | `Executed`    | `E`                               |
+| Column header: Review open | `Review open` | `RO`                              |
+| Column header: Reviewed    | `Reviewed`    | `R`                               |
+| Legend block               | absent        | added immediately after the table |
+| All other columns/rows     | unchanged     | unchanged                         |
 
 Change type: **output-altering** (column display labels change; legend added).
 
 ### 0.2 Non-regression proof / risk
 
-| At-risk element | Current behavior | Guard |
-|---|---|---|
-| Task column | Shows `author/task_folder` | Not touched; only lifecycle-column headers change |
-| Ticket column | Shows ✓/✗ | Not touched |
-| Total column | Shows raw int | Not touched |
-| Cell values (counts) | `—` or `n` | Only header row changes, not data rows |
-| Needs review / Needs work sub-lists | Rendered below each task row | Not touched |
-| Archive section | Count + bullet list | Not touched |
-| Next Action section | Decision-tree output | Not touched |
+| At-risk element                     | Current behavior             | Guard                                             |
+| ----------------------------------- | ---------------------------- | ------------------------------------------------- |
+| Task column                         | Shows `author/task_folder`   | Not touched; only lifecycle-column headers change |
+| Ticket column                       | Shows ✓/✗                    | Not touched                                       |
+| Total column                        | Shows raw int                | Not touched                                       |
+| Cell values (counts)                | `—` or `n`                   | Only header row changes, not data rows            |
+| Needs review / Needs work sub-lists | Rendered below each task row | Not touched                                       |
+| Archive section                     | Count + bullet list          | Not touched                                       |
+| Next Action section                 | Decision-tree output         | Not touched                                       |
 
 The change is limited to six header strings and the addition of a legend block after the
 table. It cannot alter row data because row data is derived from JSON field values, not
@@ -87,7 +90,7 @@ Two files receive edits:
 No new files, no new dependencies, no build wiring changes. The legend is static
 Markdown text.
 
-**Legend format** (to appear immediately after the table, before the `---` divider):
+**Legend format** (to appear immediately before the table):
 
 ```
 **Legend:** S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed
@@ -97,28 +100,29 @@ This is a single line rather than a six-item list to keep vertical space minimal
 
 **Alternatives considered and rejected:**
 
-- *Tooltip-style HTML in Markdown* — not universally rendered in terminals; rejected.
-- *Footnote-style `[1]` references* — harder to parse at a glance; adds complexity for
+- _Tooltip-style HTML in Markdown_ — not universally rendered in terminals; rejected.
+- _Footnote-style `[1]` references_ — harder to parse at a glance; adds complexity for
   no gain; rejected.
-- *Separate legend section with heading* — adds a heading to the report just for six
+- _Separate legend section with heading_ — adds a heading to the report just for six
   abbreviations; disproportionate; rejected.
 
 ---
 
 ## 2. Column-header abbreviation mapping — specification
 
-| Long header | Abbreviated header | JSON field driving column value |
-|---|---|---|
-| `Skeleton` | `S` | `steps_skeleton` |
-| `Ticketed` | `T` | `steps_ticketed` |
-| `Planned` | `P` | `steps_planned` |
-| `Executed` | `E` | `steps_executed` |
-| `Review open` | `RO` | `steps_review_open` |
-| `Reviewed` | `R` | `steps_reviewed` |
+| Long header   | Abbreviated header | JSON field driving column value |
+| ------------- | ------------------ | ------------------------------- |
+| `Skeleton`    | `S`                | `steps_skeleton`                |
+| `Ticketed`    | `T`                | `steps_ticketed`                |
+| `Planned`     | `P`                | `steps_planned`                 |
+| `Executed`    | `E`                | `steps_executed`                |
+| `Review open` | `RO`               | `steps_review_open`             |
+| `Reviewed`    | `R`                | `steps_reviewed`                |
 
 The JSON field names are **unchanged** — only the display labels change.
 
 **Legend line (exact text):**
+
 ```
 **Legend:** S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed
 ```
@@ -145,10 +149,10 @@ fail.
 
 ## 4. File-by-file changes
 
-| File | Change |
-|---|---|
-| `skills/references/status-template.md` | **edit** — replace six long column headers with abbreviations in header + separator rows; add legend line after table |
-| `skills/hb-status.md` | **edit** — update Step 4 prose column-name list to use abbreviated names |
+| File                                   | Change                                                                                                                |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `skills/references/status-template.md` | **edit** — replace six long column headers with abbreviations in header + separator rows; add legend line before table |
+| `skills/hb-status.md`                  | **edit** — update Step 4 prose column-name list to use abbreviated names                                              |
 
 No new files. No dependency manifests or lockfiles affected.
 
@@ -173,12 +177,12 @@ unaffected.
 
 2. **Per-AC checks:**
 
-   | AC | Check |
-   |---|---|
-   | AC 1.1–1.6 | Header row shows `S`, `T`, `P`, `E`, `RO`, `R` (not the long names) |
-   | AC 2 | A legend line appears immediately after the table, before `---`, mapping each abbreviation to its full name |
-   | AC 3 | `Task`, `Ticket`, `Total` columns and all row values are unchanged |
-   | AC 4 | Output renders as valid Markdown with no broken table rows or missing sections |
+   | AC         | Check                                                                                                       |
+   | ---------- | ----------------------------------------------------------------------------------------------------------- |
+   | AC 1.1–1.6 | Header row shows `S`, `T`, `P`, `E`, `RO`, `R` (not the long names)                                         |
+   | AC 2       | A legend line appears immediately before the table, mapping each abbreviation to its full name |
+   | AC 3       | `Task`, `Ticket`, `Total` columns and all row values are unchanged                                          |
+   | AC 4       | Output renders as valid Markdown with no broken table rows or missing sections                              |
 
 3. **Scope check:** only `skills/references/status-template.md` and `skills/hb-status.md`
    are modified. No other files change.
@@ -187,17 +191,17 @@ unaffected.
 
 ## 7. Acceptance-criteria traceability
 
-| AC | Satisfied by | Note |
-|---|---|---|
-| 1.1 `Skeleton` → `S` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 1.2 `Ticketed` → `T` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 1.3 `Planned` → `P` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 1.4 `Executed` → `E` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 1.5 `Review Open` → `RO` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 1.6 `Reviewed` → `R` | §2 mapping table; §4 edit to status-template.md | Header row change |
-| 2 Legend block after table | §1 legend format; §4 edit to status-template.md | Single-line legend |
-| 3 All other columns/content unchanged | §0.2 non-regression table; §4 scope | No row data touched |
-| 4 Output renders correctly | §6 verification step 1 | Manual visual check |
+| AC                                    | Satisfied by                                    | Note                |
+| ------------------------------------- | ----------------------------------------------- | ------------------- |
+| 1.1 `Skeleton` → `S`                  | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 1.2 `Ticketed` → `T`                  | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 1.3 `Planned` → `P`                   | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 1.4 `Executed` → `E`                  | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 1.5 `Review Open` → `RO`              | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 1.6 `Reviewed` → `R`                  | §2 mapping table; §4 edit to status-template.md | Header row change   |
+| 2 Legend block before table           | §1 legend format; §4 edit to status-template.md | Single-line legend  |
+| 3 All other columns/content unchanged | §0.2 non-regression table; §4 scope             | No row data touched |
+| 4 Output renders correctly            | §6 verification step 1                          | Manual visual check |
 
 ---
 
