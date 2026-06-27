@@ -27,18 +27,29 @@
   "Ticket" shows ✓ if the task has ticket.md, ✗ otherwise (task-level has_ticket).
   Count columns (Skeleton/Ticketed/Planned/Executed/Review open/Reviewed) show — when zero.
   "Total" always shows the raw integer.
-  Below each task row, two indented lists are rendered (each omitted when the
-  corresponding array is empty):
-    - Needs review — step folder names from steps_needs_review
-    - Needs work   — step folder names from steps_needs_work
 -->
 
-**Legend:** S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed
+**Legend:**
+
+Step count in each status:
+
+> S = Skeleton · T = Ticketed · P = Planned · E = Executed · RO = Review Open · R = Reviewed
 
 | Task                     | Ticket | S       | T       | P       | E       | RO      | R       | Total |
 | ------------------------ | ------ | ------- | ------- | ------- | ------- | ------- | ------- | ----- |
-| `<author>/<task_folder>` | ✓/✗   | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<n>` |
+| `<author>/<task_folder>` | ✓/✗    | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<—/n>` | `<n>` |
 
+### Task Details
+
+<!--
+One set of bullets per active task, two indented lists are rendered (each omitted when the
+  corresponding array is empty):
+    - Needs review — step folder names from steps_needs_review
+    - Needs work   — step folder names from steps_needs_work
+If both arrays are empty for the task, omit all bullets for that task.
+ -->
+
+- `<author>/<task_folder>`:
   - **Needs review:** `<step-folder>`, …
   - **Needs work:** `<step-folder>`, …
 
@@ -46,16 +57,16 @@
 
 ## Archive
 
-|                |           |
-| -------------- | --------- |
-| Archived tasks | `<count>` |
-
-- `<author>/<task_folder>`
+**Archived Tasks:** `<count>`
 
 <!--
   Recent: up to 5 most-recently-archived entries from archive.recent, each as
   author/task_folder. Omit the section entirely when archive.recent is empty.
 -->
+
+**Recently Archived Tasks:**
+
+- `<author>/<task_folder>`
 
 ---
 
