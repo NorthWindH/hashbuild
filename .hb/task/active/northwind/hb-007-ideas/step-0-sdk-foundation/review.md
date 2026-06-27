@@ -5,6 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-0-REVIEW-1 | ✅ Addressed — added `argparse.Namespace` to 4 `cmd_*` args and `_SubParsersAction` to `def_cli_idea`; removed TODO comment |
+| STEP-0-REVIEW-2 |            |
 
 ---
 
@@ -21,6 +22,14 @@
 - Added `args: argparse.Namespace` to `cmd_idea_add`, `cmd_idea_remove`, `cmd_idea_show`, `cmd_idea_set_content`
 - Added `subs: "argparse._SubParsersAction[argparse.ArgumentParser]"` to `def_cli_idea` (quoted to avoid runtime resolution of the private type)
 - Removed the `TODO REVIEW` comment and its surrounding blank lines
+
+---
+
+### STEP-0-REVIEW-2: Type annotations may still be incomplete in idea.py
+
+- **file(s):** `skills/scripts/hb_sdk/idea.py` (all function definitions)
+- Two related concerns: (1) verify every function has full type annotations on args and return values; (2) return types below the comment block may be missing or too generic (e.g. bare `dict`).
+- **source:** `TODO REVIEW` (grouped, 2 comments) in commit `fdafd82c46631842a1c54b9e97259569319ebdc3` — delete both comment blocks from source file after addressing
 
 ---
 
