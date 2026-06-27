@@ -76,16 +76,16 @@ the exact pattern of `task.py`: one `cmd_idea_*` function per subcommand, one
 `def_cli_idea(subs)` registration function, imported and called in `__main__.py`.
 
 Storage is one JSON file per author at `.hb/idea/<author>/ideas.json`. The file
-has two top-level fields:
+is a single-field object:
 
 ```
-{"next_index": <int>, "ideas": [<idea_object>, ...]}
+{"ideas": [<idea_object>, ...]}
 ```
 
-The `ideas` array holds only the live (non-removed) entries. `next_index` starts
-at 0 and increments on every successful `add`; it is never decremented or reset.
-There is no separate metadata file — the counter lives inside the same file as
-the ideas to keep the storage atomic.
+Each `idea_object` stores only `"content"` (and any optional metadata). There is
+no `"index"` field on disk — index = array position and is injected at output
+time. `remove` splices the entry out and all following entries shift down; the
+file is then re-written in full.
 
 `idea show` (no extra arg) collects ideas from all authors by globbing
 `.hb/idea/*/ideas.json`. This is the only cross-author operation; all others are
@@ -93,15 +93,15 @@ scoped to a single author.
 
 **Alternatives considered and rejected:**
 
-- *Derive next_index from `max(existing indices) + 1`*: fails on empty list and
-  allows reuse after high-index deletion. Rejected — violates AC 2.
-- *Separate `.hb-idea-meta.json` next to `ideas.json`*: two-file write is not
-  atomic; adds complexity with no benefit. Rejected.
+- *Stored monotonic counter (`next_index`)*: avoids index shift after removal but
+  adds a sync obligation and a file field that callers never need to write.
+  Rejected — positional indexing is simpler and sufficient.
+- *Store `"index"` field in each entry*: requires updating all subsequent entries
+  on every removal. Rejected — derived-at-output is cheaper and error-free.
 - *Per-project global ideas store (not per-author)*: contradicts AC 1
   (`<author>/ideas.json`). Rejected.
-- *NDJSON (one JSON object per line)*: not idiomatic for random access and
-  requires custom parsing. Rejected — standard JSON array is simpler and all
-  ideas per author are small enough to load entirely.
+- *NDJSON (one JSON object per line)*: requires custom parsing and complicates
+  splice. Rejected — standard JSON array is simpler; per-author files are small.
 
 ---
 
