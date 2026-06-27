@@ -1,0 +1,9 @@
+{
+  "name": "northwind/hb-010-drop-step",
+  "author": "northwind",
+  "task_id": "hb-010",
+  "task_extra": "drop-step",
+  "created_at": "2026-06-27T15:53:12.732351+00:00",
+  "next_step": 0,
+  "ticket_written_at": "2026-06-27T15:53:12.732418+00:00"
+}
