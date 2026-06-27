@@ -87,6 +87,25 @@ def commit_write_message_file(cwd: Path, mode: str, **kwargs: Any) -> subprocess
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
+def idea_add(cwd: Path, author: str, content: str, *, ok: bool = True) -> subprocess.CompletedProcess[str]:
+    return run(["idea", "add", author, content], cwd, ok=ok)
+
+
+def idea_remove(cwd: Path, idea_ref: str, *, ok: bool = True) -> subprocess.CompletedProcess[str]:
+    return run(["idea", "remove", idea_ref], cwd, ok=ok)
+
+
+def idea_show(cwd: Path, target: str | None = None, *, ok: bool = True) -> subprocess.CompletedProcess[str]:
+    args = ["idea", "show"]
+    if target is not None:
+        args.append(target)
+    return run(args, cwd, ok=ok)
+
+
+def idea_set_content(cwd: Path, idea_ref: str, new_content: str, *, ok: bool = True) -> subprocess.CompletedProcess[str]:
+    return run(["idea", "set-content", idea_ref, new_content], cwd, ok=ok)
+
+
 def hb(cwd: Path) -> Path:
     return cwd / ".hb"
 
