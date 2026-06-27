@@ -14,6 +14,9 @@ def path_idea_file(author: str) -> Path:
     return path_hb_asserted() / "idea" / author / "ideas.json"
 
 
+# TODO REVIEW add full type annotations to all args and return values for everything in this file
+
+
 def _load_idea_file(author: str) -> dict:
     p = path_idea_file(author)
     if not p.exists():
