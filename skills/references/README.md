@@ -4,7 +4,12 @@ Hashbuild is a structured workflow framework for AI-assisted software developmen
 
 Each skill is a focused, atomic operation. Each step in the lifecycle produces a durable artifact — a ticket, a plan, an execution summary, a review — that keeps work grounded and auditable across conversations.
 
-**Supported harnesses:** Claude Code · OpenCode
+**Supported harnesses:**
+
+| Harness | Status |
+| --- | --- |
+| Claude Code | ✅ Fully supported |
+| OpenCode | ⚠️ Experimental, probably broken |
 
 ---
 
