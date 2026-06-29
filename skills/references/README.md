@@ -8,6 +8,13 @@ Each skill is a focused, atomic operation. Each step in the lifecycle produces a
 
 ---
 
+### Goals
+
+- **Human in the loop at every step.** This isn't "AI going HAM" — it's "AI does stuff, supervised." Every step produces an artifact you can read and approve before moving on.
+- **Fewer lifecycle steps per execution step.** Each execution step has just three phases: plan, execute, review.
+- **Keep changes human-readable.** Changes are kept small enough to actually review — currently targeting ≤300 lines of changes per step.
+- **Opinionated requirements and plan structures.** Tickets and plans follow a consistent, prescribed shape so work stays legible across tasks and conversations.
+
 ### Prior Art
 
 Hashbuild draws from a growing family of structured AI development workflows. [GSD](https://github.com/open-gsd/gsd-core) (open-gsd) pioneered the phase-plan-execute loop inside Claude Code and remains the most fully-featured framework in this space; its companion [gsd-pi](https://github.com/open-gsd/gsd-pi) extends it with a meta-prompting layer designed to keep agents oriented over long autonomous runs. Other notable influences include [Claude Engineer](https://github.com/Doriandarko/claude-engineer), which introduced task decomposition via tool calls, and the broader class of scaffolded-agent approaches (AutoGPT, Aider, Cursor's multi-step modes) that demonstrated the value of durable artifact trails across AI-assisted work sessions.
