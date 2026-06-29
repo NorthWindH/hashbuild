@@ -15,10 +15,10 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to move a task from `active` t
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                       |
-| ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                                                                 |
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                 | yes\*    | Task name in `author/abc-123` or `author/abc-123-optional-flavor` format. The flavor is optional — the SDK matches on author and task ID alone. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                       |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                                                                 |
 
 ## Reference Files
 
@@ -44,7 +44,11 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task archive <name>
 
 ### 3. Commit
 
-- create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task; pass `--tag task-archive`
+- create a non-step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](${CLAUDE_SKILL_DIR}/references/committing.md) and including any new or changed files related to this task
+- pass `--tag task-archive`
+- note full author/task name in message by passing `--short "archive <author>/<task_id><task_flavor>"`, for example:
+  - if there is task flavor: `--short "archive northwind/hb-008-do-some-stuff"` where `do-some-stuff` is the full task flavor for `northwind/hb-008`
+  - if there is no task flavor: `--short "archive northwind/hb-008"`
 
 ### 4. Prompt user
 
