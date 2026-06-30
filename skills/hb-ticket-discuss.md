@@ -18,7 +18,6 @@ allowed-tools: >
   mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects
   mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata
 ---
-<!-- TODO REVIEW updated allowed-tools above to drop edit/create permissions and reformatted list for readability; record review item and resolution -->
 
 # hb-ticket-discuss
 

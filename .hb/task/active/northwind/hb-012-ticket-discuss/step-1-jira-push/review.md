@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-1-REVIEW-1 |            |
+| STEP-1-REVIEW-1 | ✅ Assessed — write-op permission prompts are intentional; no change needed |
 | STEP-1-REVIEW-2 |            |
 | STEP-1-REVIEW-3 |            |
 | STEP-1-REVIEW-4 |            |
@@ -18,6 +18,8 @@
 - **file(s):** `skills/hb-ticket-discuss.md` (frontmatter `allowed-tools`)
 - The allowed-tools list was reformatted for readability and `mcp__claude_ai_Atlassian_Rovo__createJiraIssue` and `mcp__claude_ai_Atlassian_Rovo__editJiraIssue` were dropped. Confirm this removal was intentional and that the skill can still operate correctly without these permissions declared.
 - **source:** `TODO REVIEW` in commit `db456e9` — delete comment from source file after addressing
+
+**Resolution:** Intentional and correct. `createJiraIssue` and `editJiraIssue` are write operations on an external system — requiring an explicit permission prompt for them is the right safety posture. The remaining pre-approved entries (`getAccessibleAtlassianResources`, `getVisibleJiraProjects`, `getJiraProjectIssueTypesMetadata`) are read-only discovery calls and low-risk to pre-approve. This removal is also consistent with the platform-agnostic direction being pursued in items 3 and 4: once those are resolved the remaining Atlassian-specific entries may also be cleaned up (the tool names won't be known at skill-authoring time). No code change needed.
 
 ---
 
