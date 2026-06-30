@@ -8,6 +8,9 @@
     },
     {
       "content": "update idea api to present update files at end of execution"
+    },
+    {
+      "content": "add hook on clear to show user last executed action, if any, based on last hb commit; look back up to 10 commits"
     }
   ]
 }
