@@ -7,8 +7,18 @@ description: >
   Run hashbuild's interactive ticket-creation flow to produce a standalone ticket
   (not attached to any task or step), then offer to push the ticket to a connected
   Jira (Atlassian MCP), falling back to stdout copy-paste. Makes no .hb/ writes.
-allowed-tools: Write(//tmp/*) Write(//private/tmp/*) Read(//tmp/*) Read(//private/tmp/*) Edit(//tmp/*) Edit(//private/tmp/*) mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata mcp__claude_ai_Atlassian_Rovo__createJiraIssue mcp__claude_ai_Atlassian_Rovo__editJiraIssue
+allowed-tools: >
+  Write(//tmp/*)
+  Write(//private/tmp/*)
+  Read(//tmp/*)
+  Read(//private/tmp/*)
+  Edit(//tmp/*)
+  Edit(//private/tmp/*)
+  mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources
+  mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects
+  mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata
 ---
+<!-- TODO REVIEW updated allowed-tools above to drop edit/create permissions and reformatted list for readability; record review item and resolution -->
 
 # hb-ticket-discuss
 
@@ -41,8 +51,15 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
   The subflow writes `ticket.md` to `/tmp/ticket.md`.
 - Set `$WRITTEN_TICKET` = `/tmp/ticket.md`.
 
+<!-- TODO REVIEW step 2 should be a loop until user is happy with the ticket; should not move on to push after first interpretation -->
+
 ### 3. Detect Jira MCP & offer to push
 
+<!-- TODO REVIEW `In this environment` wording is confusing for an agent reading this where such an mcp does not exist.
+Reword instead to refer to an mcp that could be looked up; for example, Claud Code's Atlassian Rovo mcp, which is what this wording is referring to.
+Goal is to allow an agent to either find an mcp server with the required capability, or to assess that such an mcp doesn't exist in the environment
+and to prompt the user to enable such an mcp.
+-->
 - Determine whether a connected Atlassian/Jira MCP tool capable of **creating a Jira issue** is available. In this environment that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`; generally, discover the connected Jira MCP's create-issue tool by capability rather than assuming this exact name.
 - If **no such tool is available**: set `$JIRA` = `unavailable` and skip to Step 5. This is the graceful path — absence of the MCP must never raise an error.
 - If a tool is available: ask the user — "Push this ticket to Jira? (create new / update existing / no)".
@@ -54,6 +71,9 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 
 Only when `$JIRA` ∈ {`create`, `update`}.
 
+<!-- TODO REVIEW presence of exact `mcp__claude_ai_Atlassian_Rovo__*` phrases assumes existnce of exact mcp tool.
+Instead phrase agnostically then offer exact tool name as an example if available but note that exact tool name may be different on other platforms.
+-->
 - **Resolve `cloudId`** via `mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources`. If exactly one site is accessible, use it; otherwise prompt the user to choose. (If the user supplied a site URL, its hostname may be passed directly per the tool's guidance.)
 - **If `$JIRA` = `create`:**
   - Resolve `projectKey` — offer choices via `mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects` and confirm.
