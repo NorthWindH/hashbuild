@@ -5,8 +5,9 @@ description: >
   /hb-ticket-discuss [--help]
 
   Run hashbuild's interactive ticket-creation flow to produce a standalone ticket
-  (not attached to any task or step) and print it for copy-paste. Makes no .hb/ writes.
-allowed-tools: Write(//tmp/*) Write(//private/tmp/*) Read(//tmp/*) Read(//private/tmp/*) Edit(//tmp/*) Edit(//private/tmp/*)
+  (not attached to any task or step), then offer to push the ticket to a connected
+  Jira (Atlassian MCP), falling back to stdout copy-paste. Makes no .hb/ writes.
+allowed-tools: Write(//tmp/*) Write(//private/tmp/*) Read(//tmp/*) Read(//private/tmp/*) Edit(//tmp/*) Edit(//private/tmp/*) mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata mcp__claude_ai_Atlassian_Rovo__createJiraIssue mcp__claude_ai_Atlassian_Rovo__editJiraIssue
 ---
 
 # hb-ticket-discuss
@@ -40,17 +41,46 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
   The subflow writes `ticket.md` to `/tmp/ticket.md`.
 - Set `$WRITTEN_TICKET` = `/tmp/ticket.md`.
 
-### 3. Emit ticket
+### 3. Detect Jira MCP & offer to push
+
+- Determine whether a connected Atlassian/Jira MCP tool capable of **creating a Jira issue** is available. In this environment that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`; generally, discover the connected Jira MCP's create-issue tool by capability rather than assuming this exact name.
+- If **no such tool is available**: set `$JIRA` = `unavailable` and skip to Step 5. This is the graceful path — absence of the MCP must never raise an error.
+- If a tool is available: ask the user — "Push this ticket to Jira? (create new / update existing / no)".
+  - "no" → set `$JIRA` = `declined`, go to Step 5.
+  - "create new" → set `$JIRA` = `create`, continue to Step 4.
+  - "update existing" → set `$JIRA` = `update`, continue to Step 4.
+
+### 4. Push to Jira (primary path)
+
+Only when `$JIRA` ∈ {`create`, `update`}.
+
+- **Resolve `cloudId`** via `mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources`. If exactly one site is accessible, use it; otherwise prompt the user to choose. (If the user supplied a site URL, its hostname may be passed directly per the tool's guidance.)
+- **If `$JIRA` = `create`:**
+  - Resolve `projectKey` — offer choices via `mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects` and confirm.
+  - Resolve `issueTypeName` — offer valid types via `mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata`; default to `Task`.
+  - Resolve `summary` — propose a concise summary line and confirm, or prompt. The summary is **not** determinable from the ticket body, so it is never silently guessed.
+  - Call `mcp__claude_ai_Atlassian_Rovo__createJiraIssue` with `cloudId`, `projectKey`, `issueTypeName`, `summary`, `description` = the full content of `$WRITTEN_TICKET`, and `contentFormat: "markdown"`.
+- **If `$JIRA` = `update`:**
+  - Prompt for the target `issueIdOrKey` (e.g. `PROJ-123`).
+  - Call `mcp__claude_ai_Atlassian_Rovo__editJiraIssue` with `cloudId`, `issueIdOrKey`, `fields: { description: <full content of $WRITTEN_TICKET> }`, and `contentFormat: "markdown"`.
+- **On success:** set `$JIRA` = `pushed` and report the resulting issue **key and browse URL** to the user.
+- **On failure** (auth, permission, invalid field, etc.): surface the error verbatim, then **fall through to Step 5** so the user still gets the copy-paste ticket — the skill never dead-ends.
+
+### 5. Emit ticket (fallback / no-push path)
+
+Reached when `$JIRA` ∈ {`unavailable`, `declined`} or after a Step 4 failure. **Skipped** when `$JIRA` = `pushed`.
 
 - Read `$WRITTEN_TICKET` and print its full content to stdout inside a fenced block so the user can copy-paste it.
-- State that this is the standalone ticket — no `.hb/` task or step folder was created — and that this stdout emission is the fallback output path step 1 will keep when no Jira MCP is available.
+- State that this is the standalone ticket — no `.hb/` task or step folder was created.
+- When `$JIRA` = `unavailable`, additionally state that **no Jira MCP was available, so the ticket is emitted for copy-paste**.
 
-### 4. Prompt user
+### 6. Prompt user
 
-Tell the user:
+- **If `$JIRA` = `pushed`:** confirm the Jira issue key and browse URL, and that nothing was written to `.hb/`.
+- **Otherwise:** tell the user:
 
-> Standalone ticket is ready above — copy-paste it wherever you need it. Nothing was written to `.hb/`. Pushing this ticket to Jira will be added by step 1 of this task.
+  > Standalone ticket is ready above — copy-paste it wherever you need it. Nothing was written to `.hb/`.
 
 ## Output
 
-Print the generated ticket content and the scratch path. If any step fails, surface the error verbatim to the caller.
+On a successful push, report the Jira issue key and browse URL. Otherwise print the generated ticket content and the scratch path. If any step fails, surface the error verbatim to the caller.
