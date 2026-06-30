@@ -8,6 +8,7 @@
 | STEP-1-REVIEW-2 | ✅ Addressed — added review loop to Step 2; loops until user confirms ticket |
 | STEP-1-REVIEW-3 | ✅ Addressed — rewrote Step 3 detect bullet; capability-first, Rovo as example |
 | STEP-1-REVIEW-4 | ✅ Addressed — Step 4 tool calls rewritten to semantic descriptions + Rovo examples |
+| STEP-1-REVIEW-5 |            |
 
 ---
 
@@ -50,6 +51,14 @@
 - **source:** `TODO REVIEW` in commit `db456e9` — delete comment from source file after addressing
 
 **Resolution:** Rewrote all five tool-call bullets in Step 4. Each bullet now describes the action semantically (list-accessible-sites, list-projects, issue-type-metadata, create-issue, edit-issue) and provides the Atlassian Rovo tool name in a parenthetical "example" note with a caveat that the exact name may differ on other platforms. The hardcoded `mcp__claude_ai_Atlassian_Rovo__*` calls are gone as primary instructions.
+
+---
+
+### STEP-1-REVIEW-5: Review loop should display ticket formatted, not in a fenced block
+
+- **file(s):** `skills/hb-ticket-discuss.md` (Step 2 — Review loop, step 1)
+- The review loop currently instructs the agent to display the ticket inside a fenced code block. Ticket content is markdown — it should be displayed formatted (rendered), not as raw text in a fenced block.
+- **source:** `TODO REVIEW` in commit `438e0c3` — delete comment from source file after addressing
 
 ---
 
