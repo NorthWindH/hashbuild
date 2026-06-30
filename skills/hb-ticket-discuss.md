@@ -59,14 +59,9 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 
 ### 3. Detect Jira MCP & offer to push
 
-<!-- TODO REVIEW `In this environment` wording is confusing for an agent reading this where such an mcp does not exist.
-Reword instead to refer to an mcp that could be looked up; for example, Claud Code's Atlassian Rovo mcp, which is what this wording is referring to.
-Goal is to allow an agent to either find an mcp server with the required capability, or to assess that such an mcp doesn't exist in the environment
-and to prompt the user to enable such an mcp.
--->
-- Determine whether a connected Atlassian/Jira MCP tool capable of **creating a Jira issue** is available. In this environment that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`; generally, discover the connected Jira MCP's create-issue tool by capability rather than assuming this exact name.
-- If **no such tool is available**: set `$JIRA` = `unavailable` and skip to Step 5. This is the graceful path — absence of the MCP must never raise an error.
-- If a tool is available: ask the user — "Push this ticket to Jira? (create new / update existing / no)".
+- Look for a connected MCP tool capable of **creating a Jira issue**. Discover it by capability — check available tools for one that creates Jira issues. On Claude Code with the Atlassian Rovo MCP connected, that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`; the exact name may differ on other platforms.
+- If **no such tool is found**: set `$JIRA` = `unavailable` and skip to Step 5, additionally telling the user that no Jira-capable MCP was detected and they can connect one (e.g. the Atlassian Rovo MCP on Claude Code) and re-run if they want to push. This is the graceful path — absence of the MCP must never raise an error.
+- If a tool is found: ask the user — "Push this ticket to Jira? (create new / update existing / no)".
   - "no" → set `$JIRA` = `declined`, go to Step 5.
   - "create new" → set `$JIRA` = `create`, continue to Step 4.
   - "update existing" → set `$JIRA` = `update`, continue to Step 4.

@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — write-op permission prompts are intentional; no change needed |
 | STEP-1-REVIEW-2 | ✅ Addressed — added review loop to Step 2; loops until user confirms ticket |
-| STEP-1-REVIEW-3 |            |
+| STEP-1-REVIEW-3 | ✅ Addressed — rewrote Step 3 detect bullet; capability-first, Rovo as example |
 | STEP-1-REVIEW-4 |            |
 
 ---
@@ -38,6 +38,8 @@
 - **file(s):** `skills/hb-ticket-discuss.md` (Step 3 — Detect Jira MCP & offer to push)
 - The phrase "In this environment that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`" is confusing to an agent that runs without that MCP. Reword to guide the agent to discover a capable MCP by capability (e.g. "find an MCP that can create Jira issues; if running on Claude Code with the Atlassian Rovo MCP, that tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`"), and add a fallback: if no such MCP is found, prompt the user to enable one.
 - **source:** `TODO REVIEW` in commit `db456e9` — delete comment from source file after addressing
+
+**Resolution:** Rewrote the detection bullet in Step 3. Now instructs the agent to discover a Jira-capable create-issue tool by capability (not by assumed name), gives the Atlassian Rovo tool as a named example, and on the unavailable path tells the user how to connect one. The hardcoded "In this environment" phrasing is gone.
 
 ---
 
