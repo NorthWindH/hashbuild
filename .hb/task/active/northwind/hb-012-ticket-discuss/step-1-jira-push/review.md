@@ -7,7 +7,7 @@
 | STEP-1-REVIEW-1 | ✅ Assessed — write-op permission prompts are intentional; no change needed |
 | STEP-1-REVIEW-2 | ✅ Addressed — added review loop to Step 2; loops until user confirms ticket |
 | STEP-1-REVIEW-3 | ✅ Addressed — rewrote Step 3 detect bullet; capability-first, Rovo as example |
-| STEP-1-REVIEW-4 |            |
+| STEP-1-REVIEW-4 | ✅ Addressed — Step 4 tool calls rewritten to semantic descriptions + Rovo examples |
 
 ---
 
@@ -48,6 +48,8 @@
 - **file(s):** `skills/hb-ticket-discuss.md` (Step 4 — Jira Push)
 - Several instructions in Step 4 name exact `mcp__claude_ai_Atlassian_Rovo__*` tool names (e.g. `getAccessibleAtlassianResources`, `getVisibleJiraProjects`). This assumes a specific MCP server. Reword each instruction to be platform-agnostic, then mention the exact Atlassian Rovo tool name as an example (e.g. "on Claude Code with Atlassian Rovo MCP, use `mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources`").
 - **source:** `TODO REVIEW` in commit `db456e9` — delete comment from source file after addressing
+
+**Resolution:** Rewrote all five tool-call bullets in Step 4. Each bullet now describes the action semantically (list-accessible-sites, list-projects, issue-type-metadata, create-issue, edit-issue) and provides the Atlassian Rovo tool name in a parenthetical "example" note with a caveat that the exact name may differ on other platforms. The hardcoded `mcp__claude_ai_Atlassian_Rovo__*` calls are gone as primary instructions.
 
 ---
 

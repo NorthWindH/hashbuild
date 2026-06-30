@@ -70,18 +70,15 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 
 Only when `$JIRA` ∈ {`create`, `update`}.
 
-<!-- TODO REVIEW presence of exact `mcp__claude_ai_Atlassian_Rovo__*` phrases assumes existnce of exact mcp tool.
-Instead phrase agnostically then offer exact tool name as an example if available but note that exact tool name may be different on other platforms.
--->
-- **Resolve `cloudId`** via `mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources`. If exactly one site is accessible, use it; otherwise prompt the user to choose. (If the user supplied a site URL, its hostname may be passed directly per the tool's guidance.)
+- **Resolve `cloudId`** — use the MCP's list-accessible-sites tool to enumerate connected Atlassian sites. (On Claude Code with Atlassian Rovo MCP: `mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources`; exact name may differ on other platforms.) If exactly one site is accessible, use it; otherwise prompt the user to choose. (If the user supplied a site URL, its hostname may be passed directly per the tool's guidance.)
 - **If `$JIRA` = `create`:**
-  - Resolve `projectKey` — offer choices via `mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects` and confirm.
-  - Resolve `issueTypeName` — offer valid types via `mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata`; default to `Task`.
+  - Resolve `projectKey` — use the MCP's list-projects tool to offer choices and confirm. (Atlassian Rovo example: `mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects`.)
+  - Resolve `issueTypeName` — use the MCP's issue-type-metadata tool to offer valid types; default to `Task`. (Atlassian Rovo example: `mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata`.)
   - Resolve `summary` — propose a concise summary line and confirm, or prompt. The summary is **not** determinable from the ticket body, so it is never silently guessed.
-  - Call `mcp__claude_ai_Atlassian_Rovo__createJiraIssue` with `cloudId`, `projectKey`, `issueTypeName`, `summary`, `description` = the full content of `$WRITTEN_TICKET`, and `contentFormat: "markdown"`.
+  - Call the MCP's create-issue tool with `cloudId`, `projectKey`, `issueTypeName`, `summary`, `description` = the full content of `$WRITTEN_TICKET`, and `contentFormat: "markdown"`. (Atlassian Rovo example: `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`.)
 - **If `$JIRA` = `update`:**
   - Prompt for the target `issueIdOrKey` (e.g. `PROJ-123`).
-  - Call `mcp__claude_ai_Atlassian_Rovo__editJiraIssue` with `cloudId`, `issueIdOrKey`, `fields: { description: <full content of $WRITTEN_TICKET> }`, and `contentFormat: "markdown"`.
+  - Call the MCP's edit-issue tool with `cloudId`, `issueIdOrKey`, `fields: { description: <full content of $WRITTEN_TICKET> }`, and `contentFormat: "markdown"`. (Atlassian Rovo example: `mcp__claude_ai_Atlassian_Rovo__editJiraIssue`.)
 - **On success:** set `$JIRA` = `pushed` and report the resulting issue **key and browse URL** to the user.
 - **On failure** (auth, permission, invalid field, etc.): surface the error verbatim, then **fall through to Step 5** so the user still gets the copy-paste ticket — the skill never dead-ends.
 
