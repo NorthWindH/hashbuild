@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — write-op permission prompts are intentional; no change needed |
-| STEP-1-REVIEW-2 |            |
+| STEP-1-REVIEW-2 | ✅ Addressed — added review loop to Step 2; loops until user confirms ticket |
 | STEP-1-REVIEW-3 |            |
 | STEP-1-REVIEW-4 |            |
 
@@ -28,6 +28,8 @@
 - **file(s):** `skills/hb-ticket-discuss.md` (Step 2)
 - Step 2 currently moves on to push after the first ticket interpretation. Instead it should loop — show the generated ticket and ask if the user is happy; if not, accept corrections and re-interpret before proceeding to Step 3.
 - **source:** `TODO REVIEW` in commit `db456e9` — delete comment from source file after addressing
+
+**Resolution:** Added a "Review loop" block at the end of Step 2. After the subflow writes the ticket, the skill now: (1) displays the ticket in a fenced block, (2) asks the user to confirm or describe changes, (3) if changes requested, re-runs the Transform (C) and Write (D) sections with the corrections incorporated, then loops back to display. Breaks on affirmation.
 
 ---
 

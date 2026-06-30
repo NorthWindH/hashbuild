@@ -50,7 +50,12 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
   The subflow writes `ticket.md` to `/tmp/ticket.md`.
 - Set `$WRITTEN_TICKET` = `/tmp/ticket.md`.
 
-<!-- TODO REVIEW step 2 should be a loop until user is happy with the ticket; should not move on to push after first interpretation -->
+**Review loop** — repeat until the user is satisfied:
+
+1. Read `$WRITTEN_TICKET` and display its full content inside a fenced block.
+2. Ask the user: "Does this ticket look right? Reply **yes** to continue, or describe any changes."
+3. If the user replies **yes** (or an equivalent affirmation): break — proceed to Step 3.
+4. Otherwise: treat the reply as corrections. Re-run only Sections C (Transform) and D (Write) of the subflow, incorporating the user's feedback into the derived content. Then return to step 1 of this loop.
 
 ### 3. Detect Jira MCP & offer to push
 
