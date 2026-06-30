@@ -52,8 +52,7 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 
 **Review loop** — repeat until the user is satisfied:
 
-<!-- TODO REVIEW display ticket formatted, not a fenced block -->
-1. Read `$WRITTEN_TICKET` and display its full content inside a fenced block.
+1. Read `$WRITTEN_TICKET` and display its full content as formatted markdown (not a fenced block).
 2. Ask the user: "Does this ticket look right? Reply **yes** to continue, or describe any changes."
 3. If the user replies **yes** (or an equivalent affirmation): break — proceed to Step 3.
 4. Otherwise: treat the reply as corrections. Re-run only Sections C (Transform) and D (Write) of the subflow, incorporating the user's feedback into the derived content. Then return to step 1 of this loop.

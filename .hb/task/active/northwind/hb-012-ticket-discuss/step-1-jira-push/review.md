@@ -8,7 +8,7 @@
 | STEP-1-REVIEW-2 | ✅ Addressed — added review loop to Step 2; loops until user confirms ticket |
 | STEP-1-REVIEW-3 | ✅ Addressed — rewrote Step 3 detect bullet; capability-first, Rovo as example |
 | STEP-1-REVIEW-4 | ✅ Addressed — Step 4 tool calls rewritten to semantic descriptions + Rovo examples |
-| STEP-1-REVIEW-5 |            |
+| STEP-1-REVIEW-5 | ✅ Addressed — review loop now displays ticket as formatted markdown |
 
 ---
 
@@ -59,6 +59,8 @@
 - **file(s):** `skills/hb-ticket-discuss.md` (Step 2 — Review loop, step 1)
 - The review loop currently instructs the agent to display the ticket inside a fenced code block. Ticket content is markdown — it should be displayed formatted (rendered), not as raw text in a fenced block.
 - **source:** `TODO REVIEW` in commit `438e0c3` — delete comment from source file after addressing
+
+**Resolution:** Updated review loop step 1 to say "display its full content as formatted markdown (not a fenced block)." The TODO REVIEW comment has been deleted from the source file.
 
 ---
 
