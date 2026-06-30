@@ -178,7 +178,9 @@ One changed unit: the skill file.
 **Step 3 (modified) — Detect Jira MCP & collect NL description.** Contract:
 - Detection logic (by capability, Rovo as example, graceful absent-path) — **unchanged**.
 - If unavailable: `$JIRA = unavailable`, skip to Step 6. **Unchanged.**
-- If available: ask the user to describe the Jira target in natural language. Examples:
+- If available: ask the user to describe the Jira target in natural language, and tell
+  them the resolved details will be shown for confirmation before anything is created or
+  updated. Examples to include in the prompt:
   "create a Task in the MOBILE project for the auth refactor", "update MOBILE-412",
   "update the login epic in BACKEND". "no" remains valid → `$JIRA = declined`, skip to
   Step 6. Otherwise store description as `$NL_DESC` and continue to Step 4.
