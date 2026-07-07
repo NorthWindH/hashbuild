@@ -2,7 +2,7 @@
   "name": "northwind/hb-013-randomize-temp-ticket-path",
   "author": "northwind",
   "task_id": "hb-013",
-  "task_extra": "-randomize-temp-ticket-path",
+  "task_extra": "randomize-temp-ticket-path",
   "created_at": "2026-07-07T20:04:21.469358+00:00",
   "next_step": 0,
   "ticket_written_at": "2026-07-07T20:04:21.470069+00:00"
