@@ -4,7 +4,7 @@ import argparse
 import typing
 from pathlib import Path
 
-from .common import exists_or_do, path_hb, path_hb_git_keep, progress, report_paths
+from .common import ensure_gitignore_entry, exists_or_do, path_hb, path_hb_git_keep, progress, report_paths
 
 
 def cmd_init(args: argparse.Namespace) -> None:
@@ -12,6 +12,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     paths = list[Path]()
     paths.append(exists_or_do(path_hb(), lambda p: p.mkdir(parents=True, exist_ok=True)))
     paths.append(exists_or_do(path_hb_git_keep(), lambda p: p.touch(exist_ok=True)))
+    ensure_gitignore_entry(".hb/state.json")
 
     progress("init done; created hashbuild (hb) framework directory")
     report_paths(paths)

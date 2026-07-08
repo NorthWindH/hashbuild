@@ -106,6 +106,28 @@ def idea_set_content(cwd: Path, idea_ref: str, new_content: str, *, ok: bool = T
     return run(["idea", "set-content", idea_ref, new_content], cwd, ok=ok)
 
 
+def state_record(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    args = ["state", "record"]
+    if skill := kwargs.get("skill"):
+        args += ["--skill", skill]
+    if outcome := kwargs.get("outcome"):
+        args += ["--outcome", outcome]
+    if timestamp := kwargs.get("timestamp"):
+        args += ["--timestamp", timestamp]
+    if task := kwargs.get("task"):
+        args += ["--task", task]
+    if step := kwargs.get("step"):
+        args += ["--step", step]
+    return run(args, cwd, ok=kwargs.get("ok", True))
+
+
+def state_show(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    args = ["state", "show"]
+    if fmt := kwargs.get("format"):
+        args += ["--format", fmt]
+    return run(args, cwd, ok=kwargs.get("ok", True))
+
+
 def hb(cwd: Path) -> Path:
     return cwd / ".hb"
 

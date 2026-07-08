@@ -76,6 +76,33 @@ def path_step_ticket(step_path: Path) -> Path:
     return step_path / "ticket.md"
 
 
+def path_project_gitignore() -> Path:
+    return Path.cwd() / ".gitignore"
+
+
+def path_hb_state() -> Path:
+    return path_hb() / "state.json"
+
+
+def ensure_gitignore_entry(entry: str) -> None:
+    """Idempotently append `entry` as its own line to the project .gitignore.
+
+    Creates the file if absent. No-ops if a line matching `entry` verbatim
+    already exists (exact line match, not substring).
+    """
+    p = path_project_gitignore()
+    if p.exists():
+        text = p.read_text()
+        if entry in text.splitlines():
+            progress(f"{entry} already present in {p.absolute()}")
+            return
+        if text and not text.endswith("\n"):
+            text += "\n"
+        p.write_text(text + entry + "\n")
+    else:
+        p.write_text(entry + "\n")
+
+
 def report_paths(paths: Iterable[Path]) -> None:
     print("=== affected paths: ===")
     for p in paths:
