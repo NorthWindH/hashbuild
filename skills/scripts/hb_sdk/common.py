@@ -84,6 +84,9 @@ def path_hb_state() -> Path:
     return path_hb() / "state.json"
 
 
+# TODO REVIEW hb-014-0-REVIEW-1 ensure_gitignore_entry should not receive an argument.
+# it should already know the exact correct entry to ignore.
+# entry should match only at repo root
 def ensure_gitignore_entry(entry: str) -> None:
     """Idempotently append `entry` as its own line to the project .gitignore.
 
