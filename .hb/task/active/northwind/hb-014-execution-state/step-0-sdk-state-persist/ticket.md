@@ -25,13 +25,14 @@ Add a `hb-sdk state` command group that can record and read a last-executed-acti
 
 ## B. Git exclusion
 
-5. `hb-sdk init` idempotently ensures `.hb/state.json` is listed in the project's `.gitignore` (creating `.gitignore` if absent, appending the entry only if not already present).
-6. Running `hb-sdk init` twice in a row does not duplicate the `.gitignore` entry.
-7. No existing `hb-*` skill or `hb-sdk commit` staging path stages or commits `.hb/state.json` (verify `hb_sdk/commit.py`'s staging logic does not pick it up, e.g. by relying on the `.gitignore` entry).
+5. `.gitignore` is only ever updated through `hb-sdk` — not by ad-hoc shell/file edits in a skill's Markdown steps. Extend `hb-sdk` with a reusable "ensure gitignore entry" primitive (e.g. a `common.py` function such as `ensure_gitignore_entry(entry: str)`, used by `cmd_init` and available to future commands) that idempotently appends an entry to `.gitignore` — creating the file if absent, and skipping the append if the entry already exists verbatim.
+6. `hb-sdk init` calls this primitive to ensure `.hb/state.json` is listed in the project's `.gitignore`.
+7. Running `hb-sdk init` twice in a row does not duplicate the `.gitignore` entry.
+8. No existing `hb-*` skill or `hb-sdk commit` staging path stages or commits `.hb/state.json` (verify `hb_sdk/commit.py`'s staging logic does not pick it up, e.g. by relying on the `.gitignore` entry).
 
 ## C. Tests / verification
 
-8. Manual verification: after `hb-sdk init` in a fresh temp dir, `.gitignore` contains a `.hb/state.json` (or equivalent `.hb/*.json`-scoped, but not overly broad) entry; `hb-sdk state record ...` followed by `hb-sdk state show` round-trips the same values.
+9. Manual verification: after `hb-sdk init` in a fresh temp dir, `.gitignore` contains a `.hb/state.json` (or equivalent `.hb/*.json`-scoped, but not overly broad) entry; `hb-sdk state record ...` followed by `hb-sdk state show` round-trips the same values.
 
 ---
 
