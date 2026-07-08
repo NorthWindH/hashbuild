@@ -84,15 +84,15 @@ def path_hb_state() -> Path:
     return path_hb() / "state.json"
 
 
-# TODO REVIEW hb-014-0-REVIEW-1 ensure_gitignore_entry should not receive an argument.
-# it should already know the exact correct entry to ignore.
-# entry should match only at repo root
-def ensure_gitignore_entry(entry: str) -> None:
-    """Idempotently append `entry` as its own line to the project .gitignore.
+def ensure_gitignore_entry() -> None:
+    """Idempotently append the hb state file's path to the project .gitignore.
 
-    Creates the file if absent. No-ops if a line matching `entry` verbatim
+    The entry is anchored to the repo root (leading `/`) so it matches only
+    the top-level `.hb/state.json`, not any same-named file in a subdirectory.
+    Creates the file if absent. No-ops if a line matching the entry verbatim
     already exists (exact line match, not substring).
     """
+    entry = "/" + str(path_hb_state().relative_to(Path.cwd()))
     p = path_project_gitignore()
     if p.exists():
         text = p.read_text()

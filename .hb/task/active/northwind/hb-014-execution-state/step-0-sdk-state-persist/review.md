@@ -4,17 +4,19 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-0-REVIEW-1 |            |
+| STEP-0-REVIEW-1 | ✅ Addressed — `ensure_gitignore_entry()` now takes no args and self-derives a repo-root-anchored `/.hb/state.json` entry |
 
 ---
 
 ## Notes
 
-### STEP-0-REVIEW-1: ensure_gitignore_entry should not take an argument and should anchor its entry to the repo root
+### STEP-0-REVIEW-1: ensure_gitignore_entry should not take an argument and should anchor its entry to the repo root — ADDRESSED
 
 - **file(s):** `skills/scripts/hb_sdk/common.py` (`ensure_gitignore_entry`), `skills/scripts/hb_sdk/init_cmd.py` (`cmd_init` call site)
 - `ensure_gitignore_entry` should not receive an argument — it should already know the exact correct entry to ignore. The entry should also match only at repo root.
 - **source:** `TODO REVIEW` in commit `f958f2f9bb381c57534b8e84097f1f5ce9d1a6a2` — delete comment from source file after addressing
+
+**Resolution:** Changed `ensure_gitignore_entry()` in `common.py` to take no arguments — it now derives the entry itself from `path_hb_state().relative_to(Path.cwd())` (the single source of truth for the hb state file location) and prefixes it with `/` to anchor the pattern explicitly to the repo root, so it can only match `.hb/state.json` at the top level and not a same-named file nested in a subdirectory. Updated the sole call site in `init_cmd.py::cmd_init` from `ensure_gitignore_entry(".hb/state.json")` to `ensure_gitignore_entry()`, and deleted both `TODO REVIEW` comments. Updated the three assertions in `tests/skills/scripts/hb_sdk/test_hb_sdk_init.py` that checked for the literal `.hb/state.json` gitignore line to expect the anchored `/.hb/state.json` form. Verified with the full test suite: `uv run pytest tests/` → 182 passed (was 182 passed before the change too, confirming no regressions).
 
 ---
 

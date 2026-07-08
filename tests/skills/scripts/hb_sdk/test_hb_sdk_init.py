@@ -24,14 +24,14 @@ def test_init_fails_without_hb(tmp_path: Path) -> None:
 
 def test_init_adds_state_json_to_gitignore(tmp_path: Path) -> None:
     init(tmp_path)
-    assert ".hb/state.json" in (tmp_path / ".gitignore").read_text().splitlines()
+    assert "/.hb/state.json" in (tmp_path / ".gitignore").read_text().splitlines()
 
 
 def test_init_twice_does_not_duplicate_gitignore_entry(tmp_path: Path) -> None:
     init(tmp_path)
     init(tmp_path)
     lines = (tmp_path / ".gitignore").read_text().splitlines()
-    assert lines.count(".hb/state.json") == 1
+    assert lines.count("/.hb/state.json") == 1
 
 
 def test_init_preserves_existing_gitignore_content(tmp_path: Path) -> None:
@@ -39,4 +39,4 @@ def test_init_preserves_existing_gitignore_content(tmp_path: Path) -> None:
     init(tmp_path)
     lines = (tmp_path / ".gitignore").read_text().splitlines()
     assert "node_modules" in lines
-    assert ".hb/state.json" in lines
+    assert "/.hb/state.json" in lines
