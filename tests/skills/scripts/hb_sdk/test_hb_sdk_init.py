@@ -4,6 +4,10 @@ from pathlib import Path
 
 from helpers import init, run
 
+from .test_hb_sdk_state import STATE_FILE_HB_PATH
+
+STATE_FILE_IGNORE_ENTRY = str("/" / STATE_FILE_HB_PATH)
+
 
 def test_init_creates_hb_dir(tmp_path: Path) -> None:
     init(tmp_path)
@@ -24,14 +28,14 @@ def test_init_fails_without_hb(tmp_path: Path) -> None:
 
 def test_init_adds_state_json_to_gitignore(tmp_path: Path) -> None:
     init(tmp_path)
-    assert "/.hb/state.json" in (tmp_path / ".gitignore").read_text().splitlines()
+    assert STATE_FILE_IGNORE_ENTRY in (tmp_path / ".gitignore").read_text().splitlines()
 
 
 def test_init_twice_does_not_duplicate_gitignore_entry(tmp_path: Path) -> None:
     init(tmp_path)
     init(tmp_path)
     lines = (tmp_path / ".gitignore").read_text().splitlines()
-    assert lines.count("/.hb/state.json") == 1
+    assert lines.count(STATE_FILE_IGNORE_ENTRY) == 1
 
 
 def test_init_preserves_existing_gitignore_content(tmp_path: Path) -> None:
@@ -39,4 +43,4 @@ def test_init_preserves_existing_gitignore_content(tmp_path: Path) -> None:
     init(tmp_path)
     lines = (tmp_path / ".gitignore").read_text().splitlines()
     assert "node_modules" in lines
-    assert "/.hb/state.json" in lines
+    assert STATE_FILE_IGNORE_ENTRY in lines

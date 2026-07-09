@@ -8,11 +8,14 @@ from helpers import init, state_record, state_show
 
 # ── state record — happy path ───────────────────────────────────────────────
 
+STATE_FILE_NAME = ".state.ignore.json"
+STATE_FILE_HB_PATH = Path(".hb") / STATE_FILE_NAME
+
 
 def test_state_record_writes_json_file(tmp_path: Path) -> None:
     init(tmp_path)
     state_record(tmp_path, skill="hb-task-create", outcome="success", timestamp="2026-01-01T00:00:00Z")
-    data = json.loads((tmp_path / ".hb" / "state.json").read_text())
+    data = json.loads((tmp_path / STATE_FILE_HB_PATH).read_text())
     assert data == {
         "skill": "hb-task-create",
         "outcome": "success",
@@ -32,7 +35,7 @@ def test_state_record_with_task_and_step(tmp_path: Path) -> None:
         task="northwind/hb-014",
         step="0",
     )
-    data = json.loads((tmp_path / ".hb" / "state.json").read_text())
+    data = json.loads((tmp_path / STATE_FILE_HB_PATH).read_text())
     assert data["task"] == "northwind/hb-014"
     assert data["step"] == "0"
 
@@ -44,7 +47,7 @@ def test_state_record_overwrites_prior_record(tmp_path: Path) -> None:
     init(tmp_path)
     state_record(tmp_path, skill="skill-a", outcome="success", timestamp="2026-01-01T00:00:00Z")
     state_record(tmp_path, skill="skill-b", outcome="failure", timestamp="2026-01-02T00:00:00Z")
-    data = json.loads((tmp_path / ".hb" / "state.json").read_text())
+    data = json.loads((tmp_path / STATE_FILE_HB_PATH).read_text())
     assert data["skill"] == "skill-b"
     assert data["outcome"] == "failure"
 
@@ -137,4 +140,4 @@ def test_state_json_not_reported_by_git_status(tmp_path: Path) -> None:
     result = subprocess.run(
         ["git", "status", "--short"], cwd=tmp_path, capture_output=True, text=True, check=True
     )
-    assert "state.json" not in result.stdout
+    assert STATE_FILE_NAME not in result.stdout

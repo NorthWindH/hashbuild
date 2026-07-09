@@ -9,7 +9,7 @@ from .common import path_hb_asserted, path_hb_state, progress
 
 
 def write_state(record: dict[str, str | None]) -> Path:
-    """Overwrite .hb/state.json with `record`. Returns the path written."""
+    """Overwrite state file with `record`. Returns the path written."""
     path_hb_asserted()
     p = path_hb_state()
     progress(f"writing state to {p.absolute()} ...")
@@ -18,7 +18,7 @@ def write_state(record: dict[str, str | None]) -> Path:
 
 
 def read_state() -> dict[str, str | None] | None:
-    """Return the current record, or None if .hb/state.json does not exist."""
+    """Return the current record, or None if state file does not exist."""
     path_hb_asserted()
     p = path_hb_state()
     if not p.exists():

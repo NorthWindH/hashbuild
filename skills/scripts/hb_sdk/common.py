@@ -81,14 +81,14 @@ def path_project_gitignore() -> Path:
 
 
 def path_hb_state() -> Path:
-    return path_hb() / "state.json"
+    return path_hb() / ".state.ignore.json"
 
 
 def ensure_gitignore_entry() -> None:
     """Idempotently append the hb state file's path to the project .gitignore.
 
     The entry is anchored to the repo root (leading `/`) so it matches only
-    the top-level `.hb/state.json`, not any same-named file in a subdirectory.
+    the top-level state file, not any same-named file in a subdirectory.
     Creates the file if absent. No-ops if a line matching the entry verbatim
     already exists (exact line match, not substring).
     """
