@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-1-REVIEW-1 | ✅ Assessed — audited all 8 call sites; all already pass full `author/task_id` |
-| STEP-1-REVIEW-2 |            |
+| STEP-1-REVIEW-2 | ✅ Addressed — `ensure_gitignore_entry()` now returns the `.gitignore` path, reported via `paths` |
 
 ---
 
@@ -33,6 +33,10 @@ Ensure all skills are passing the required `author/task_id` when passing `--task
 - **file(s):** `skills/scripts/hb_sdk/init_cmd.py` (`cmd_init`, `ensure_gitignore_entry`)
 - `ensure_gitignore_entry()` may add an entry to `.gitignore` but its result is not appended to the `paths` list, so `cmd_init` never reports that the gitignore file was updated.
 - **source:** `TODO REVIEW` in commit `2343e6729e4166328e21b5dc68b44f8b47a06b8d` — delete comment from source file after addressing
+
+**Resolution:** Changed `ensure_gitignore_entry()` in `skills/scripts/hb_sdk/common.py` to return the `.gitignore` `Path` (both when it writes a new entry and when it no-ops because the entry already exists), and updated `cmd_init` in `init_cmd.py` to `paths.append(ensure_gitignore_entry())`. Verified manually with a scratch `hb-sdk init` run — `.gitignore` now appears under `=== affected paths: ===`. Deleted the `TODO REVIEW` comment.
+
+**Disposition: Addressed**
 
 ---
 

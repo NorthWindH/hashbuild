@@ -84,13 +84,14 @@ def path_hb_state() -> Path:
     return path_hb() / ".state.ignore.json"
 
 
-def ensure_gitignore_entry() -> None:
+def ensure_gitignore_entry() -> Path:
     """Idempotently append the hb state file's path to the project .gitignore.
 
     The entry is anchored to the repo root (leading `/`) so it matches only
     the top-level state file, not any same-named file in a subdirectory.
     Creates the file if absent. No-ops if a line matching the entry verbatim
-    already exists (exact line match, not substring).
+    already exists (exact line match, not substring). Returns the .gitignore
+    path either way, so callers can report it as an affected path.
     """
     entry = "/" + str(path_hb_state().relative_to(Path.cwd()))
     p = path_project_gitignore()
@@ -98,12 +99,13 @@ def ensure_gitignore_entry() -> None:
         text = p.read_text()
         if entry in text.splitlines():
             progress(f"{entry} already present in {p.absolute()}")
-            return
+            return p
         if text and not text.endswith("\n"):
             text += "\n"
         p.write_text(text + entry + "\n")
     else:
         p.write_text(entry + "\n")
+    return p
 
 
 def report_paths(paths: Iterable[Path]) -> None:
