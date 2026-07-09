@@ -13,6 +13,7 @@ def cmd_init(args: argparse.Namespace) -> None:
     paths.append(exists_or_do(path_hb(), lambda p: p.mkdir(parents=True, exist_ok=True)))
     paths.append(exists_or_do(path_hb_git_keep(), lambda p: p.touch(exist_ok=True)))
 
+    # TODO REVIEW when gitignore gets updated, it should be added to paths list so the updated path can be reported
     ensure_gitignore_entry()
 
     progress("init done; created hashbuild (hb) framework directory")
