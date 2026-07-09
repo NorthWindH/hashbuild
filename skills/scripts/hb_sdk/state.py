@@ -28,7 +28,7 @@ def read_state() -> dict[str, str | None] | None:
 
 
 def cmd_state_record(args: argparse.Namespace) -> None:
-    record = {
+    record: dict[str, Any] = {
         "skill": args.skill,
         "outcome": args.outcome,
         "timestamp": datetime.now().astimezone().isoformat(),
