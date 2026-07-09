@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-1-REVIEW-1 |            |
+| STEP-1-REVIEW-1 | ✅ Assessed — audited all 8 call sites; all already pass full `author/task_id` |
 | STEP-1-REVIEW-2 |            |
 
 ---
@@ -16,6 +16,15 @@
 Looking at updated skills, unclear if agent will pass just task name or the required `author/task_id` to hb-sdk.
 
 Ensure all skills are passing the required `author/task_id` when passing `--task` to `hb-sdk state record`
+
+**Resolution:** Audited all 8 `state record` call sites across the skills that wire it in:
+
+- `hb-task-create.md`, `hb-task-archive.md`, `hb-task-unarchive.md`, `hb-task-step-add.md` — each passes `--task "<name>"`, where each skill's own Step docs define `<name>` explicitly as "the fully-qualified name exactly as received (e.g. `author/abc-123-some-stuff`)".
+- `hb-task-step-plan.md`, `hb-task-step-execute.md`, `hb-task-step-review-init.md`, `hb-task-step-review-address.md` — each passes `--task "$TASK_REF"`, where `$TASK_REF` is defined as `step_ref` with the trailing `/<step_n>` segment removed, and `step_ref` is documented as `author/task_id/step_n` — so `$TASK_REF` is `author/task_id`, again fully-qualified.
+
+`hb-sdk state record` itself (`skills/scripts/hb_sdk/state.py::cmd_state_record`) stores `--task` verbatim with no format validation, so correctness depends entirely on the calling skills — all 8 already pass the full `author/task_id`. No bug found; no code changes needed.
+
+**Disposition: Assessed**
 
 ---
 
