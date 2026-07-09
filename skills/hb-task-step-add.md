@@ -67,7 +67,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 - include `--ticket-overwrite` only when `--ticket-overwrite` was provided
 - `<name>` is the task name exactly as received; flavor is optional (e.g. `author/abc-123` or `author/abc-123-some-stuff`)
 - the SDK reads `next_step` from `.hb-task.json`, creates the folder, then increments `next_step`
-- capture the paths reported through stdout for use in the next step
+- capture the paths reported through stdout for use in the next step; capture the printed step folder's absolute path as `$STEP_PATH`
 - if an error occurs, present error message on stderr verbatim
 
 ### 4. Commit
@@ -84,6 +84,18 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 **All other modes (skeleton-only or `--ticket` supplied):**
 
 > Step added. `/clear` this conversation, then: if the step ticket is ready, run `/hb-task-step-plan <step_ref>` to create the implementation plan. If the ticket still needs its acceptance criteria filled in, edit `ticket.md` in the step folder first.
+
+### 6. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <name>/<basename of $STEP_PATH>
+```
+
+- captures the printed step number as `$N`
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-add --outcome success --task "<name>" --step "$N"
+```
 
 ## Output
 

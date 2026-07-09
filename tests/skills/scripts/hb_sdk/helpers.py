@@ -112,8 +112,6 @@ def state_record(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
         args += ["--skill", skill]
     if outcome := kwargs.get("outcome"):
         args += ["--outcome", outcome]
-    if timestamp := kwargs.get("timestamp"):
-        args += ["--timestamp", timestamp]
     if task := kwargs.get("task"):
         args += ["--task", task]
     if step := kwargs.get("step"):

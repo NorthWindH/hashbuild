@@ -53,6 +53,14 @@ Also show the user:
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/review.md`; pass `--tag step-review`
 
+### 7. Record execution state
+
+- set `$TASK_REF` = `step_ref` with the trailing `/<step_n>` segment removed
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-review-init --outcome success --task "$TASK_REF" --step "$N"
+```
+
 ## Output
 
 Report the path to the created `review.md`. If any command fails, surface the error verbatim to the caller.

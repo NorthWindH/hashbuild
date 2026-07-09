@@ -39,10 +39,23 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 - prints the absolute path of the step folder to stdout; capture it as `$STEP_PATH`
 - if an error occurs, surface it verbatim and stop
 
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
+```
+
+- captures the numeric step number as `$N`
+- if an error occurs, surface it verbatim and stop
+
+- set `$TASK_REF` = `step_ref` with the trailing `/<step_n>` segment removed
+
 ### 3. Read plan
 
 - read `$STEP_PATH/plan.md`
-- if the file does not exist, abort with: `error: plan.md not found in $STEP_PATH — run /hb-task-step-plan first`
+- if the file does not exist:
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-execute --outcome failure --task "$TASK_REF" --step "$N"
+  ```
+  then abort with: `error: plan.md not found in $STEP_PATH — run /hb-task-step-plan first`
 
 ### 4. Execute the plan
 
@@ -68,6 +81,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 Tell the user:
 
 > Step executed. `/clear` this conversation, then: to start a code review, either run `/hb-task-step-review-address <step_ref>` directly (if you added `TODO REVIEW` comments, committed or uncommitted), or run `/hb-task-step-review-init <step_ref>` to create `review.md` and fill in concerns manually. To move to the next step, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+
+### 8. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-execute --outcome success --task "$TASK_REF" --step "$N"
+```
 
 ## Output
 

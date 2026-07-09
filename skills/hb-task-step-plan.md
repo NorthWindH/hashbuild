@@ -39,6 +39,15 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 - prints the absolute path of the step folder to stdout; capture it as `$STEP_PATH`
 - if an error occurs, surface it verbatim and stop
 
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
+```
+
+- captures the numeric step number as `$N`
+- if an error occurs, surface it verbatim and stop
+
+- set `$TASK_REF` = `step_ref` with the trailing `/<step_n>` segment removed
+
 ### 3. Read inputs
 
 - read `$STEP_PATH/ticket.md` — the acceptance criteria driving this plan
@@ -58,6 +67,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step path <step_ref>
 Tell the user:
 
 > Plan ready. `/clear` this conversation, then run `/hb-task-step-execute <step_ref>` to carry out the plan.
+
+### 7. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-plan --outcome success --task "$TASK_REF" --step "$N"
+```
 
 ## Output
 

@@ -2,6 +2,7 @@
 
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -30,7 +31,7 @@ def cmd_state_record(args: argparse.Namespace) -> None:
     record = {
         "skill": args.skill,
         "outcome": args.outcome,
-        "timestamp": args.timestamp,
+        "timestamp": datetime.now().astimezone().isoformat(),
         "task": args.task,
         "step": args.step,
     }
@@ -63,7 +64,6 @@ def def_cli_state(subs: Any) -> None:
     p_record = state_subs.add_parser("record", help="Record last-executed-action state")
     p_record.add_argument("--skill", required=True, metavar="<name>")
     p_record.add_argument("--outcome", required=True, metavar="<outcome>")
-    p_record.add_argument("--timestamp", required=True, metavar="<ts>")
     p_record.add_argument("--task", metavar="<ref>")
     p_record.add_argument("--step", metavar="<ref>")
     p_record.set_defaults(func=cmd_state_record)

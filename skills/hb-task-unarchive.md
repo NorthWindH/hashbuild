@@ -52,6 +52,12 @@ Tell the user:
 
 > Task restored. `/clear` this conversation, then run `/hb-status` to see active tasks or `/hb-task-step-add` to continue working on it.
 
+### 5. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-unarchive --outcome success --task "<name>"
+```
+
 ## Output
 
 Report the restored task path. If any command fails, surface the error verbatim to the caller.

@@ -56,6 +56,12 @@ Tell the user:
 
 > Task archived. `/clear` this conversation, then run `/hb-status` to see remaining active tasks and decide what to work on next, or `/hb-task-create` to start a new task.
 
+### 5. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-archive --outcome success --task "<name>"
+```
+
 ## Output
 
 Report the archived task path. If any command fails, surface the error verbatim to the caller.

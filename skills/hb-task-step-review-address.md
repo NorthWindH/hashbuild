@@ -50,6 +50,8 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 - captures the numeric step number as `$N`
 - if an error occurs, surface it verbatim and stop
 
+- set `$TASK_REF` = `step_ref` with the trailing `/<step_n>` segment removed
+
 ### 3. Create or read review.md
 
 If `$STEP_PATH/review.md` already exists: read it and continue.
@@ -124,7 +126,13 @@ Skip this step entirely if `--no-todo-scan` was passed.
 
 6. If any items were appended, write the updated `review.md`.
 
-7. Check whether `review.md` is still in its default state — defined as: exactly one `### ` heading in `## Notes` with no title text and no body content (the untouched placeholder from `hb-task-step-review-init`). If it is, notify the user and stop:
+7. Check whether `review.md` is still in its default state — defined as: exactly one `### ` heading in `## Notes` with no title text and no body content (the untouched placeholder from `hb-task-step-review-init`). If it is:
+
+   ```bash
+   ${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-review-address --outcome failure --task "$TASK_REF" --step "$N"
+   ```
+
+   then notify the user and stop:
 
    > `review.md` has no review concerns yet. Fill in review items under `## Notes`, or add `TODO REVIEW` comments to the codebase (committed or uncommitted) and re-run `/hb-task-step-review-address <step_ref>`.
 
@@ -141,7 +149,13 @@ A heading is a review item if it either:
 
 - assign the next available `M` value (monotonically increasing from 1, no duplicates across all items)
 - if the title text already starts with a partial ID or a number, use best judgement to infer the intended `M`; fall back to next-available when ambiguous
-- if an item is so ambiguous that no safe `M` can be assigned (e.g. two items with the same explicit number, or an ID that conflicts with a well-formed item), **STOP**: notify the user of the specific conflict and do not modify `review.md`; await user correction
+- if an item is so ambiguous that no safe `M` can be assigned (e.g. two items with the same explicit number, or an ID that conflicts with a well-formed item):
+
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-review-address --outcome failure --task "$TASK_REF" --step "$N"
+  ```
+
+  then **STOP**: notify the user of the specific conflict and do not modify `review.md`; await user correction
 
 Rewrite any headings that needed normalisation in `review.md`.
 
@@ -207,6 +221,12 @@ Repeat 9a–9e for the next unresolved item.
 Tell the user:
 
 > Review is iterative — you can add more concerns to `review.md` or add `TODO REVIEW` comments (committed or uncommitted) and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+
+### 11. Record execution state
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-review-address --outcome success --task "$TASK_REF" --step "$N"
+```
 
 ## Output
 
