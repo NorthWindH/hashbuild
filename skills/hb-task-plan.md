@@ -80,12 +80,31 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
   - `$FACTS` = the facts captured in Step 3 — drafted step tickets should reflect known facts without requiring them restated in `$PARENT_CRITERIA`
 - Follow [${CLAUDE_SKILL_DIR}/references/breakdown-subflow.md](references/breakdown-subflow.md) with the above.
 
-### 8. Report
+### 8. Update facts store
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- captures stdout as `$FACTS_AFTER` (may be empty)
+- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
+- using judgement, based on what gap analysis and breakdown revealed:
+  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
+  - add new facts discovered during breakdown only when likely to matter for future planning, execution, or review, weighed against the size guidance
+  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
+- if the composed content differs from `$FACTS_AFTER`:
+  1. ```bash
+     ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
+     ```
+  2. create a task-level commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including only `.hb/facts.md`, mode `task`, `--tag task-plan`
+- if the composed content is unchanged from `$FACTS_AFTER`, skip both the write and the commit — no-op
+
+### 9. Report
 
 - list all steps created with their paths and the gaps each one addresses
 - if any step failed, surface the error verbatim
 
-### 9. Prompt user
+### 10. Prompt user
 
 Tell the user:
 

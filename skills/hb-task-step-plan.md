@@ -68,17 +68,35 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
 - if `plan.md` already exists, update it to reflect the current ticket; preserve any sections that remain accurate
 - take `$FACTS` into account when drafting `plan.md` — if a fact is relevant to this step's ticket, reflect it in the plan without requiring it be restated in `ticket.md`
 
-### 6. Commit
+### 6. Update facts store
 
-- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md`; pass `--tag step-plan`
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
 
-### 7. Prompt user
+- captures stdout as `$FACTS_AFTER` (may be empty)
+- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
+- using judgement, based on what drafting this `plan.md` revealed:
+  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
+  - add new facts discovered while planning only when likely to matter for future planning, execution, or review, weighed against the size guidance
+  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
+- if the composed content differs from `$FACTS_AFTER`:
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
+  ```
+- if the composed content is unchanged from `$FACTS_AFTER`, skip the write — no-op
+
+### 7. Commit
+
+- create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md` and `.hb/facts.md` if it was changed in the previous step; pass `--tag step-plan`
+
+### 8. Prompt user
 
 Tell the user:
 
 > Plan ready. `/clear` this conversation, then run `/hb-task-step-execute <step_ref>` to carry out the plan.
 
-### 8. Record execution state
+### 9. Record execution state
 
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-plan --outcome success --task "$TASK_REF" --step "$N"
