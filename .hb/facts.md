@@ -25,3 +25,10 @@
   (Load action) reused only its Jira *update-path* resolution algorithm (explicit key →
   getJiraIssue; else JQL search → searchJiraIssuesUsingJql; ambiguous → numbered list,
   never auto-select) in adapted, read-only form — never its create path.
+- hb-ticket-discuss.md's `allowed-tools` must be checked against what its subflows
+  actually invoke before trimming for least-privilege: `Read` is needed because the
+  Load ticket action's file source (load-ticket-subflow.md §B) resolves an arbitrary
+  user-given path/glob, not just /tmp; `WebFetch` is needed because its web source
+  (§D) explicitly capability-checks for it by name. `Bash(find *)` was dropped in
+  hb-015/step-2 review (STEP-2-REVIEW-1) with no evidence any subflow uses it — revisit
+  if a future step adds shell-based file discovery.

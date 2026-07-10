@@ -16,7 +16,8 @@ allowed-tools: >
   Read(//private/tmp/*)
   Edit(//tmp/*)
   Edit(//private/tmp/*)
-  # TODO REVIEW dropped some read allowed-tools; do not need to give overly broad permissions; user can permit as required
+  Read
+  WebFetch
   mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources
   mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects
   mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata
