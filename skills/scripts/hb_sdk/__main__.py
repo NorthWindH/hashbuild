@@ -3,6 +3,7 @@
 import argparse
 
 from .commit import def_cli_commit
+from .facts import def_cli_facts
 from .idea import def_cli_idea
 from .init_cmd import def_cli_init
 from .state import def_cli_state
@@ -21,6 +22,7 @@ def main() -> None:
     def_cli_commit(subs)
     def_cli_idea(subs)
     def_cli_state(subs)
+    def_cli_facts(subs)
 
     args = parser.parse_args()
     args.func(args)

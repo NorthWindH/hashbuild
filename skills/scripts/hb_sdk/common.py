@@ -84,6 +84,10 @@ def path_hb_state() -> Path:
     return path_hb() / ".state.ignore.json"
 
 
+def path_hb_facts() -> Path:
+    return path_hb() / "facts.md"
+
+
 def ensure_gitignore_entry() -> Path:
     """Idempotently append the hb state file's path to the project .gitignore.
 

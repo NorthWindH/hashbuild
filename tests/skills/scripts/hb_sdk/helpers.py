@@ -126,6 +126,14 @@ def state_show(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
+def facts_write(cwd: Path, content: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["facts", "write", content], cwd, ok=kwargs.get("ok", True))
+
+
+def facts_read(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["facts", "read"], cwd, ok=kwargs.get("ok", True))
+
+
 def hb(cwd: Path) -> Path:
     return cwd / ".hb"
 
