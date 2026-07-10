@@ -35,9 +35,18 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize --format md
 ```
 
-- captures stdout and writes it directly to the user
 - if the command fails, surface the error verbatim and stop
+- captures stdout as $SUMMARY_MD
+- read $SUMMARY_MD and use judgement to add any natural language take aways or summary then store those as $ADDITIONS
 
-## Output
+### 3. Print
+- print out the following:
+  ```
+  <output_format>
+  $SUMMARY_MD
 
-The filled status report as markdown. No commits or file writes.
+  ---
+
+  $ADDITIONS
+  </output_format>
+  ```
