@@ -10,7 +10,10 @@
 
 ## Notes
 
-###
+### STEP-6-REVIEW-1: Give attention to user input or interruptions
+
+- Not seeing input provided by interrupting step planning be picked up for fact writing
+- Need to fix this
 
 ---
 
