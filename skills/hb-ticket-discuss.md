@@ -16,8 +16,14 @@ allowed-tools: >
   Read(//private/tmp/*)
   Edit(//tmp/*)
   Edit(//private/tmp/*)
+  # TODO REVIEW review starts here:
+  # These are overly broad permissions and they should be dropped.
+  # Agent harness should not be allowed to read or web fetch ANY resource.
+  # Any tool not listed here will simply be prompted upon attempt to use by agent / harness so dropping them here will NOT block actions in this skill.
+  # Drop these overly broad tools from this listing.
   Read
   WebFetch
+  # TODO REVIEW review ends here
   mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources
   mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects
   mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata
