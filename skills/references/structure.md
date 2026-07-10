@@ -2,6 +2,8 @@
 
 - all files in `.hb` at top-level in project directory
 - inside `.hb/`:
+  - `facts.md`: persistent, project-level facts store; created/maintained via
+    `hb-sdk facts write`
   - task folders in `task/`
   - inside `task/` folder:
     - active task folders in `active/`
@@ -26,6 +28,7 @@
 
 ```
 .hb/
+├── facts.md
 └── task/
     ├── active/
     │   └── hasan/
@@ -62,6 +65,7 @@ Mixed — some steps with `step_extra`, some without:
 
 ```
 .hb/
+├── facts.md
 └── task/
     ├── active/
     │   └── hasan/
@@ -84,6 +88,7 @@ Multi-author, multiple active tasks:
 
 ```
 .hb/
+├── facts.md
 └── task/
     ├── active/
     │   ├── hasan/
