@@ -48,27 +48,37 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 
 - set `$TASK_REF` = `step_ref` with the trailing `/<step_n>` segment removed
 
-### 3. Read inputs
+### 3. Read facts store
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- captures stdout as `$FACTS` (may be empty)
+- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+
+### 4. Read inputs
 
 - read `$STEP_PATH/ticket.md` — the acceptance criteria driving this plan
 - read `${CLAUDE_SKILL_DIR}/references/plan-template.md` — the structural template to follow
 
-### 4. Generate plan.md
+### 5. Generate plan.md
 
 - write `$STEP_PATH/plan.md` using the template structure, filled with content derived from `ticket.md`
 - if `plan.md` already exists, update it to reflect the current ticket; preserve any sections that remain accurate
+- take `$FACTS` into account when drafting `plan.md` — if a fact is relevant to this step's ticket, reflect it in the plan without requiring it be restated in `ticket.md`
 
-### 5. Commit
+### 6. Commit
 
 - create a step commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including `$STEP_PATH/plan.md`; pass `--tag step-plan`
 
-### 6. Prompt user
+### 7. Prompt user
 
 Tell the user:
 
 > Plan ready. `/clear` this conversation, then run `/hb-task-step-execute <step_ref>` to carry out the plan.
 
-### 7. Record execution state
+### 8. Record execution state
 
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/hb-sdk state record --skill hb-task-step-plan --outcome success --task "$TASK_REF" --step "$N"

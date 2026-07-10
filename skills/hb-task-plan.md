@@ -39,12 +39,21 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task path <name>
 - prints the absolute path of the task folder to stdout; capture as `$TASK_PATH`
 - if an error occurs, surface it verbatim and stop
 
-### 3. Load task-level ticket
+### 3. Read facts store
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- captures stdout as `$FACTS` (may be empty)
+- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+
+### 4. Load task-level ticket
 
 - read `$TASK_PATH/ticket.md`
 - if it does not exist, notify the user: "No task-level `ticket.md` found at `$TASK_PATH/ticket.md`. A task ticket is required to perform gap analysis." and stop
 
-### 4. Discover existing steps
+### 5. Discover existing steps
 
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
@@ -56,26 +65,27 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
   - attempt to read `<step_path>/ticket.md`
   - if absent, mark this step as **missing ticket**
 
-### 5. Report missing step tickets
+### 6. Report missing step tickets
 
 - if any steps are missing `ticket.md`, notify the user which steps have no ticket
 - those steps are excluded from gap analysis since their acceptance criteria are unknown
 
-### 6. Breakdown via shared subflow
+### 7. Breakdown via shared subflow
 
 - set the caller contract:
   - `$PARENT_LABEL` = `<name>` (the task name)
-  - `$PARENT_CRITERIA` = the task ticket's **Acceptance Criteria** section (from Step 3)
-  - `$CHILDREN` = each Step-4-discovered step that has a `ticket.md`, labeled by its step path, with its **Acceptance Criteria** section
+  - `$PARENT_CRITERIA` = the task ticket's **Acceptance Criteria** section (from Step 4)
+  - `$CHILDREN` = each Step-5-discovered step that has a `ticket.md`, labeled by its step path, with its **Acceptance Criteria** section
   - `$MATERIALIZE_CHILD` = "invoke `hb-task-step-add` with `<name>` as the task name, `--ticket <temp_ticket_path>` to seed the step from the drafted ticket, and `--flavor <slug>` when a concise slug can be derived from the gap being addressed; capture the printed step path"
+  - `$FACTS` = the facts captured in Step 3 — drafted step tickets should reflect known facts without requiring them restated in `$PARENT_CRITERIA`
 - Follow [${CLAUDE_SKILL_DIR}/references/breakdown-subflow.md](references/breakdown-subflow.md) with the above.
 
-### 7. Report
+### 8. Report
 
 - list all steps created with their paths and the gaps each one addresses
 - if any step failed, surface the error verbatim
 
-### 8. Prompt user
+### 9. Prompt user
 
 Tell the user:
 
