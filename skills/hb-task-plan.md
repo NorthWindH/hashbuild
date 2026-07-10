@@ -61,46 +61,21 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
 - if any steps are missing `ticket.md`, notify the user which steps have no ticket
 - those steps are excluded from gap analysis since their acceptance criteria are unknown
 
-### 6. Gap analysis
+### 6. Breakdown via shared subflow
 
-- extract the **Acceptance Criteria** section from the task-level `ticket.md`
-- for each step that has a `ticket.md`, extract its **Acceptance Criteria** section
-- identify task-level criteria not addressed by any existing step
-- present a gap report to the user:
-  - list each uncovered task-level criterion
-  - note which steps, if any, partially address it
+- set the caller contract:
+  - `$PARENT_LABEL` = `<name>` (the task name)
+  - `$PARENT_CRITERIA` = the task ticket's **Acceptance Criteria** section (from Step 3)
+  - `$CHILDREN` = each Step-4-discovered step that has a `ticket.md`, labeled by its step path, with its **Acceptance Criteria** section
+  - `$MATERIALIZE_CHILD` = "invoke `hb-task-step-add` with `<name>` as the task name, `--ticket <temp_ticket_path>` to seed the step from the drafted ticket, and `--flavor <slug>` when a concise slug can be derived from the gap being addressed; capture the printed step path"
+- Follow [${CLAUDE_SKILL_DIR}/references/breakdown-subflow.md](references/breakdown-subflow.md) with the above.
 
-### 7. Prompt user
-
-- if no gaps are found: notify the user "All task acceptance criteria appear covered by existing steps." and stop
-- otherwise present the gap list and ask: "Would you like to add steps to cover these gaps?"
-- if the user declines: ask "How would you like to proceed?" and await their direction; stop this flow
-
-### 8. Create gap-filling steps
-
-For each gap or related group of gaps (keep each step small to medium; target less than 300 estimated lines of changes per step — use the size of surrounding steps as a guide):
-
-1. **Draft ticket**: write a temporary ticket file using [${CLAUDE_SKILL_DIR}/references/ticket-template.md](references/ticket-template.md) as the structural template:
-   - **Background**: state which task-level criteria this step addresses and why
-   - **Acceptance Criteria**: concrete, checkable conditions that close the identified gap(s)
-   - **Out of scope**: criteria deferred to other steps or beyond this step's boundary
-   - write the file to a temp path (e.g. `/tmp/hb-task-plan-step-<n>.md`)
-
-2. **Clarify if needed**: if the gap is ambiguous or requires a design decision, prompt the user for clarification before finalising the ticket
-
-3. **Add step**: invoke the `hb-task-step-add` skill:
-   - pass `<name>` as the task name
-   - pass `--ticket <temp_ticket_path>` to seed the step from the drafted ticket
-   - pass `--flavor <slug>` when a concise slug can be derived from the gap being addressed
-
-4. Repeat for each remaining gap or group of gaps
-
-### 9. Report
+### 7. Report
 
 - list all steps created with their paths and the gaps each one addresses
 - if any step failed, surface the error verbatim
 
-### 10. Prompt user
+### 8. Prompt user
 
 Tell the user:
 

@@ -11,4 +11,5 @@
 | `${CLAUDE_SKILL_DIR}/references/review-init-subflow.md`       | Shared subflow for `review.md` file creation (resolve, check, write); injected via `!` by `review-init` and `review-address`.            |
 | `${CLAUDE_SKILL_DIR}/references/git-status-short-format.adoc` | Git `XY` status codes; read when `git status --short` shows an unfamiliar code.                                                          |
 | `${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md` | Shared subflow for `ticket.md` interactive creation (guard, prompt, transform, write); injected via `!` by `hb-task-create` and `hb-task-step-add`. |
+| `${CLAUDE_SKILL_DIR}/references/breakdown-subflow.md`         | Shared subflow for gap analysis and breakdown (propose-confirm, per-child draft); used by `hb-task-plan` and (later) `hb-ticket-discuss`. |
 | `${CLAUDE_SKILL_DIR}/hb-task-unarchive.md`                    | Unarchive skill; read when the user asks about restoring an archived task.                                                               |
