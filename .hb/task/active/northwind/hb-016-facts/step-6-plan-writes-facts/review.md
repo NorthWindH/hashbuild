@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | STEP-6-REVIEW-1 | ✅ Addressed — write-after judgement clause now explicitly counts user session corrections/interruptions as a fact source, not just written-artifact content |
 | STEP-6-REVIEW-2 | ✅ Addressed — confirmed STEP-6-REVIEW-1's judgement-clause fix would have caught this session's interruption, and backfilled the missed fact (`skills/hb-*.md` is canonical source, `~/.claude/skills/hb-*/` is the installed copy) into `.hb/facts.md` |
-| STEP-6-REVIEW-3 |            |
+| STEP-6-REVIEW-3 | ✅ Addressed — reassessed all 5 facts against the comment's 3 criteria; dropped 2 status-snapshot facts, kept 3 planning-relevant ones compressed to <=120 chars each |
 
 ---
 
@@ -77,6 +77,32 @@ future sessions don't need a fourth correction.
     - all facts should be short (less than 120 characters IN TOTAL per fact)
     - focus ONLY on information that corrects a planning error, as that information will help future planning
 - **source:** `TODO REVIEW` in commit `55a0bf4f2b93eeaf8d7d27d3d0aefd1773cc651f` — delete comment from source file after addressing
+
+**Resolution:** Reassessed all five facts that were in `.hb/facts.md` against the three
+criteria the comment specified: (1) drop what's inferable elsewhere, (2) keep each fact
+under 120 characters total, (3) keep only what corrects a planning error and helps
+future planning.
+- Dropped the read-before/write-after-pattern-adoption fact and the write-after-clause-
+  update-status fact: both were snapshots of which skill files currently contain which
+  wording — fully recoverable by reading those skill files directly, and neither
+  corrects a planning error (they're implementation status, not gotchas).
+- Kept, compressed to one line each (<=120 chars):
+  - the `skills/hb-*.md` vs `~/.claude/skills/hb-*/` canonical-source fact (the one the
+    comment itself called out as relevant) — not fully inferable from disk alone and
+    has caused repeated real confusion (hb-005/step-1, hb-008/step-1, this step's
+    STEP-6-REVIEW-2).
+  - the hb-015/step-1 deviation fact (Jira push logic deleted, needs re-authoring in
+    hb-015/step-5, recoverable via a specific git commit) — this is exactly a
+    "corrects a planning error, helps future planning" fact: hb-015/step-5 planning
+    would otherwise miss that this logic needs to be re-authored from git history.
+  - the hb-015/step-2 allowed-tools decision fact (Read/WebFetch omission is deliberate,
+    already litigated) — prevents a future session from "fixing" something that was
+    already explicitly rejected.
+  The mechanism-level concern ("fact collection approach is flawed") is explicitly
+  out of scope for this cleanup per the comment's own wording ("will file a task to
+  improve this") — not addressed here.
+
+**Disposition:** ✅ Addressed
 
 ---
 
