@@ -6,6 +6,7 @@
 | --------------- | ---------- |
 | STEP-6-REVIEW-1 | ✅ Addressed — write-after judgement clause now explicitly counts user session corrections/interruptions as a fact source, not just written-artifact content |
 | STEP-6-REVIEW-2 | ✅ Addressed — confirmed STEP-6-REVIEW-1's judgement-clause fix would have caught this session's interruption, and backfilled the missed fact (`skills/hb-*.md` is canonical source, `~/.claude/skills/hb-*/` is the installed copy) into `.hb/facts.md` |
+| STEP-6-REVIEW-3 |            |
 
 ---
 
@@ -60,6 +61,22 @@ recurring point of confusion, not a one-off. Added that fact to `.hb/facts.md` n
 future sessions don't need a fourth correction.
 
 **Disposition:** ✅ Addressed
+
+### STEP-6-REVIEW-3: Facts store content is too long and duplicates info derivable from disk
+
+- **file(s):** `.hb/facts.md`
+- Current facts look bad:
+  - all are too long; ideally a fact (the full fact) is less than 120 characters
+  - the only one that is actually relevant between plannings is the one relating to `skills/hb-*.md`
+  - all others can be inferred from the current state of files on disk as they are updated;
+    meaning, they should not be facts (duplicating knowledge that can be found elsewhere)
+- This signals that the fact collection approach is flawed; a task will be filed to
+  improve it. For now:
+  - reassess all facts for the following:
+    - if the knowledge can be found elsewhere, it does not need to be here so drop it from here
+    - all facts should be short (less than 120 characters IN TOTAL per fact)
+    - focus ONLY on information that corrects a planning error, as that information will help future planning
+- **source:** `TODO REVIEW` in commit `55a0bf4f2b93eeaf8d7d27d3d0aefd1773cc651f` — delete comment from source file after addressing
 
 ---
 
