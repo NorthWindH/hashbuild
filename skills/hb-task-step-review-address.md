@@ -177,13 +177,22 @@ An item is **unresolved** when its `Resolution` cell in the status table is empt
 
 For each unresolved item, in ID order:
 
-#### 9a. Read the item
+#### 9a. Read facts store
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- captures stdout as `$FACTS` (may be empty)
+- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+
+#### 9b. Read the item
 
 Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
 
 - if the body is empty or only a bare heading with no concern stated, **prompt the user** to fill in the concern before continuing with this item; await their response
 
-#### 9b. Address the concern
+#### 9c. Address the concern
 
 - investigate and address the concern described in the item
 - if the concern is unclear even after reading context, prompt the user for clarification before acting
@@ -191,8 +200,9 @@ Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
   - state the original feedback
   - write a `**Resolution:**` section describing what was done (or why nothing was done, with evidence)
   - disposition: **Addressed**, **Assessed**, or **Deferred**
+- take `$FACTS` into account when addressing this concern — if a fact is relevant to this item, apply it without requiring it be restated in the review item
 
-#### 9c. Update review.md
+#### 9d. Update review.md
 
 - update the `### STEP-N-REVIEW-M:` body in `## Notes` with the full note (concern + resolution)
 - update the item's `Resolution` cell in the `## Status` table with the disposition and one-line summary:
@@ -200,7 +210,7 @@ Read the `### STEP-N-REVIEW-M:` section body from `## Notes`.
   - `✅ Assessed — <one-line kept-as-is + why>`
   - `⏭️ Deferred — <one-line + pointer to where>`
 
-#### 9d. Delete TODO REVIEW comment(s)
+#### 9e. Delete TODO REVIEW comment(s)
 
 If the concern was sourced from one or more `TODO REVIEW` comments (indicated by a **source:** line in the concern body), delete those comment lines from the referenced file(s):
 
@@ -208,13 +218,31 @@ If the concern was sourced from one or more `TODO REVIEW` comments (indicated by
 - Also delete any continuation lines that were captured as part of the same multi-line comment (i.e. the lines immediately following the marker that extend the comment, as described in step 5.3)
 - Remove all of these lines entirely from the file
 
-Do this before or as part of the commit in the next sub-step.
+Do this before or as part of the commit in a later sub-step.
 
-#### 9e. Commit
+#### 9f. Update facts store
 
-Commit `review.md` as a step commit together with any files changed while addressing this item (including source files where `TODO REVIEW` comments were deleted), by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md); pass `--tag step-review`.
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
 
-Repeat 9a–9e for the next unresolved item.
+- captures stdout as `$FACTS_AFTER` (may be empty)
+- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
+- using judgement, based on what addressing this item revealed:
+  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
+  - add new facts discovered while addressing this item only when they are likely to matter for future planning/execution/review, weighed against the size guidance
+  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
+- if the composed content differs from `$FACTS_AFTER`:
+  ```bash
+  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
+  ```
+- if the composed content is unchanged from `$FACTS_AFTER`, skip the write — no-op
+
+#### 9g. Commit
+
+Commit `review.md` as a step commit together with any files changed while addressing this item (including source files where `TODO REVIEW` comments were deleted, and `.hb/facts.md` if it was changed in the previous sub-step), by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md); pass `--tag step-review`.
+
+Repeat 9a–9g for the next unresolved item.
 
 ### 10. Prompt user
 
