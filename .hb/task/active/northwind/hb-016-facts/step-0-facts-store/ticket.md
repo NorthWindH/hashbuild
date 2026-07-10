@@ -18,8 +18,9 @@ planning and execution) will consume.
 3. `hb-sdk facts write`:
     1. accepts the new full contents of the store and overwrites
        `.hb/facts.md`.
-    2. creates `.hb/facts.md` (and any missing `.hb/` parent directory) if it
-       does not already exist.
+    2. creates `.hb/facts.md` if it does not already exist. If `.hb/` itself
+       does not exist, `facts write` dies (matching `hb-sdk state`'s existing
+       behavior via `path_hb_asserted()`) rather than creating it.
 4. No `hb-sdk facts init` subcommand is added — the file is created lazily via
    `write`, matching the pattern of `read`/`write` already used by `hb-sdk state`.
 5. The facts store's format documents, as guidance for the agent populating it,
