@@ -76,7 +76,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
 
 - captures stdout as `$FACTS_AFTER` (may be empty)
 - read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
-- using judgement, based on what drafting this `plan.md` revealed:
+- using judgement, based on what drafting this `plan.md` revealed — including any corrections or clarifications the user gave by interrupting this session (e.g. redirecting a wrong assumption), not only what ended up written into `plan.md` itself:
   - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
   - add new facts discovered while planning only when likely to matter for future planning, execution, or review, weighed against the size guidance
   - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones

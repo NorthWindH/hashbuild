@@ -88,7 +88,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
 
 - captures stdout as `$FACTS_AFTER` (may be empty)
 - read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
-- using judgement, based on what gap analysis and breakdown revealed:
+- using judgement, based on what gap analysis and breakdown revealed — including any corrections or clarifications the user gave by interrupting this session (e.g. redirecting a wrong assumption), not only what ended up written into a drafted step ticket:
   - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
   - add new facts discovered during breakdown only when likely to matter for future planning, execution, or review, weighed against the size guidance
   - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
