@@ -62,6 +62,8 @@ To generate a commit message, use `${CLAUDE_SKILL_DIR}/scripts/hb-sdk`.
 4. [ADD] add modifications to relevant files to stage:
    - for each relevant file:
      `git add <file_or_directory>`
+   - if this skill's execution updated `.hb/facts.md`, include it among the
+     relevant files staged
 
 ### 2. Generate commit message
 
