@@ -41,12 +41,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task path <name>
 
 ### 3. Read facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
-
-- captures stdout as `$FACTS` (may be empty)
-- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part A.
 
 ### 4. Load task-level ticket
 
@@ -82,22 +77,13 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step list <name>
 
 ### 8. Update facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
+Set the caller contract:
 
-- captures stdout as `$FACTS_AFTER` (may be empty)
-- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
-- using judgement, based on what gap analysis and breakdown revealed — including any corrections or clarifications the user gave by interrupting this session (e.g. redirecting a wrong assumption), not only what ended up written into a drafted step ticket:
-  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
-  - add new facts discovered during breakdown only when likely to matter for future planning, execution, or review, weighed against the size guidance
-  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
-- if the composed content differs from `$FACTS_AFTER`:
-  1. ```bash
-     ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
-     ```
-  2. create a task-level commit by following [${CLAUDE_SKILL_DIR}/references/committing.md](references/committing.md) including only `.hb/facts.md`, mode `task`, `--tag task-plan`
-- if the composed content is unchanged from `$FACTS_AFTER`, skip both the write and the commit — no-op
+- `$CONTEXT_LABEL` = `"gap analysis and breakdown"`
+- `$SELF_COMMIT` = `true`
+- `$COMMIT_ARGS` = mode `task`, only `.hb/facts.md`, `--tag task-plan`
+
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part B.
 
 ### 9. Report
 

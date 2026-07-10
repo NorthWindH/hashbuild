@@ -179,12 +179,7 @@ For each unresolved item, in ID order:
 
 #### 9a. Read facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
-
-- captures stdout as `$FACTS` (may be empty)
-- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part A.
 
 #### 9b. Read the item
 
@@ -222,21 +217,12 @@ Do this before or as part of the commit in a later sub-step.
 
 #### 9f. Update facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
+Set the caller contract:
 
-- captures stdout as `$FACTS_AFTER` (may be empty)
-- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
-- using judgement, based on what addressing this item revealed:
-  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
-  - add new facts discovered while addressing this item only when they are likely to matter for future planning/execution/review, weighed against the size guidance
-  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
-- if the composed content differs from `$FACTS_AFTER`:
-  ```bash
-  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
-  ```
-- if the composed content is unchanged from `$FACTS_AFTER`, skip the write — no-op
+- `$CONTEXT_LABEL` = `"addressing this item"`
+- `$SELF_COMMIT` = `false`
+
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part B.
 
 #### 9g. Commit
 

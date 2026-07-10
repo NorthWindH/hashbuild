@@ -17,4 +17,5 @@
 | `${CLAUDE_SKILL_DIR}/references/describe-ticket-subflow.md`   | Describe-ticket action for `hb-ticket-discuss`'s loop; dispatched from `ticket-loop-subflow.md`'s Action Registry.                        |
 | `${CLAUDE_SKILL_DIR}/references/exit-ticket-loop-subflow.md`  | Exit action for `hb-ticket-discuss`'s loop; dispatched from `ticket-loop-subflow.md`'s Action Registry.                                   |
 | `${CLAUDE_SKILL_DIR}/references/facts-template.md`            | Guidance for populating `.hb/facts.md` via `hb-sdk facts write`; read before authoring facts-store content.                              |
+| `${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md`       | Shared subflow for facts-store read/compose/gate/write (Part A read, Part B compose+write); injected via caller contract by `hb-task-step-plan`, `hb-task-plan`, `hb-task-step-execute`, `hb-task-step-review-address`. |
 | `${CLAUDE_SKILL_DIR}/hb-task-unarchive.md`                    | Unarchive skill; read when the user asks about restoring an archived task.                                                               |

@@ -59,12 +59,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step number <step_ref>
 
 ### 4. Read facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
-
-- captures stdout as `$FACTS` (may be empty)
-- never errors; if `.hb/facts.md` or `.hb/` itself is missing, proceeds unaffected — no error, no blocking prompt
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part A.
 
 ### 5. Execute the plan
 
@@ -84,21 +79,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step execution-slug
 
 ### 7. Update facts store
 
-```bash
-${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
-```
+Set the caller contract:
 
-- captures stdout as `$FACTS_AFTER` (may be empty)
-- read [${CLAUDE_SKILL_DIR}/references/facts-template.md](references/facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
-- using judgement, based on what this execution revealed:
-  - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
-  - add new facts discovered during this execution only when they are likely to matter for future planning or execution, weighed against the size guidance
-  - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
-- if the composed content differs from `$FACTS_AFTER`:
-  ```bash
-  ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
-  ```
-- if the composed content is unchanged from `$FACTS_AFTER`, skip the write — no-op
+- `$CONTEXT_LABEL` = `"this execution"`
+- `$SELF_COMMIT` = `false`
+
+Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-write-subflow.md) § Part B.
 
 ### 8. Commit
 
