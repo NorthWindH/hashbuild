@@ -13,6 +13,7 @@
 | `${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md` | Shared subflow for `ticket.md` interactive creation (guard, prompt, transform, write); injected via `!` by `hb-task-create` and `hb-task-step-add`. |
 | `${CLAUDE_SKILL_DIR}/references/breakdown-subflow.md`         | Shared subflow for gap analysis and breakdown (propose-confirm, per-child draft); used by `hb-task-plan` and (later) `hb-ticket-discuss`. |
 | `${CLAUDE_SKILL_DIR}/references/ticket-loop-subflow.md`       | Shared subflow for `hb-ticket-discuss`'s loop iteration (ticket-entry model, action registry, present/dispatch/loop-continue); injected by `hb-ticket-discuss`. |
+| `${CLAUDE_SKILL_DIR}/references/load-ticket-subflow.md`       | Load-ticket action for `hb-ticket-discuss`'s loop (file / Jira / web sources); dispatched from `ticket-loop-subflow.md`'s Action Registry.                       |
 | `${CLAUDE_SKILL_DIR}/references/describe-ticket-subflow.md`   | Describe-ticket action for `hb-ticket-discuss`'s loop; dispatched from `ticket-loop-subflow.md`'s Action Registry.                        |
 | `${CLAUDE_SKILL_DIR}/references/exit-ticket-loop-subflow.md`  | Exit action for `hb-ticket-discuss`'s loop; dispatched from `ticket-loop-subflow.md`'s Action Registry.                                   |
 | `${CLAUDE_SKILL_DIR}/references/facts-template.md`            | Guidance for populating `.hb/facts.md` via `hb-sdk facts write`; read before authoring facts-store content.                              |

@@ -34,6 +34,7 @@ below):
 
 | Action | Selectable via (examples) | Dispatch subflow |
 |---|---|---|
+| Load ticket | "load the ticket from PROJ-123", "load this file as a ticket", "pull in the ticket at this URL" | `load-ticket-subflow.md` |
 | Describe ticket | "describe a ticket", "create a new one", "let's write a ticket for X" | `describe-ticket-subflow.md` |
 | Exit | "exit", "I'm done", "end the session" | `exit-ticket-loop-subflow.md` |
 

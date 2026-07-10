@@ -7,8 +7,8 @@ description: >
   Run a persistent, multi-turn loop for drafting standalone tickets (not
   attached to any task or step). Holds any number of tickets in
   in-conversation context and, each iteration, presents a menu of next
-  actions (e.g. describe, exit) selectable via natural language. Makes no
-  .hb/ writes.
+  actions (e.g. describe, load, exit) selectable via natural language. Makes
+  no .hb/ writes.
 allowed-tools: >
   Write(//tmp/*)
   Write(//private/tmp/*)
@@ -16,6 +16,9 @@ allowed-tools: >
   Read(//private/tmp/*)
   Edit(//tmp/*)
   Edit(//private/tmp/*)
+  Read
+  WebFetch
+  Bash(find *)
   mcp__claude_ai_Atlassian_Rovo__getAccessibleAtlassianResources
   mcp__claude_ai_Atlassian_Rovo__getVisibleJiraProjects
   mcp__claude_ai_Atlassian_Rovo__getJiraProjectIssueTypesMetadata
@@ -25,7 +28,7 @@ allowed-tools: >
 
 # hb-ticket-discuss
 
-Run a persistent, multi-turn loop for drafting standalone tickets — no task or step folder is created. Tickets accumulate in in-conversation context across iterations; each iteration presents the current state and a menu of next actions (e.g. describe, exit) selectable via natural language.
+Run a persistent, multi-turn loop for drafting standalone tickets — no task or step folder is created. Tickets accumulate in in-conversation context across iterations; each iteration presents the current state and a menu of next actions (e.g. describe, load, exit) selectable via natural language.
 
 ## Inputs
 
