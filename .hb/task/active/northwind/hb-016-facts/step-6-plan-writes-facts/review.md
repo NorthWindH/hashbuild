@@ -5,6 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-6-REVIEW-1 | ✅ Addressed — write-after judgement clause now explicitly counts user session corrections/interruptions as a fact source, not just written-artifact content |
+| STEP-6-REVIEW-2 |            |
 
 ---
 
@@ -30,6 +31,13 @@ drafted artifact. Also recorded a fact noting the same latent gap exists in
 explicit callout) — left as-is since fixing those is out of scope for this step.
 
 **Disposition:** ✅ Addressed
+
+### STEP-6-REVIEW-2: Still seeing user input not get written to facts
+
+- For example, load this claude session: ad4cd403-cfa7-40ae-b075-0c8e9d6fbeb4
+- after initial plan prompt (`/hb-task-step-plan northwind/hb-015/1`), user interrupted and added a correction, but that correction was never added to facts
+- use this as a motivating example
+- update procedure to ensure that user inputs and interruptions are recorded in facts if they apply to future planning and execution (like in this case)
 
 ---
 
