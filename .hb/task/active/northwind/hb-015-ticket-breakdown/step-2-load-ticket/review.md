@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-2-REVIEW-1 | ✅ Addressed — restored `Read`/`WebFetch` (needed by file/web Load sources); left `Bash(find *)` dropped, unused |
-| STEP-2-REVIEW-2 |            |
+| STEP-2-REVIEW-2 | ✅ Addressed — dropped `Read`/`WebFetch` again per explicit re-request; unlisted tools still prompt, so Load sources still work |
 
 ---
 
@@ -29,11 +29,13 @@ Restored `Read` and `WebFetch` to `allowed-tools` (matching the plain-`Read` gra
 
 ---
 
-### STEP-2-REVIEW-2: Drop `Read`/`WebFetch` from `allowed-tools` — bracketed re-request overriding STEP-2-REVIEW-1
+### STEP-2-REVIEW-2: Drop `Read`/`WebFetch` from `allowed-tools` — bracketed re-request overriding STEP-2-REVIEW-1 — ADDRESSED
 
 - **file(s):** `skills/hb-ticket-discuss.md` (`allowed-tools` frontmatter, `Read`/`WebFetch` lines bracketed by the `TODO REVIEW` range)
 - Reviewer re-opens the concern STEP-2-REVIEW-1 addressed by restoring `Read`/`WebFetch`: these are overly broad permissions and should be dropped — the agent harness should not be allowed to read or web-fetch *any* resource without an explicit per-use prompt. The comment explicitly notes that any tool not listed in `allowed-tools` is still available but will simply prompt the user on first use, so dropping them here will not block the Load ticket action's file/web sources — it only removes the blanket pre-approval.
 - **source:** `TODO REVIEW` in commit `c449b95d9f103e8ae58f1823bc7b652dd657bdb4` — delete comment from source file after addressing
+
+**Resolution:** Dropped `Read` and `WebFetch` from `allowed-tools` again, per this explicit, more detailed re-request — this overrides STEP-2-REVIEW-1's earlier "restore them" resolution and is the final word on the tradeoff. The reviewer's own reasoning resolves the concern STEP-2-REVIEW-1 raised: Claude Code prompts for any tool call not covered by `allowed-tools`, so the file/web Load ticket sources in `load-ticket-subflow.md` §B/§D still function — each `Read` outside `/tmp` or each `WebFetch` call now requires a one-time per-session user approval instead of running unattended. That's a deliberate least-privilege tradeoff (no blanket pre-approval to read or fetch arbitrary resources), not a functional break. `Bash(find *)` remains dropped, unchanged from STEP-2-REVIEW-1 — no evidence any subflow needs it.
 
 ---
 
