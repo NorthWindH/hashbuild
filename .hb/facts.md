@@ -11,3 +11,8 @@
   hb-task-step-review-address.md (step 9f) still only say "based on what this execution
   revealed" and were not updated to call this out explicitly — same latent gap, left
   as-is since out of scope for hb-016/step-6.
+- `skills/hb-*.md` in this repo is the canonical source for skill definitions.
+  `~/.claude/skills/hb-*/` is a separate installed/deployed copy, not the source to
+  edit. This has caused repeated confusion across sessions (see hb-005/step-1 and
+  hb-008/step-1 review notes, and the ad4cd403 session referenced in hb-016/step-6
+  STEP-6-REVIEW-2) — check this before assuming where a skill lives.
