@@ -16,3 +16,12 @@
   edit. This has caused repeated confusion across sessions (see hb-005/step-1 and
   hb-008/step-1 review notes, and the ad4cd403 session referenced in hb-016/step-6
   STEP-6-REVIEW-2) — check this before assuming where a skill lives.
+- hb-015/step-1 deleted (not preserved dormant) the pre-existing Jira push/NL-resolution
+  /Idea-link logic from `skills/hb-ticket-discuss.md` while rewriting it into the loop
+  skeleton — a deviation from that step's plan, which had wanted it left in place. The
+  exact original wording is fully recoverable via `git show 7bd2c42:skills/hb-ticket-
+  discuss.md` (last commit before the rewrite), not present in the live file. hb-015/
+  step-5 (Push action) will need to re-author it from that git history; hb-015/step-2
+  (Load action) reused only its Jira *update-path* resolution algorithm (explicit key →
+  getJiraIssue; else JQL search → searchJiraIssuesUsingJql; ambiguous → numbered list,
+  never auto-select) in adapted, read-only form — never its create path.
