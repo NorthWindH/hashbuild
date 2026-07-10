@@ -1,5 +1,20 @@
 # Facts Store
 
+<!-- TODO REVIEW
+- these facts look bad:
+  - all are too long; ideally a fact (the full fact) is less than 120 characters
+  - the only one that is actually relevant between plannings is the one relating to `skills/hb-*.md`
+  - all others can be inferred from the current state of files on disk as they are updated;
+    meaning, they should not be facts (duplicating knowledge that can be found elsewhere)
+- this signals that fact collection approach is flawed
+- will file a task to improve this
+- for now:
+  - reassess all facts for the following:
+    - if the knowledge can be found elsewhere, it does not need to be here so drop it from here
+    - all facts should be short (less than 120 characters IN TOTAL per fact)
+    - focus ONLY on information that corrects a planning error, as that information will help future planning
+ -->
+
 - The read-before/write-after facts pattern (hb-sdk facts read then facts write, gated
   on composed content differing) is implemented in all four hb-task-* lifecycle
   skills: hb-task-step-execute, hb-task-step-review-address, hb-task-step-plan,
