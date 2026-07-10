@@ -38,7 +38,7 @@ For each confirmed candidate, in order:
    - **Acceptance Criteria**: concrete, checkable conditions that close the identified gap(s)
    - **Out of scope**: anything left to sibling candidates
    - keep the draft small to medium (target less than 300 estimated lines of changes)
-2. **Present**: show the draft to the user
+2. **Present**: show the draft to the user in full, do not summarize
 3. **Resolve**: loop **confirm / request changes / skip** until resolved
    - on request-changes: revise the draft and re-present
    - on skip: record this candidate as skipped; move to the next candidate
