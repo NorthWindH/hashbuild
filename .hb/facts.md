@@ -5,4 +5,5 @@
 - hb-ticket-discuss.md allowed-tools omits Read/WebFetch on purpose; don't re-add (rejected in hb-015/step-2).
 - Subflows invoked at 2+ points in one skill use caller-contract+prose-follow (like breakdown-subflow), not `!cat`.
 - lint/format gates: use `uv run ruff check`/`uv run ruff format --check` (plain `ruff` binary isn't on PATH).
-- hb-014/step-3: unexecuted-step confirmation on archive lives in hb-task-archive.md itself (not hb-flow); hb-flow just confirms+invokes.
+- hb-014/step-3: archive guard dropped entirely (unarchive is trivial) — not implemented in hb-flow or hb-task-archive.
+- hb-flow (hb-014/step-3) is first skill w/ `Skill` tool in allowed-tools — verify permission syntax at execution.
