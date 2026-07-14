@@ -11,3 +11,4 @@
 - Task flavor is embedded in `<author/task-id>` name string (no `--flavor` flag on `hb-task-create`); only `hb-task-step-add` has a separate `--flavor` flag, since the SDK assigns the step number itself.
 - Claude Code SessionStart hooks: plain stdout is context-only, never user-visible; use JSON `{"systemMessage": "..."}` to show the user a message.
 - `install`'s `HookPatcher` matches hb-flow's hook entry via `HB_FLOW_HOOK_MARKER` (stable substring), not exact command equality, so `HB_FLOW_HOOK_COMMAND` text can change without breaking install/uninstall idempotency.
+- `README.md` at repo root is a symlink to `skills/references/README.md`; edit the real target path, not the symlink.

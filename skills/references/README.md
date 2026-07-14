@@ -67,6 +67,7 @@ Install and uninstall actions are idempotent so you can feel free to call them r
 
 | Skill                          | What it does                                                         |
 | ------------------------------ | -------------------------------------------------------------------- |
+| `/hb-flow`                     | Report state and recommended next action, then route to the right skill from a natural-language reply |
 | `/hb-init`                     | Initialize `.hb/` in your project (idempotent, run once per project) |
 | `/hb-status`                   | Show workspace state and recommended next action                     |
 | `/hb-task-create`              | Create a task skeleton                                               |
@@ -78,10 +79,17 @@ Install and uninstall actions are idempotent so you can feel free to call them r
 | `/hb-task-step-review-address` | Normalize and address all open review items                          |
 | `/hb-task-archive`             | Move a completed task from active to the archive                     |
 | `/hb-task-unarchive`           | Restore an archived task back to active                              |
+| `/hb-ticket-discuss`           | Draft standalone tickets in a multi-turn loop (not attached to a task/step) |
 
 ---
 
 ## Getting started
+
+The fastest way to work with hashbuild day to day: run `/hb-init` once, then
+run `/hb-flow` whenever you're not sure what to do next — it reports where
+things left off and routes you to the right skill from a plain-language
+reply. The steps below spell out what `/hb-flow` is doing under the hood, and
+remain the reference for each skill's exact arguments.
 
 ### 1. Initialize your project
 
