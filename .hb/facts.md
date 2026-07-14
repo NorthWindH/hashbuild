@@ -9,3 +9,4 @@
 - hb-014/step-3: hb-flow's Skill tool call has no channel to pass facts to invoked skill; don't add a facts-read step there (rejected in review).
 - hb-014/step-3: hb-flow reads facts store for its own use before Step 4 (prompt) to help inform next-action framing.
 - Task flavor is embedded in `<author/task-id>` name string (no `--flavor` flag on `hb-task-create`); only `hb-task-step-add` has a separate `--flavor` flag, since the SDK assigns the step number itself.
+- hb-014/step-4: `install`'s `SettingsPatcher` leaves `{"permissions": {"allow": []}}` behind after uninstall even when nothing was removed (unconditional setdefault) — pre-existing, not caused by the new `HookPatcher`.

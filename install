@@ -57,6 +57,9 @@ HARNESSES: dict[HarnessKey, HarnessConfig] = {
     ),
 }
 
+HB_FLOW_HOOK_MATCHER = "startup|clear"
+HB_FLOW_HOOK_COMMAND = "[ -d .hb ] && echo 'hashbuild: run /hb-flow to see where things left off.'; true"
+
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -291,6 +294,105 @@ class SettingsPatcher:
         return self._update("uninstall")
 
 
+@dataclass
+class HookUpdateResult:
+    path_settings: Path = field(default_factory=Path)
+    hook_added: bool = False
+    hook_removed: bool = False
+    updated_settings: dict[str, Any] = field(default_factory=dict[str, Any])
+
+    def __bool__(self) -> bool:
+        return bool(self.hook_added or self.hook_removed)
+
+    def flush(self) -> None:
+        """Write results to disk"""
+
+        if not self.updated_settings:
+            die("empty settings data; nothing to write")
+
+        self.path_settings.write_text(json.dumps(self.updated_settings, indent=2) + "\n")
+
+
+class HookPatcher:
+    """Patches the `/hb-flow` SessionStart hook into a Claude harness's settings.json."""
+
+    _path_settings: Path
+
+    def __init__(self, path_settings: Path) -> None:
+        self._path_settings = path_settings
+
+    def _read_settings(self) -> dict[str, Any]:
+        if not self._path_settings.exists():
+            return dict()
+
+        data: dict[str, Any] = json.loads(self._path_settings.read_text())
+        return data
+
+    def _find_matcher_group(self, data: dict[str, Any]) -> dict[str, Any] | None:
+        groups: list[dict[str, Any]] = data.get("hooks", {}).get("SessionStart", [])
+        for group in groups:
+            if group.get("matcher") == HB_FLOW_HOOK_MATCHER:
+                return group
+
+        return None
+
+    def _find_hook_entry(self, group: dict[str, Any]) -> dict[str, Any] | None:
+        for entry in group.get("hooks", []):
+            if entry.get("type") == "command" and entry.get("command") == HB_FLOW_HOOK_COMMAND:
+                return entry
+
+        return None
+
+    def install(self) -> HookUpdateResult:
+        data = self._read_settings()
+        result = HookUpdateResult(path_settings=self._path_settings, updated_settings=data)
+
+        group = self._find_matcher_group(data)
+        if group is not None:
+            if self._find_hook_entry(group) is not None:
+                return result
+
+            group.setdefault("hooks", []).append({"type": "command", "command": HB_FLOW_HOOK_COMMAND})
+            result.hook_added = True
+            return result
+
+        session_start: list[dict[str, Any]] = data.setdefault("hooks", {}).setdefault("SessionStart", [])
+        session_start.append(
+            {
+                "matcher": HB_FLOW_HOOK_MATCHER,
+                "hooks": [{"type": "command", "command": HB_FLOW_HOOK_COMMAND}],
+            }
+        )
+        result.hook_added = True
+        return result
+
+    def uninstall(self) -> HookUpdateResult:
+        data = self._read_settings()
+        result = HookUpdateResult(path_settings=self._path_settings, updated_settings=data)
+
+        group = self._find_matcher_group(data)
+        if group is None:
+            return result
+
+        entry = self._find_hook_entry(group)
+        if entry is None:
+            return result
+
+        group["hooks"].remove(entry)
+        result.hook_removed = True
+
+        if not group["hooks"]:
+            data["hooks"]["SessionStart"].remove(group)
+
+        if not data["hooks"]["SessionStart"]:
+            del data["hooks"]["SessionStart"]
+
+        if not data["hooks"]:
+            del data["hooks"]
+
+        return result
+
+
 def _confirm(prompt: str) -> bool:
     try:
         resp = input(prompt).strip().lower()
@@ -388,6 +490,20 @@ def run_install(picks: ValidHarnesses) -> None:
                 else:
                     info("  [skip] skipped settings patch")
 
+        if harness is HARNESS_CLAUDE and settings_path is not None:
+            hook_patcher = HookPatcher(settings_path)
+            hook_result = hook_patcher.install()
+            if not hook_result:
+                info(f"  [skip] /hb-flow session-start hook already present in {settings_path}")
+            else:
+                info(f"\n  The following hook will be added to {settings_path}:")
+                info(f"    SessionStart ({HB_FLOW_HOOK_MATCHER}): {HB_FLOW_HOOK_COMMAND}")
+                if _confirm("  Apply? [Y/n] "):
+                    hook_result.flush()
+                    info(f"  [ok] patched {settings_path}")
+                else:
+                    info("  [skip] skipped hook patch")
+
 
 def run_uninstall(picks: ValidHarnesses) -> None:
     skill_files = _skill_files()
@@ -421,6 +537,20 @@ def run_uninstall(picks: ValidHarnesses) -> None:
                     info(f"  [ok] cleaned {settings_path}")
                 else:
                     info("  [skip] skipped settings cleanup")
+
+        if harness is HARNESS_CLAUDE and settings_path is not None:
+            hook_patcher = HookPatcher(settings_path)
+            hook_result = hook_patcher.uninstall()
+            if not hook_result:
+                info(f"  [skip] no /hb-flow session-start hook found in {settings_path}")
+            else:
+                info(f"\n  The following hook will be removed from {settings_path}:")
+                info(f"    SessionStart ({HB_FLOW_HOOK_MATCHER}): {HB_FLOW_HOOK_COMMAND}")
+                if _confirm("  Remove? [Y/n] "):
+                    hook_result.flush()
+                    info(f"  [ok] cleaned {settings_path}")
+                else:
+                    info("  [skip] skipped hook cleanup")
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
