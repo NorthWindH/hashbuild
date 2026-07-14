@@ -313,15 +313,8 @@ class HookUpdateResult:
     def __bool__(self) -> bool:
         return bool(self.hook_added or self.hook_updated or self.hook_removed)
 
-    # TODO REVIEW flush() dies on a legitimately empty settings dict (e.g. uninstall leaves nothing
-    # behind because the hb-flow hook was the only content). This guard predates this step and is
-    # unrelated to the systemMessage/idempotency fix here — out of scope for this item, flagging for
-    # a follow-up review pass.
     def flush(self) -> None:
         """Write results to disk"""
-
-        if not self.updated_settings:
-            die("empty settings data; nothing to write")
 
         self.path_settings.write_text(json.dumps(self.updated_settings, indent=2) + "\n")
 

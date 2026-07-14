@@ -7,7 +7,7 @@
 | STEP-4-REVIEW-1 | ✅ Addressed — hook now emits `systemMessage` JSON so the message renders to the user |
 | STEP-4-REVIEW-2 | ✅ Addressed — hook entries now matched by stable marker, upgraded/removed in place regardless of command-text changes |
 | STEP-4-REVIEW-3 | ⏭️ Deferred — no second hook exists yet to validate a generic marker against; revisit when one is added |
-| STEP-4-REVIEW-4 |            |
+| STEP-4-REVIEW-4 | ✅ Addressed — removed the incorrect empty-dict guard from `HookUpdateResult.flush()` |
 
 ---
 
@@ -56,6 +56,10 @@ Disposition: **Deferred**
 - **file(s):** `install` (`HookUpdateResult.flush()`, around line 318)
 - `flush()` calls `die()` whenever `updated_settings` is falsy. This incorrectly fires when `uninstall()` legitimately empties the settings dict down to `{}` — e.g. a `settings.json` that contained only the hb-flow hook entry. This guard predates the systemMessage/idempotency fix from STEP-4-REVIEW-1/2 and is unrelated to it; it was flagged there as a follow-up rather than fixed in place.
 - **source:** `TODO REVIEW` in commit `cc992cf46a9d2ed0b8d87e5c04a1c1368d428756` — delete comment from source file after addressing
+
+**Resolution:** Confirmed the bug is real and reachable: `HookPatcher.uninstall()` deletes the `hooks` key entirely once `SessionStart` and its matcher group are both empty, so `updated_settings` legitimately becomes `{}` when a `settings.json` contained only the hb-flow hook. Both call sites (`run_install`/`run_uninstall`) already gate `flush()` behind `if not result: skip`, so by the time `flush()` runs, `__bool__` has already confirmed a real change occurred — the emptiness guard inside `flush()` was redundant in the success path and actively wrong in this one legitimate edge case. Removed the `if not self.updated_settings: die(...)` guard from `HookUpdateResult.flush()` entirely; it now unconditionally writes `updated_settings` to disk. Verified with a standalone script: uninstalling a `settings.json` containing only the hb-flow hook now writes `{}` instead of dying. `SettingsUpdateResult.flush()` (the sibling class for permission patching) keeps its own identical-looking guard as-is — its `updated_settings` can never actually go empty, since `data.setdefault("permissions", {})` / `data.setdefault("permission", {})` always leaves at least one key behind, so there's no matching bug there and no reason to touch it for this item.
+
+Disposition: **Addressed**
 
 ---
 
