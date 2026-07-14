@@ -94,4 +94,4 @@ Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-
 
 Tell the user:
 
-> Steps ready. `/clear` this conversation, then run `/hb-task-step-plan <name>/0` to create the implementation plan for the first step.
+> Steps ready. `/clear` this conversation, then run `/hb-flow` to see what to do next.

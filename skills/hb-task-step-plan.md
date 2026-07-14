@@ -80,7 +80,7 @@ Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-
 
 Tell the user:
 
-> Plan ready. `/clear` this conversation, then run `/hb-task-step-execute <step_ref>` to carry out the plan.
+> Plan ready. `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 ### 9. Record execution state
 

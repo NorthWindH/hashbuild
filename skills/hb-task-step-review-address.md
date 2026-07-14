@@ -234,7 +234,7 @@ Repeat 9a–9g for the next unresolved item.
 
 Tell the user:
 
-> Review is iterative — you can add more concerns to `review.md` or add `TODO REVIEW` comments (committed or uncommitted) and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then: to continue with more steps, run `/hb-task-step-add <name>` then `/hb-task-step-plan`. When all steps are done, run `/hb-task-archive <name>` to close the task.
+> Review is iterative — you can add more concerns to `review.md` or add `TODO REVIEW` comments (committed or uncommitted) and re-run `/hb-task-step-review-address <step_ref>` at any time. When the step is fully reviewed, `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 ### 11. Record execution state
 

@@ -42,7 +42,7 @@ Tell the user:
 >
 > You can also leave `TODO REVIEW` comments anywhere in the codebase (e.g. `// TODO REVIEW: this function duplicates logic in X`). When you run `/hb-task-step-review-address`, those comments are automatically picked up — from the HEAD commit and from any uncommitted changed files — and added as review items, then deleted from the source after they are addressed. Pass `--no-todo-scan` to skip this behavior, or `--commits N` to scan more than one commit.
 >
-> When done, `/clear` this conversation, then run `/hb-task-step-review-address <step_ref>` to work through the review items.
+> When done, `/clear` this conversation, then run `/hb-flow` to work through the review items.
 
 Also show the user:
 

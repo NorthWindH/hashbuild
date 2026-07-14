@@ -86,11 +86,11 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task step add [--flavor <slug>] [--ticket <ti
 
 **When interactive mode ran (Step 2, case 3) — ticket was just written:**
 
-> Step added with ticket. `/clear` this conversation, then run `/hb-task-step-plan <step_ref>` to create the implementation plan.
+> Step added with ticket. `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 **All other modes (skeleton-only or `--ticket` supplied):**
 
-> Step added. `/clear` this conversation, then: if the step ticket is ready, run `/hb-task-step-plan <step_ref>` to create the implementation plan. If the ticket still needs its acceptance criteria filled in, edit `ticket.md` in the step folder first.
+> Step added. `/clear` this conversation, then: if the step ticket is ready, run `/hb-flow` to see what to do next. If the ticket still needs its acceptance criteria filled in, edit `ticket.md` in the step folder first.
 
 ### 6. Record execution state
 

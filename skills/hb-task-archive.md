@@ -54,7 +54,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task archive <name>
 
 Tell the user:
 
-> Task archived. `/clear` this conversation, then run `/hb-status` to see remaining active tasks and decide what to work on next, or `/hb-task-create` to start a new task.
+> Task archived. `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 ### 5. Record execution state
 

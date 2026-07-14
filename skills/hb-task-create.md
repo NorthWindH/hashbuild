@@ -84,11 +84,11 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 
 **When interactive mode ran (Step 2, case 3) — ticket was just written:**
 
-> Task and ticket created. `/clear` this conversation, then run `/hb-task-plan <name>` to analyze acceptance criteria and create step tickets. When steps are ready, run `/hb-task-step-plan <name/step-n>` for each step.
+> Task and ticket created. `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 **All other modes (skeleton-only or `--ticket` supplied):**
 
-> Task created. `/clear` this conversation, then: if you have a task `ticket.md`, run `/hb-task-plan <name>` to analyze acceptance criteria and create steps to cover them. If not, write a `ticket.md` first (Background, Acceptance Criteria, Out of scope), then run `/hb-task-plan`. To add the first step manually instead, run `/hb-task-step-add <name>`.
+> Task created. `/clear` this conversation, then: if you have a task `ticket.md`, run `/hb-flow` to see what to do next. If not, write a `ticket.md` first (Background, Acceptance Criteria, Out of scope), then run `/hb-flow`.
 
 ### 6. Record execution state
 

@@ -45,7 +45,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk init
 
 Tell the user:
 
-> Hashbuild is ready. To start your first task, `/clear` this conversation to free context, then run `/hb-task-create` with the task name and an optional ticket file.
+> Hashbuild is ready. To start your first task, `/clear` this conversation to free context, then run `/hb-flow` to get started.
 >
 > At any point, run `/hb-status` to see the current state of all active tasks and get a recommended next action.
 >

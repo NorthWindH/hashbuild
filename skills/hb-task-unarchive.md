@@ -50,7 +50,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task unarchive <name>
 
 Tell the user:
 
-> Task restored. `/clear` this conversation, then run `/hb-status` to see active tasks or `/hb-task-step-add` to continue working on it.
+> Task restored. `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 ### 5. Record execution state
 
