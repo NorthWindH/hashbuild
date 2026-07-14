@@ -34,9 +34,14 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to add the next step folder to
 
 If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/references/skill-help.md](references/skill-help.md). Stop.
 
-<!-- TODO REVIEW update steps to read fact store before proceeding -->
-
 ### 2. Flag precedence / interactive ticket
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- capture stdout as `$FACTS` (may be empty); never errors — if `.hb/facts.md` or `.hb/` itself is missing, proceed unaffected
+- if interactive mode runs below, take `$FACTS` into account during ticket derivation (subflow Section C) — apply relevant facts without requiring the user restate them
 
 Set:
 

@@ -9,7 +9,7 @@
 | STEP-3-REVIEW-3 | ✅ Assessed — kept as-is, no channel exists to pass facts through the `Skill` tool call and target skills already read facts themselves |
 | STEP-3-REVIEW-4 | ✅ Addressed — added `hb-sdk facts read` at start of Step 4 to inform prompt framing |
 | STEP-3-REVIEW-5 | ✅ Addressed — fixed the real bug in `hb-flow.md`'s STEP-3-REVIEW-2 resolution instead of adding an unneeded flag |
-| STEP-3-REVIEW-6 |            |
+| STEP-3-REVIEW-6 | ✅ Addressed — added inline `hb-sdk facts read` to both skills' Step 2, mirroring hb-flow's own facts-read pattern rather than joining facts-write-subflow |
 
 ---
 
@@ -64,6 +64,7 @@
 - **file(s):** `skills/hb-task-create.md` (Step 1/2 boundary), `skills/hb-task-step-add.md` (Step 1/2 boundary)
 - Both skills should read the facts store (`.hb/facts.md`) before proceeding past the help check, so relevant facts (e.g. naming conventions, past rejected approaches) can inform ticket seeding / interactive prompts.
 - **source:** `TODO REVIEW` in commit `6ca33ea3eae94ec63bfe4e22779efe2ab92a2691` — delete comment from source file after addressing
+- **Resolution:** Added an inline `hb-sdk facts read` call at the top of Step 2 in both `hb-task-create.md` and `hb-task-step-add.md`, capturing `$FACTS` for use during interactive ticket derivation. Did not wire these into `facts-write-subflow.md` (whose "Shared by" scope is explicitly `hb-task-step-plan`, `hb-task-plan`, `hb-task-step-execute`, `hb-task-step-review-address`) — those four skills produce judgment-laden artifacts (plans, execution notes, review resolutions) that can also *surface* new facts worth writing back (Part B). `hb-task-create`/`hb-task-step-add` mostly transcribe or derive `ticket.md` directly from the user's own words via `interactive-ticket-subflow.md`, with no comparable write-back moment — so a read-only inline call, matching the precedent `hb-flow.md` set for STEP-3-REVIEW-4, is the right-sized fix. Disposition: **Addressed**.
 
 ---
 
