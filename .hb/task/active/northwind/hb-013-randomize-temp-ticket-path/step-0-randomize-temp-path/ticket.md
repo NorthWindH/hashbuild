@@ -24,6 +24,8 @@ Replace the hardcoded `/tmp` target path in `interactive-ticket-subflow.md` (and
 4. The resulting path is a valid `.md` file (e.g. ends in `ticket.md` or `<slug>.md`) usable as-is for `hb-sdk`'s `--ticket <path>` argument.
 5. Skeleton-only mode and the `--ticket <path>`-supplied mode in `hb-task-create` and `hb-task-step-add` are unaffected — only the interactive-mode temp path changes.
     1. Existing skeleton-only and `--ticket`-supplied invocations behave identically before and after this change.
+6. `hb-ticket-discuss`'s ticket-creation actions (`describe-ticket-subflow.md`, `load-ticket-subflow.md`) share the same underlying collision class through their own `$TICKET_SEQ`-based `/tmp/hb-ticket-discuss/ticket-N` path — unique only within one conversation, not across concurrent sessions, which each start `$TICKET_SEQ` at the same value. They move onto the same session-scoped/collision-free resolution as the other callers rather than being left on a parallel, still-collision-prone scheme.
+    1. `$TICKET_SEQ`'s sole purpose today is constructing that per-call subfolder; once no longer needed for that, it is removed as dead state from the loop's threaded parameters (`ticket-loop-subflow.md`, `describe-ticket-subflow.md`, `load-ticket-subflow.md`, and `hb-ticket-discuss.md`'s own initialization) rather than left unused.
 
 ---
 
