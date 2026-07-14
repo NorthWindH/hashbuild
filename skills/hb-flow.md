@@ -56,6 +56,9 @@ If the initial invocation already carried a freeform request (the text after any
 
 ### 5. Resolve intent
 
+<!-- TODO REVIEW add task-create skill to registry -->
+<!-- TODO REVIEW update step-add and task-create to always derive flavor from user's provided natural language; user can always drop this or update it during the confirmation step -->
+
 Match the reply against the Action Registry below using semantic match, not exact keywords:
 
 | Action                | Target skill                                                                                                                       | Args shape                    | Example phrasings                                                   |
@@ -80,6 +83,7 @@ On no confident match: ask a clarifying question and re-prompt (return to Step 4
   ```
   Surface any SDK error verbatim and re-prompt (return to Step 4) rather than treating it as resolved.
 - Otherwise derive it from data already gathered. Fetch it first if not already available this turn:
+
   ```bash
   ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize --format json
   ```
@@ -88,6 +92,7 @@ On no confident match: ask a clarifying question and re-prompt (return to Step 4
   - "plan a step": the first step with `has_ticket=true, has_plan=false`; if the first pending step has no ticket, say so instead of resolving to it
   - "execute a step": the first step with `has_plan=true, has_execution=false`
   - "review": the first entry in `steps_needs_review`
+
 - If still ambiguous, ask a clarifying question (return to Step 4) instead of guessing.
 
 ### 7. Confirm
@@ -98,6 +103,8 @@ State the exact resolved invocation (`/hb-<skill> <args>`, matching the target s
 - **Confirms:** proceed to Step 8.
 
 ### 8. Invoke
+
+<!-- TODO REVIEW add step to read facts store so that facts are available to the next skill invoked -->
 
 Call the `Skill` tool with `skill = <target-skill-name>` (from Step 5's Action Registry) and `args = <resolved args string>` (the same string a user would type after the slash command, e.g. `northwind/hb-014-execution-state/step-3-hb-flow-skill`). This runs the target skill within the current session per the `Skill` tool's own contract — its own commit / prompt-user / state-record steps run as part of that invocation. `hb-flow` performs no separate commit or `hb-sdk state record` call of its own.
 
