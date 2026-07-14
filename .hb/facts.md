@@ -6,4 +6,5 @@
 - Subflows invoked at 2+ points in one skill use caller-contract+prose-follow (like breakdown-subflow), not `!cat`.
 - lint/format gates: use `uv run ruff check`/`uv run ruff format --check` (plain `ruff` binary isn't on PATH).
 - hb-014/step-3: archive guard dropped entirely (unarchive is trivial) — not implemented in hb-flow or hb-task-archive.
-- hb-flow (hb-014/step-3) is first skill w/ `Skill` tool in allowed-tools — verify permission syntax at execution.
+- `skills/hb-flow.md` shipped (hb-014/step-3), `allowed-tools: ... Skill`, dispatches 8 hb-* skills via Skill tool.
+- hb-flow's Skill-tool dispatch is unverified live: caller skills' own `allowed-tools` gates it (e.g. hb-task-step-execute lacks `Skill`), so it can't be driven from inside another skill's session — test via a fresh top-level `/hb-flow` invocation instead.
