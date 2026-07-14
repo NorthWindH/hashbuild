@@ -210,6 +210,33 @@ To restore an archived task back to active:
 
 Moves the task from `.hb/task/archive/` back to `.hb/task/active/`.
 
+### Let `/hb-flow` drive
+
+Rather than tracking which skill to run next yourself, run `/hb-flow`. It reports where things left off, the recommended next action for each active task, then asks what you'd like to do next — reply in plain language and it resolves, confirms, and invokes the right skill for you:
+
+```
+/hb-flow
+```
+
+> Last action: `hb-task-step-execute` on `author/abc-123`, step 2.
+> Recommended: review this step, or move on to step 3.
+>
+> What would you like to do?
+
+```
+plan the next step
+```
+
+> Resolved: `/hb-task-step-plan author/abc-123/3`. Proceed?
+
+You can also front-load the request instead of waiting for the prompt:
+
+```
+/hb-flow archive the abc-123 task
+```
+
+`/hb-flow` never invents skill logic of its own — it only routes to the real skills documented above, so the exact same artifacts and commit behavior apply.
+
 ### Check status at any time
 
 ```
