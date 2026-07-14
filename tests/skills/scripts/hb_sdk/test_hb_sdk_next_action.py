@@ -192,7 +192,7 @@ def test_next_action_stage_review_or_next_has_next_step(tmp_path: Path) -> None:
     choices = entries[0]["choices"]
     assert len(choices) == 2
     assert choices[0]["label"] == "Review this step"
-    assert choices[1]["label"] == "Move to the next step"
+    assert choices[1]["label"] == "Move to the next step (run `/clear` first)"
     assert choices[1]["invocation"] == "/hb-task-step-plan hasan/abc-1/step-1"
 
 

@@ -18,10 +18,6 @@ class NextAction:
     choices: list[Choice] | None = None
 
 
-# TODO REVIEW /clear should be executed before any next step when presented at the end of most skills.
-# Exceptions are when presented at the end of hb-status, hb-task-step-review-* skills, and hb-flow (not yet written) prior to taking an action
-
-
 # TODO REVIEW prefer /hb-task-step-review-address to /hb-task-step-review-init; init is only used in specialty scenarios when user needs a plain skeleton-only review.md file
 def _resolve(steps: list[dict[str, Any]], ref: str, on_exhausted: str) -> NextAction:
     for i, s in enumerate(steps):
@@ -53,7 +49,10 @@ def _resolve(steps: list[dict[str, Any]], ref: str, on_exhausted: str) -> NextAc
             review_choice = Choice("Review this step", review_inv)
             move_on = _resolve(steps[i + 1 :], ref, on_exhausted="steps_complete")
             if move_on.invocation is not None:
-                rest = [Choice("Move to the next step", move_on.invocation)]
+                label = "Move to the next step"
+                if "/clear" in move_on.message:
+                    label += " (run `/clear` first)"
+                rest = [Choice(label, move_on.invocation)]
             else:
                 rest = move_on.choices or []
             return NextAction(
