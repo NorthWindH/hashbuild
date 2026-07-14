@@ -38,8 +38,10 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
   ```bash
   ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts write "<composed content>"
   ```
+
   - if `$SELF_COMMIT` is `true`: commit now via `$COMMIT_ARGS`, following [committing.md](committing.md)
   - if `$SELF_COMMIT` is `false`: leave `.hb/facts.md` uncommitted for the caller's own later commit step to pick up
+  - in all cases: present facts removed, updated, and added
 - if the composed content is unchanged from `$FACTS_AFTER`: skip the write entirely (and, when `$SELF_COMMIT` is `true`, skip the commit too) — no-op
 
 **Failure/degradation contract:** missing facts store never blocks either part; an unchanged compose result is a clean no-op, not an error.
