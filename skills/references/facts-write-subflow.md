@@ -27,12 +27,12 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
 ```
 
 - captures stdout as `$FACTS_AFTER` (may be empty)
-- read [facts-template.md](facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) before composing any changes
+- read [facts-template.md](facts-template.md) for size guidance (target <= 100 lines, hard max 1000 lines, <= 120 chars/line) and the exclusion categories before composing any changes
 - using judgement, based on what `$CONTEXT_LABEL` revealed — including any corrections or clarifications the user gave by interrupting the session (e.g. redirecting a wrong assumption), not only what ended up written into the caller's own output artifact:
   - **prefer dropping** any fact that is trivially re-derivable from current on-disk state rather than keeping it "just in case"
   - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
   - keep each fact short — target <= 120 characters total
-  - add new facts only when they correct a planning error or otherwise inform future planning/execution/review, weighed against the size guidance — see [facts-template.md](facts-template.md) for the "which future step acts on this?" test and the two categories that fail it (shipped/status announcements; messages meant for the human right now, not a future skill invocation)
+  - **gate on every candidate new fact before adding it**: name the specific future skill invocation or step that would read this fact and act differently because of it. If no specific reader can be named, drop the candidate — do not add it "just in case" or because the preceding work felt significant. See [facts-template.md](facts-template.md) for the three categories that reliably fail this gate (shipped/status announcements; messages meant for the human right now, not a future skill invocation; incidental observations with no planned future action)
   - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
 - if the composed content differs from `$FACTS_AFTER`:
   ```bash

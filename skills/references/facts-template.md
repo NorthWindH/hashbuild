@@ -12,14 +12,18 @@
   prose narrative.
 
   A fact earns its place only if it would change how a *future* planning,
-  execution, or review step reasons or acts. Before adding one, ask "which
-  future step reads this and does something differently because of it?" — if
-  the honest answer is "none, it's just a record that something happened,"
-  drop it. Two categories that reliably fail this test and should NOT be
-  added, however tempting during execution:
+  execution, or review step reasons or acts. Before adding one, name the
+  specific future skill invocation or step that would read it and act
+  differently because of it — if no specific reader can be named, drop it;
+  "it's just a record that something happened" is not a reader. Three
+  categories that reliably fail this test and should NOT be added, however
+  tempting right after finishing real work:
   - **Shipped/status announcements** ("X now exists", "Y was added with Z
-    tool") — this is already the git log and the execution summary's job;
-    restating it here adds no new information a future step could act on.
+    tool", or the task/step-prefixed shape `"<task>/step-N: <thing> is no
+    longer <old> — <new> was added/removed"`) — this is already the git log
+    and the execution summary's job; restating it here adds no new
+    information a future step could act on, even when it names the specific
+    task/step it came from.
   - **Messages meant for the human right now** ("test this next", "this is
     unverified, try it in a fresh session") — these belong in the skill's own
     user-facing output (its "Prompt user" step or final report), not the
