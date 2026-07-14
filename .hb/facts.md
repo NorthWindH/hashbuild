@@ -14,3 +14,4 @@
 - `README.md` at repo root is a symlink to `skills/references/README.md`; edit the real target path, not the symlink.
 - allowed-tools glob `//tmp/*` matches nested multi-segment paths under /tmp too (proven by hb-ticket-discuss's existing writes); no glob widening needed for deeper /tmp subdirs.
 - `load-ticket-subflow.md` never `Follow`s `interactive-ticket-subflow.md` — it only borrows specific sections (§A.1, §C, §D) inline, since it must not trigger that subflow's own guard/prompt. `describe-ticket-subflow.md` does `Follow` it fully.
+- hb-015/step-2's plan.md is stale: describes `$TICKET_SEQ` + a Read/WebFetch/Bash(find) widening that never shipped — for this task, trust live files over old step plan.md text.
