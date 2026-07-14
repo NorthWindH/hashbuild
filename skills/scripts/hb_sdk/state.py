@@ -6,7 +6,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .common import path_hb_asserted, path_hb_state, progress
+from .common import path_hb, path_hb_asserted, path_hb_state, progress
+from .next_action import compute_next_action, render_md_lines, to_dict
+from .summarize import build_data
 
 
 def write_state(record: dict[str, str | None]) -> Path:
@@ -56,6 +58,17 @@ def cmd_state_show(args: argparse.Namespace) -> None:
         print(json.dumps(record if record is not None else {}, indent=2))
 
 
+def cmd_state_next_action(args: argparse.Namespace) -> None:
+    state = read_state() if path_hb().exists() else None
+    data = build_data(path_hb())
+    entries = compute_next_action(state, data)
+    if args.format == "md":
+        for ref, na in entries:
+            print("\n".join(render_md_lines(na)))
+    else:
+        print(json.dumps([to_dict(ref, na) for ref, na in entries], indent=2))
+
+
 def def_cli_state(subs: Any) -> None:
     p_state = subs.add_parser("state", help="State persistence operations")
     state_subs = p_state.add_subparsers(dest="state_command", metavar="<action>")
@@ -71,3 +84,7 @@ def def_cli_state(subs: Any) -> None:
     p_show = state_subs.add_parser("show", help="Show current recorded state")
     p_show.add_argument("--format", choices=["json", "md"], default="json")
     p_show.set_defaults(func=cmd_state_show)
+
+    p_na = state_subs.add_parser("next-action", help="Print derived next action for active task(s)")
+    p_na.add_argument("--format", choices=["json", "md"], default="json")
+    p_na.set_defaults(func=cmd_state_next_action)

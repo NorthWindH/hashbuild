@@ -126,6 +126,13 @@ def state_show(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(args, cwd, ok=kwargs.get("ok", True))
 
 
+def state_next_action(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    args = ["state", "next-action"]
+    if fmt := kwargs.get("format"):
+        args += ["--format", fmt]
+    return run(args, cwd, ok=kwargs.get("ok", True))
+
+
 def facts_write(cwd: Path, content: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(["facts", "write", content], cwd, ok=kwargs.get("ok", True))
 

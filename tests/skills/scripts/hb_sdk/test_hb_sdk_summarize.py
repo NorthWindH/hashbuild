@@ -685,4 +685,7 @@ def test_summarize_format_md_next_action_all_steps_executed(tmp_path: Path) -> N
     (sp0 / "plan.md").write_text("# plan")
     (sp0 / "execution-2026-01-01T00-00-00+0000.md").write_text("# exec")
     result = summarize(tmp_path, format="md")
-    assert "review steps, archive task, or add more steps" in result.stdout
+    assert "Review this step" in result.stdout
+    assert "Add more steps" in result.stdout
+    assert "Update the plan" in result.stdout
+    assert "Archive the task" in result.stdout

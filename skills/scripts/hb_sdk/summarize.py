@@ -7,6 +7,7 @@ import typing
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import next_action
 from .common import (
     TASK_FOLDER_ACTIVE,
     TASK_FOLDER_ARCHIVE,
@@ -137,41 +138,6 @@ def _summarize_task(task_path: Path, author: str) -> _TaskInfo:
     )
 
 
-def _next_action(data: dict[str, typing.Any]) -> str:
-    if not data["initialized"]:
-        return "- Run `/hb-init` to initialize the workspace."
-
-    active_tasks = data["active_tasks"]
-
-    if not active_tasks:
-        return "- Start a new task with `/hb-task-create <author/task-id>`."
-
-    actions: list[str] = []
-    for t in active_tasks:
-        ref = f"{t['author']}/{t['task_folder']}"
-        if not t["has_ticket"]:
-            actions.append(f"Add `ticket.md` to `{ref}` with Background and Acceptance Criteria.")
-            continue
-        if t["total_steps"] == 0 or not any(s["has_ticket"] for s in t["steps"]):
-            actions.append(f"Add steps to `{ref}` with `/hb-task-plan {ref}` or `/hb-task-step-add {ref}`.")
-            continue
-        for s in t["steps"]:
-            step_ref = f"{ref}/{s['name']}"
-            if not s["has_ticket"]:
-                actions.append(f"Add `ticket.md` to `{step_ref}` or run `/hb-task-step-add {ref}`.")
-            elif not s["has_plan"]:
-                actions.append(f"Run `/hb-task-step-plan {step_ref}` to plan the next step.")
-            elif not s["has_execution"]:
-                actions.append(f"Run `/hb-task-step-execute {step_ref}` to execute the plan.")
-        if t["total_steps"] > 0 and all(s["has_execution"] for s in t["steps"]):
-            actions.append(f"All steps executed for `{ref}` — review steps, archive task, or add more steps.")
-
-    if not actions:
-        return "- Review workspace state."
-
-    return "\n".join(f"- {a}" for a in actions)
-
-
 def _render_md(data: dict[str, typing.Any]) -> str:
     def _cell(v: int) -> str:
         return "—" if v == 0 else str(v)
@@ -241,12 +207,13 @@ def _render_md(data: dict[str, typing.Any]) -> str:
             lines.append(f"- `{entry['author']}/{entry['task_folder']}`")
 
     lines += ["", "---", "", "## Next Action", ""]
-    lines.append(_next_action(data))
+    for ref, na in next_action.compute_next_action(None, data):
+        lines += next_action.render_md_lines(na)
 
     return "\n".join(lines) + "\n"
 
 
-def _build_data(hb: Path) -> dict[str, typing.Any]:
+def build_data(hb: Path) -> dict[str, typing.Any]:
     if not hb.exists():
         return {"initialized": False, "active_tasks": [], "archive": {"count": 0, "recent": []}}
 
@@ -324,7 +291,7 @@ def _build_data(hb: Path) -> dict[str, typing.Any]:
 
 
 def cmd_summarize(args: argparse.Namespace) -> None:
-    data = _build_data(path_hb())
+    data = build_data(path_hb())
     if args.format == "md":
         print(_render_md(data))
     else:
