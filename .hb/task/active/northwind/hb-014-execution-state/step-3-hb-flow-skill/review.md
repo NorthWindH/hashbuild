@@ -8,6 +8,7 @@
 | STEP-3-REVIEW-2 | ✅ Addressed — added `--flavor` to args shape + Step 6 derivation guidance |
 | STEP-3-REVIEW-3 | ✅ Assessed — kept as-is, no channel exists to pass facts through the `Skill` tool call and target skills already read facts themselves |
 | STEP-3-REVIEW-4 | ✅ Addressed — added `hb-sdk facts read` at start of Step 4 to inform prompt framing |
+| STEP-3-REVIEW-5 |            |
 
 ---
 
@@ -45,6 +46,14 @@
 - **file(s):** `skills/hb-flow.md` (Step 4, Prompt for intent)
 - Before Step 4 asks "What would you like to do?" (or consumes an initial freeform request), `hb-flow` should read `.hb/facts.md` for its own use. Facts may help it inform which next-action suggestions to surface or how to interpret the user's reply, without needing to pass anything to the invoked skill.
 - **Resolution:** Added a `hb-sdk facts read` call at the start of Step 4, capturing output as `$FACTS`, with guidance to take it into account when framing example phrasings or interpreting the reply — distinct from STEP-3-REVIEW-3, since this use is entirely internal to `hb-flow`'s own reasoning and doesn't require passing anything through the `Skill` tool call. Disposition: **Addressed**.
+
+---
+
+### STEP-3-REVIEW-5: Add --flavor flag to hb-task-create
+
+- **file(s):** `skills/hb-task-create.md` (Inputs)
+- `hb-task-create` should gain a `--flavor <slug>` flag, similar to `hb-task-step-add`'s, so that `hb-flow`'s STEP-3-REVIEW-2 resolution (which added `[--flavor <slug>]` to `hb-task-create`'s args shape in the Action Registry) is actually backed by a real flag on the target skill.
+- **source:** `TODO REVIEW` in commit `988249a14954ac148f95df887937e2d7c5bccbb5` — delete comment from source file after addressing
 
 ---
 
