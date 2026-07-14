@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — hook now emits `systemMessage` JSON so the message renders to the user |
 | STEP-4-REVIEW-2 | ✅ Addressed — hook entries now matched by stable marker, upgraded/removed in place regardless of command-text changes |
-| STEP-4-REVIEW-3 |            |
+| STEP-4-REVIEW-3 | ⏭️ Deferred — no second hook exists yet to validate a generic marker against; revisit when one is added |
 | STEP-4-REVIEW-4 |            |
 
 ---
@@ -44,6 +44,10 @@ Disposition: **Addressed**
 - **file(s):** `install` (around `HB_FLOW_HOOK_MARKER` definition, line ~72)
 - The current hook marker string is more complex than it needs to be. Reviewer suggests simplifying it to something like `[hashbuild]` so the same marker convention can be reused across more hook types in the future, not just the SessionStart hook.
 - **source:** `TODO REVIEW` in commit `1f57291f3da9e2abd5059ac053d6f9d315522425` — delete comment from source file after addressing
+
+**Resolution:** Checked whether any active task plans a second hook (searched `.hb/task/active/**/*.md` for hook-related work) — none do; `install` currently registers exactly one hook (`SessionStart`). Simplifying `HB_FLOW_HOOK_MARKER` to a generic `[hashbuild]`-style token now would be speculative: there's no second hook's command text to validate the new marker against, and the current marker (`"run /hb-flow to see what to do next."`) already does its one job — uniquely identifying the hb-flow SessionStart entry regardless of which `HB_FLOW_HOOK_COMMAND` variant is installed. Not changing it now; revisit marker design if/when a second hook type is actually added, at which point the right generic form can be chosen with a real second use case to validate against instead of guessing.
+
+Disposition: **Deferred**
 
 ---
 
