@@ -101,36 +101,44 @@ In your project directory:
 
 Creates `.hb/` at the project root and commits it. Run once per project.
 
-### 2. Write a ticket (optional but recommended)
-
-A ticket is a Markdown file that defines what a task must achieve. Three sections:
-
-```markdown
-# Background
-
-One sentence (or more) on what you need and why.
-
-# Acceptance Criteria
-
-1. Concrete, checkable condition — "input X produces output Y"
-2. Another criterion
-
-# Out of scope
-
-- What this task deliberately does not do
-```
-
-### 3. Create a task
+### 2. Create a task
 
 Task names follow the format `author/prefix-123[-optional-flavor]`:
 
 ```
-/hb-task-create author/abc-123-my-feature --ticket ticket.md
+/hb-task-create author/abc-123-my-feature
 ```
 
-Creates `.hb/task/active/author/abc-123-my-feature/` with your ticket seeded in, and commits the skeleton.
+**Recommended: let it draft the ticket interactively.** With no `--ticket` file passed, `hb-task-create` asks you to describe what the task should cover — freeform prose, bullets, or a fully structured draft, whatever's fastest for you to write — then transforms your answer into a `ticket.md` with the standard three sections.
 
-### 4. Plan the task
+For example, if you reply:
+
+> We need a `--dry-run` flag on the sync command so users can preview changes before applying them. It should print each file that would be modified without touching disk. Doesn't need to work combined with `--force`.
+
+it produces:
+
+```markdown
+# Background
+
+Users need to preview changes before applying them, without risking
+unintended modifications to disk.
+
+# Acceptance Criteria
+
+1. A `--dry-run` flag is added to the sync command.
+2. Running with `--dry-run` prints each file that would be modified.
+3. Running with `--dry-run` does not modify any files on disk.
+
+# Out of scope
+
+- Combining `--dry-run` with `--force`
+```
+
+Creates `.hb/task/active/author/abc-123-my-feature/` with the generated ticket seeded in, and commits the skeleton.
+
+**Alternatives:** if you already have a fully drafted ticket file, pass it directly with `--ticket <path>` to skip the interactive prompt. To skip ticket creation entirely and get an empty skeleton, pass `--no-interactive`.
+
+### 3. Plan the task
 
 ```
 /hb-task-plan author/abc-123
@@ -138,7 +146,7 @@ Creates `.hb/task/active/author/abc-123-my-feature/` with your ticket seeded in,
 
 Reads your task ticket's acceptance criteria, compares them against any existing step tickets, and interactively creates steps to cover the gaps. Each step gets a scoped `ticket.md`.
 
-### 5. Plan and execute each step
+### 4. Plan and execute each step
 
 For each step in order, `/clear` between each skill invocation to keep context fresh:
 
@@ -182,7 +190,7 @@ Review is iterative — add more concerns and re-run `/hb-task-step-review-addre
 
 Repeat for each step. Add more steps at any time with `/hb-task-step-add` or update a task's ticket.md then `/hb-task-plan` again to cover any new gaps.
 
-### 6. Archive the task
+### 5. Archive the task
 
 When all steps are done:
 
