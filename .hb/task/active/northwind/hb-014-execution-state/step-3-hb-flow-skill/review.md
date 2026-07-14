@@ -8,7 +8,7 @@
 | STEP-3-REVIEW-2 | ✅ Addressed — added `--flavor` to args shape + Step 6 derivation guidance |
 | STEP-3-REVIEW-3 | ✅ Assessed — kept as-is, no channel exists to pass facts through the `Skill` tool call and target skills already read facts themselves |
 | STEP-3-REVIEW-4 | ✅ Addressed — added `hb-sdk facts read` at start of Step 4 to inform prompt framing |
-| STEP-3-REVIEW-5 |            |
+| STEP-3-REVIEW-5 | ✅ Addressed — fixed the real bug in `hb-flow.md`'s STEP-3-REVIEW-2 resolution instead of adding an unneeded flag |
 
 ---
 
@@ -54,6 +54,7 @@
 - **file(s):** `skills/hb-task-create.md` (Inputs)
 - `hb-task-create` should gain a `--flavor <slug>` flag, similar to `hb-task-step-add`'s, so that `hb-flow`'s STEP-3-REVIEW-2 resolution (which added `[--flavor <slug>]` to `hb-task-create`'s args shape in the Action Registry) is actually backed by a real flag on the target skill.
 - **source:** `TODO REVIEW` in commit `988249a14954ac148f95df887937e2d7c5bccbb5` — delete comment from source file after addressing
+- **Resolution:** Did not add a `--flavor` flag to `hb-task-create` — its premise doesn't hold. `hb-sdk task create` takes a fully-qualified `<author/task-id>` name where the flavor (`task_extra`) is already part of the name string (e.g. `author/abc-123-some-stuff`, per `structure.md`); `hb-task-step-add` needs a separate `--flavor` flag only because the SDK assigns the step number itself, so the caller can't pre-embed the flavor into a step ref. The actual bug was in `hb-flow.md`'s STEP-3-REVIEW-2 resolution, which incorrectly gave `hb-task-create` a `[--flavor <slug>]` args-shape entry it doesn't support. Fixed there instead: reverted the Action Registry's "Create a new task" row to plain `<author/task-id>`, and updated the Step 6 derivation bullet so `hb-flow` appends the derived slug directly onto the task-id for `hb-task-create` while still passing a separate `--flavor` for `hb-task-step-add`. Disposition: **Addressed** (in `hb-flow.md`, not `hb-task-create.md`).
 
 ---
 

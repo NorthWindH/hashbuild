@@ -67,7 +67,7 @@ Match the reply against the Action Registry below using semantic match, not exac
 
 | Action                | Target skill                                                                                                                       | Args shape                    | Example phrasings                                                   |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
-| Create a new task     | `hb-task-create`                                                                                                                   | `<author/task-id> [--flavor <slug>]` | "create a new task", "start a task for X"                    |
+| Create a new task     | `hb-task-create`                                                                                                                   | `<author/task-id>`            | "create a new task", "start a task for X"                           |
 | Plan task into steps  | `hb-task-plan`                                                                                                                     | `<task_ref>`                  | "plan this task", "break it into steps"                             |
 | Add a step            | `hb-task-step-add`                                                                                                                 | `<task_ref> [--flavor <slug>]`| "add a step", "add another step"                                    |
 | Plan a step           | `hb-task-step-plan`                                                                                                                | `<task_ref>/<step_n>`         | "plan the next step", "let's plan it", "go back and re-plan step 2" |
@@ -99,7 +99,7 @@ On no confident match: ask a clarifying question and re-prompt (return to Step 4
   - "review": the first entry in `steps_needs_review`
 
 - If still ambiguous, ask a clarifying question (return to Step 4) instead of guessing.
-- If the target skill is `hb-task-create` or `hb-task-step-add`, derive a `--flavor <slug>` from the user's reply (lowercase, hyphen-separated, `[a-z-]` only) and include it in the resolved args. The user can drop or edit it at the Step 7 confirmation.
+- If the target skill is `hb-task-step-add`, derive a `--flavor <slug>` from the user's reply (lowercase, hyphen-separated, `[a-z-]` only) and include it in the resolved args. If the target skill is `hb-task-create`, derive the same slug but append it directly to the task-id in the resolved `<author/task-id>` (e.g. `author/abc-123-<slug>`) — `hb-task-create` has no separate `--flavor` flag; the task_extra is part of the name itself. In both cases the user can drop or edit it at the Step 7 confirmation.
 
 ### 7. Confirm
 
