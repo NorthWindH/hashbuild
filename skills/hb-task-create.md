@@ -33,6 +33,8 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to create or verify the task s
 
 If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/references/skill-help.md](references/skill-help.md). Stop.
 
+<!-- TODO REVIEW update steps to read fact store before proceeding -->
+
 ### 2. Flag precedence / interactive ticket
 
 Set:
