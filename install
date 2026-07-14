@@ -58,7 +58,7 @@ HARNESSES: dict[HarnessKey, HarnessConfig] = {
 }
 
 HB_FLOW_HOOK_MATCHER = "startup|clear"
-HB_FLOW_HOOK_COMMAND = "[ -d .hb ] && echo 'hashbuild: run /hb-flow to see where things left off.'; true"
+HB_FLOW_HOOK_COMMAND = "[ -d .hb ] && echo 'hashbuild: run /hb-flow to see what to do next.'; true"
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
