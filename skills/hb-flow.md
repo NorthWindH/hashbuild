@@ -56,15 +56,13 @@ If the initial invocation already carried a freeform request (the text after any
 
 ### 5. Resolve intent
 
-<!-- TODO REVIEW update step-add and task-create to always derive flavor from user's provided natural language; user can always drop this or update it during the confirmation step -->
-
 Match the reply against the Action Registry below using semantic match, not exact keywords:
 
 | Action                | Target skill                                                                                                                       | Args shape                    | Example phrasings                                                   |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
-| Create a new task     | `hb-task-create`                                                                                                                   | `<author/task-id>`            | "create a new task", "start a task for X"                           |
+| Create a new task     | `hb-task-create`                                                                                                                   | `<author/task-id> [--flavor <slug>]` | "create a new task", "start a task for X"                    |
 | Plan task into steps  | `hb-task-plan`                                                                                                                     | `<task_ref>`                  | "plan this task", "break it into steps"                             |
-| Add a step            | `hb-task-step-add`                                                                                                                 | `<task_ref>`                  | "add a step", "add another step"                                    |
+| Add a step            | `hb-task-step-add`                                                                                                                 | `<task_ref> [--flavor <slug>]`| "add a step", "add another step"                                    |
 | Plan a step           | `hb-task-step-plan`                                                                                                                | `<task_ref>/<step_n>`         | "plan the next step", "let's plan it", "go back and re-plan step 2" |
 | Execute a step        | `hb-task-step-execute`                                                                                                             | `<task_ref>/<step_n>`         | "execute this step", "run the plan"                                 |
 | Start/continue review | `hb-task-step-review-address` (default) or `hb-task-step-review-init` (only if the user explicitly wants to just seed `review.md`) | `<task_ref>/<step_n>`         | "let's review", "review this step", "just create review.md"         |
@@ -94,6 +92,7 @@ On no confident match: ask a clarifying question and re-prompt (return to Step 4
   - "review": the first entry in `steps_needs_review`
 
 - If still ambiguous, ask a clarifying question (return to Step 4) instead of guessing.
+- If the target skill is `hb-task-create` or `hb-task-step-add`, derive a `--flavor <slug>` from the user's reply (lowercase, hyphen-separated, `[a-z-]` only) and include it in the resolved args. The user can drop or edit it at the Step 7 confirmation.
 
 ### 7. Confirm
 

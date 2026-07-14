@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-3-REVIEW-1 | ✅ Addressed — added "Create a new task" → `hb-task-create` row to Action Registry |
-| STEP-3-REVIEW-2 |            |
+| STEP-3-REVIEW-2 | ✅ Addressed — added `--flavor` to args shape + Step 6 derivation guidance |
 | STEP-3-REVIEW-3 |            |
 
 ---
@@ -26,6 +26,7 @@
 - **file(s):** `skills/hb-flow.md` (Step 5, near Action Registry)
 - When `/hb-flow` routes to `hb-task-step-add` or `hb-task-create`, those skills should always derive their `--flavor` from the user's provided natural-language request rather than leaving it unset/interactive. The user can still drop or update the derived flavor during that skill's own confirmation step.
 - **source:** `TODO REVIEW` in commit `580febe85456354e3b9d610d224d0641dbb9378c` — delete comment from source file after addressing
+- **Resolution:** Added `[--flavor <slug>]` to the "Create a new task" and "Add a step" rows' Args shape column, and added a bullet to Step 6 (Resolve target task/step) instructing `hb-flow` to derive a `--flavor <slug>` from the user's reply when the target skill is `hb-task-create` or `hb-task-step-add`, editable by the user at the Step 7 confirmation. Disposition: **Addressed**.
 
 ---
 
