@@ -7,7 +7,7 @@
 | STEP-3-REVIEW-1 | ✅ Addressed — added "Create a new task" → `hb-task-create` row to Action Registry |
 | STEP-3-REVIEW-2 | ✅ Addressed — added `--flavor` to args shape + Step 6 derivation guidance |
 | STEP-3-REVIEW-3 | ✅ Assessed — kept as-is, no channel exists to pass facts through the `Skill` tool call and target skills already read facts themselves |
-| STEP-3-REVIEW-4 |            |
+| STEP-3-REVIEW-4 | ✅ Addressed — added `hb-sdk facts read` at start of Step 4 to inform prompt framing |
 
 ---
 
@@ -44,6 +44,7 @@
 
 - **file(s):** `skills/hb-flow.md` (Step 4, Prompt for intent)
 - Before Step 4 asks "What would you like to do?" (or consumes an initial freeform request), `hb-flow` should read `.hb/facts.md` for its own use. Facts may help it inform which next-action suggestions to surface or how to interpret the user's reply, without needing to pass anything to the invoked skill.
+- **Resolution:** Added a `hb-sdk facts read` call at the start of Step 4, capturing output as `$FACTS`, with guidance to take it into account when framing example phrasings or interpreting the reply — distinct from STEP-3-REVIEW-3, since this use is entirely internal to `hb-flow`'s own reasoning and doesn't require passing anything through the `Skill` tool call. Disposition: **Addressed**.
 
 ---
 

@@ -52,6 +52,13 @@ In plain language, report:
 
 ### 4. Prompt for intent
 
+```bash
+${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
+```
+
+- capture stdout as `$FACTS` (may be empty); never errors — if `.hb/facts.md` or `.hb/` itself is missing, proceed unaffected
+- take `$FACTS` into account when framing example phrasings or interpreting the reply below (e.g. a fact naming a step already in flight can shape which example actions are surfaced), without requiring the user to restate it
+
 If the initial invocation already carried a freeform request (the text after any flags), use it as the reply. Otherwise ask "What would you like to do?" and list 3-4 example phrasings drawn from the Action Registry (Step 5). Await the reply.
 
 ### 5. Resolve intent
