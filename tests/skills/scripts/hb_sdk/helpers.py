@@ -102,7 +102,9 @@ def idea_show(cwd: Path, target: str | None = None, *, ok: bool = True) -> subpr
     return run(args, cwd, ok=ok)
 
 
-def idea_set_content(cwd: Path, idea_ref: str, new_content: str, *, ok: bool = True) -> subprocess.CompletedProcess[str]:
+def idea_set_content(
+    cwd: Path, idea_ref: str, new_content: str, *, ok: bool = True
+) -> subprocess.CompletedProcess[str]:
     return run(["idea", "set-content", idea_ref, new_content], cwd, ok=ok)
 
 
