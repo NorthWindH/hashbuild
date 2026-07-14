@@ -11,6 +11,21 @@
   transient in-progress note. Prefer short, dated, falsifiable statements over
   prose narrative.
 
+  A fact earns its place only if it would change how a *future* planning,
+  execution, or review step reasons or acts. Before adding one, ask "which
+  future step reads this and does something differently because of it?" — if
+  the honest answer is "none, it's just a record that something happened,"
+  drop it. Two categories that reliably fail this test and should NOT be
+  added, however tempting during execution:
+  - **Shipped/status announcements** ("X now exists", "Y was added with Z
+    tool") — this is already the git log and the execution summary's job;
+    restating it here adds no new information a future step could act on.
+  - **Messages meant for the human right now** ("test this next", "this is
+    unverified, try it in a fresh session") — these belong in the skill's own
+    user-facing output (its "Prompt user" step or final report), not the
+    facts store. The facts store is read by future *skill invocations*, not
+    relayed to a person as a to-do.
+
   Size guidance (not programmatically enforced — apply judgement):
   - Target size: <= 100 lines.
   - Hard maximum: 1000 lines.

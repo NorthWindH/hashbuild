@@ -32,7 +32,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk facts read
   - **prefer dropping** any fact that is trivially re-derivable from current on-disk state rather than keeping it "just in case"
   - remove or correct any fact in `$FACTS_AFTER` found to be stale or incorrect
   - keep each fact short — target <= 120 characters total
-  - add new facts only when they correct a planning error or otherwise inform future planning/execution/review, weighed against the size guidance
+  - add new facts only when they correct a planning error or otherwise inform future planning/execution/review, weighed against the size guidance — see [facts-template.md](facts-template.md) for the "which future step acts on this?" test and the two categories that fail it (shipped/status announcements; messages meant for the human right now, not a future skill invocation)
   - if pruning is needed to stay within guidance, prune stale/superseded facts before adding new ones
 - if the composed content differs from `$FACTS_AFTER`:
   ```bash
