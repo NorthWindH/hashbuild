@@ -8,7 +8,7 @@ description: >
   interpret a natural-language reply, confirm the resolved hb-* skill invocation with
   the user, and invoke it directly — including calls-to-action other than the
   currently recommended one.
-allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Read Skill
+allowed-tools: Bash(${CLAUDE_SKILL_DIR}/scripts/hb-sdk *) Skill
 ---
 
 # hb-flow
@@ -17,10 +17,10 @@ Report where the active task/step left off and the recommended next action, then
 
 ## Inputs
 
-| Parameter                    | Required | Description                                                                                                                              |
-| ----------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Parameter                    | Required | Description                                                                                                                                          |
+| ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<natural language request>` | no       | Freeform description of what to do next (e.g. "execute this step", "archive this task"). If omitted, asked for interactively after the state report. |
-| `help`, `--help`, `-h`        | no       | Print help and exit.                                                                                                                       |
+| `help`, `--help`, `-h`       | no       | Print help and exit.                                                                                                                                 |
 
 ## Reference Files
 
@@ -58,16 +58,16 @@ If the initial invocation already carried a freeform request (the text after any
 
 Match the reply against the Action Registry below using semantic match, not exact keywords:
 
-| Action                     | Target skill                                                                                                   | Args shape                | Example phrasings                                                    |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------ |
-| Plan task into steps        | `hb-task-plan`                                                                                                     | `<task_ref>`               | "plan this task", "break it into steps"                                  |
-| Add a step                  | `hb-task-step-add`                                                                                                 | `<task_ref>`               | "add a step", "add another step"                                         |
-| Plan a step                 | `hb-task-step-plan`                                                                                                | `<task_ref>/<step_n>`      | "plan the next step", "let's plan it", "go back and re-plan step 2"      |
-| Execute a step               | `hb-task-step-execute`                                                                                             | `<task_ref>/<step_n>`      | "execute this step", "run the plan"                                      |
-| Start/continue review       | `hb-task-step-review-address` (default) or `hb-task-step-review-init` (only if the user explicitly wants to just seed `review.md`) | `<task_ref>/<step_n>`      | "let's review", "review this step", "just create review.md"              |
-| Move to the next step       | whichever skill/args `$NEXT_ACTIONS`'s `review_or_next`/`steps_complete` choices resolve to                       | as printed in `$NEXT_ACTIONS` | "move on", "next step"                                                    |
-| Archive task                 | `hb-task-archive`                                                                                                  | `<task_ref>`               | "archive this task", "close it out"                                      |
-| Unarchive task               | `hb-task-unarchive`                                                                                                | `<task_ref>`               | "unarchive it", "restore this task"                                      |
+| Action                | Target skill                                                                                                                       | Args shape                    | Example phrasings                                                   |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| Plan task into steps  | `hb-task-plan`                                                                                                                     | `<task_ref>`                  | "plan this task", "break it into steps"                             |
+| Add a step            | `hb-task-step-add`                                                                                                                 | `<task_ref>`                  | "add a step", "add another step"                                    |
+| Plan a step           | `hb-task-step-plan`                                                                                                                | `<task_ref>/<step_n>`         | "plan the next step", "let's plan it", "go back and re-plan step 2" |
+| Execute a step        | `hb-task-step-execute`                                                                                                             | `<task_ref>/<step_n>`         | "execute this step", "run the plan"                                 |
+| Start/continue review | `hb-task-step-review-address` (default) or `hb-task-step-review-init` (only if the user explicitly wants to just seed `review.md`) | `<task_ref>/<step_n>`         | "let's review", "review this step", "just create review.md"         |
+| Move to the next step | whichever skill/args `$NEXT_ACTIONS`'s `review_or_next`/`steps_complete` choices resolve to                                        | as printed in `$NEXT_ACTIONS` | "move on", "next step"                                              |
+| Archive task          | `hb-task-archive`                                                                                                                  | `<task_ref>`                  | "archive this task", "close it out"                                 |
+| Unarchive task        | `hb-task-unarchive`                                                                                                                | `<task_ref>`                  | "unarchive it", "restore this task"                                 |
 
 On no confident match: ask a clarifying question and re-prompt (return to Step 4) — never guess.
 
@@ -83,6 +83,7 @@ On no confident match: ask a clarifying question and re-prompt (return to Step 4
   ```bash
   ${CLAUDE_SKILL_DIR}/scripts/hb-sdk summarize --format json
   ```
+
   - task-level actions ("plan task", "add a step", "archive", "unarchive"): if exactly one active task, use it; if more than one and none named, ask which one (never silently pick one)
   - "plan a step": the first step with `has_ticket=true, has_plan=false`; if the first pending step has no ticket, say so instead of resolving to it
   - "execute a step": the first step with `has_plan=true, has_execution=false`

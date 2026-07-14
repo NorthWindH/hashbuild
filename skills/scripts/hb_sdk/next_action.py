@@ -111,7 +111,9 @@ def compute_next_action(
             )
         ]
 
-    entries = [(f"{t['author']}/{t['task_folder']}", next_action_for_task(t)) for t in active]
+    entries: list[tuple[str | None, NextAction]] = [
+        (f"{t['author']}/{t['task_folder']}", next_action_for_task(t)) for t in active
+    ]
     wanted = state.get("task") if state else None
     if wanted is not None:
         idx = next((i for i, (ref, _) in enumerate(entries) if ref == wanted), None)
