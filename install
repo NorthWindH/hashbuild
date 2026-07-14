@@ -58,10 +58,9 @@ HARNESSES: dict[HarnessKey, HarnessConfig] = {
 }
 
 HB_FLOW_HOOK_MATCHER = "startup|clear"
-HB_FLOW_HOOK_COMMAND = "[ -d .hb ] && echo 'hashbuild: run /hb-flow to see what to do next.'; true"
-
-# TODO REVIEW hook should be presented to user but it's not showing. See input output reference here: https://code.claude.com/docs/en/hooks#hook-input-and-output
-
+HB_FLOW_HOOK_COMMAND = (
+    '[ -d .hb ] && echo \'{"systemMessage": "hashbuild: run /hb-flow to see what to do next."}\'; true'
+)
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
