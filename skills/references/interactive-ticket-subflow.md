@@ -1,10 +1,10 @@
-> **Subflow — interactive ticket creation.** Shared by `hb-task-create` and
-> `hb-task-step-add`. Contains no side effects (no commit, no SDK calls, no user
-> notification beyond the prompt itself).
+> **Subflow — interactive ticket creation.** Shared by `hb-task-create`,
+> `hb-task-step-add`, and `hb-ticket-discuss`'s `describe-ticket-subflow.md`/
+> `load-ticket-subflow.md`. Contains no side effects (no commit, no SDK calls,
+> no user notification beyond the prompt itself).
 
 **Caller contract.** Before injecting this subflow, the calling skill must have resolved:
 
-- `$TARGET_PATH` — absolute path to the folder where `ticket.md` will be written
 - `$TICKET_SUPPLIED` — set to `true` if `--ticket <path>` was passed; otherwise unset or `false`
 - `$NO_INTERACTIVE` — set to `true` if `--no-interactive` was passed; otherwise unset or `false`
 
@@ -12,7 +12,18 @@
 
 - If `$TICKET_SUPPLIED` is `true`: skip this entire subflow (a ticket file was supplied; it takes precedence). Do nothing.
 - If `$NO_INTERACTIVE` is `true`: skip this entire subflow (skeleton-only mode requested). Do nothing.
-- Otherwise: continue to Section B.
+- Otherwise: continue to Section A.1.
+
+#### A.1 Resolve target path
+
+Resolve `$TARGET_PATH` — the directory `ticket.md` will be written to — with this precedence:
+
+1. **Harness-declared session scratch dir.** If the current operating context/instructions document a session-specific scratch or temporary directory (any convention — for example, some harnesses surface this as in-session "Scratchpad Directory" guidance), use it.
+2. **Hand-rolled fallback.** Otherwise, run `mktemp -d /tmp/hb-ticket.XXXXXXXX` and use the directory it creates.
+
+`mktemp -d` failing (e.g. `/tmp` unwritable) is a hard environment failure outside this subflow's control — surface the error verbatim rather than silently retrying or picking an unvalidated path.
+
+Continue to Section B.
 
 #### B. Prompt step
 
@@ -71,3 +82,5 @@ Write the derived content to `$TARGET_PATH/ticket.md` using this structure:
 
 <bullet list>
 ```
+
+**Return value:** `$TARGET_PATH` — the directory resolved in Section A.1 — so the caller can build `$TARGET_PATH/ticket.md` for its own use (e.g. a `--ticket` argument, or a read-back per `ticket-loop-subflow.md`'s ticket entry model).

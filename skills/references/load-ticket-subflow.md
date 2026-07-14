@@ -7,7 +7,6 @@
 **Caller contract.** Before invoking this subflow, the caller must have resolved:
 
 - `$TICKET_CONTEXT` — mutable list of ticket entries (in/out)
-- `$TICKET_SEQ` — mutable integer counter (in/out)
 - (implicit) the user's triggering utterance — already visible in the same
   conversation this subflow executes in; not a formal parameter.
 
@@ -27,7 +26,7 @@ which source they mean and wait for their answer before continuing.
 #### B. File source
 
 1. Resolve the named path or glob. Zero matches → tell the user, return to
-   the loop menu (no entry added, `$TICKET_SEQ` unchanged). Multiple matches
+   the loop menu (no entry added). Multiple matches
    → present a numbered list of matches; the user picks one — never
    auto-select. One match → use it.
 2. Read the resolved file. Read failure → surface the error verbatim, return
@@ -76,9 +75,8 @@ Shared by all three sources:
 1. Transform `$RAW_CONTENT` by applying `interactive-ticket-subflow.md` §C's
    Rule 1 (near-perfect match → transcribe) and Rule 2 (freeform → derive) as
    written there.
-2. Increment `$TICKET_SEQ`. Set `$TARGET_PATH` =
-   `/tmp/hb-ticket-discuss/ticket-$TICKET_SEQ` — a fresh, non-colliding
-   scratch folder for this call.
+2. Apply `interactive-ticket-subflow.md` §A.1's resolution logic to set
+   `$TARGET_PATH`.
 3. Write step: before writing, if `$TARGET_PATH/ticket.md` already exists,
    delete it. Write the transformed content to `$TARGET_PATH/ticket.md` using
    `interactive-ticket-subflow.md` §D's file structure.
@@ -96,7 +94,7 @@ Shared by all three sources:
    (from $SOURCE)"`.
 
 **Failure/degradation contract:** every §B/§C/§D failure branch returns to
-the loop menu without mutating `$TICKET_CONTEXT` or `$TICKET_SEQ` and without
+the loop menu without mutating `$TICKET_CONTEXT` and without
 raising an error — the returned outcome string instead describes the failure
 (e.g. `"Load ticket failed: <reason>"`) so `ticket-loop-subflow.md` §E still
 logs the attempt. No partial or malformed entry is ever appended.

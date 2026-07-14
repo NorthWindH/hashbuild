@@ -7,7 +7,6 @@
 **Caller contract.** Before injecting this subflow, the calling skill must have resolved:
 
 - `$TICKET_CONTEXT` — mutable list of ticket entries (§A); caller initializes to `[]`
-- `$TICKET_SEQ` — mutable integer counter; caller initializes to `0`
 - `$ACTION_LOG` — mutable list of strings; caller initializes to `[]`
 
 #### A. Ticket entry model
@@ -56,8 +55,8 @@ Match the user's freeform reply against §B's action names and example
 phrasings using semantic match, not exact keyword match. On an ambiguous or
 unmatched reply: ask a clarifying question and re-prompt, without re-running
 all of §C. On a confident match: invoke the matched action's dispatch
-subflow, passing `$TICKET_CONTEXT` and `$TICKET_SEQ` by reference (the
-callee mutates them in place).
+subflow, passing `$TICKET_CONTEXT` by reference (the callee mutates it in
+place).
 
 #### E. Log + loop continue
 

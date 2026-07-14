@@ -45,11 +45,11 @@ If the first argument is `help`, `--help`, or `-h`: follow [${CLAUDE_SKILL_DIR}/
 
 ### 2. Initialize loop
 
-Set `$TICKET_CONTEXT` = `[]`, `$TICKET_SEQ` = `0`, `$ACTION_LOG` = `[]`.
+Set `$TICKET_CONTEXT` = `[]`, `$ACTION_LOG` = `[]`.
 
 ### 3. Inject loop subflow
 
-Follow [${CLAUDE_SKILL_DIR}/references/ticket-loop-subflow.md](references/ticket-loop-subflow.md), passing `$TICKET_CONTEXT`, `$TICKET_SEQ`, and `$ACTION_LOG` as its caller contract requires. This subflow runs the present → dispatch → loop-continue cycle until the user selects Exit, at which point it returns here and the skill ends.
+Follow [${CLAUDE_SKILL_DIR}/references/ticket-loop-subflow.md](references/ticket-loop-subflow.md), passing `$TICKET_CONTEXT` and `$ACTION_LOG` as its caller contract requires. This subflow runs the present → dispatch → loop-continue cycle until the user selects Exit, at which point it returns here and the skill ends.
 
 ## Output
 

@@ -13,4 +13,4 @@
 - `install`'s `HookPatcher` matches hb-flow's hook entry via `HB_FLOW_HOOK_MARKER` (stable substring), not exact command equality, so `HB_FLOW_HOOK_COMMAND` text can change without breaking install/uninstall idempotency.
 - `README.md` at repo root is a symlink to `skills/references/README.md`; edit the real target path, not the symlink.
 - allowed-tools glob `//tmp/*` matches nested multi-segment paths under /tmp too (proven by hb-ticket-discuss's existing writes); no glob widening needed for deeper /tmp subdirs.
-- `load-ticket-subflow.md` never `Follow`s `interactive-ticket-subflow.md` — it only borrows specific sections (§C, §D) inline, since it must not trigger that subflow's own guard/prompt. `describe-ticket-subflow.md` does `Follow` it fully.
+- `load-ticket-subflow.md` never `Follow`s `interactive-ticket-subflow.md` — it only borrows specific sections (§A.1, §C, §D) inline, since it must not trigger that subflow's own guard/prompt. `describe-ticket-subflow.md` does `Follow` it fully.

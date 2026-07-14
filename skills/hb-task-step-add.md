@@ -53,15 +53,13 @@ Evaluate in order (first match wins):
 1. **`$TICKET_SUPPLIED` is `true`** — proceed to Step 3; pass `--ticket <ticket_path>` to the SDK as today.
 2. **`$NO_INTERACTIVE` is `true`** — skeleton-only mode; proceed to Step 3 without a ticket.
 3. **Neither flag** — interactive mode:
-   a. Set `$TARGET_PATH` = `/tmp`.
-   b. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](references/interactive-ticket-subflow.md) with:
-   - `$TARGET_PATH` = `/tmp`
+   a. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](references/interactive-ticket-subflow.md) with:
    - `$TICKET_SUPPLIED` = `false`
    - `$NO_INTERACTIVE` = `false`
 
-   The subflow writes `ticket.md` to `/tmp/ticket.md`.
-   c. Set `$WRITTEN_TICKET` = `/tmp/ticket.md`.
-   d. Proceed to Step 3 with `--ticket $WRITTEN_TICKET`.
+   The subflow resolves its own `$TARGET_PATH` and writes `ticket.md` to `$TARGET_PATH/ticket.md`, returning `$TARGET_PATH`.
+   b. Set `$WRITTEN_TICKET` = `$TARGET_PATH/ticket.md` (using the subflow's returned `$TARGET_PATH`).
+   c. Proceed to Step 3 with `--ticket $WRITTEN_TICKET`.
 
 ### 3. Add step
 

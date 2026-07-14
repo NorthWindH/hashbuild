@@ -5,12 +5,10 @@
 **Caller contract.** Before invoking this subflow, the caller must have resolved:
 
 - `$TICKET_CONTEXT` — mutable list of ticket entries (in/out)
-- `$TICKET_SEQ` — mutable integer counter (in/out)
 
 #### Behavior
 
-1. Increment `$TICKET_SEQ`. Set `$TARGET_PATH` = `/tmp/hb-ticket-discuss/ticket-$TICKET_SEQ` — a fresh, non-colliding scratch folder for this call.
-2. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](interactive-ticket-subflow.md) with `$TARGET_PATH` as set above, `$TICKET_SUPPLIED` = `false`, `$NO_INTERACTIVE` = `false`. This writes `$TARGET_PATH/ticket.md`.
+1. Follow [${CLAUDE_SKILL_DIR}/references/interactive-ticket-subflow.md](interactive-ticket-subflow.md) with `$TICKET_SUPPLIED` = `false`, `$NO_INTERACTIVE` = `false`. This resolves `$TARGET_PATH` and writes `$TARGET_PATH/ticket.md`.
 3. **Review loop** — repeat until the user is satisfied:
    1. Read `$TARGET_PATH/ticket.md` and display its full content as formatted markdown (not a fenced block).
    2. Ask the user: "Does this ticket look right? Reply **yes** to continue, or describe any changes."
