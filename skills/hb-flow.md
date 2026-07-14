@@ -103,8 +103,6 @@ State the exact resolved invocation (`/hb-<skill> <args>`, matching the target s
 
 ### 8. Invoke
 
-<!-- TODO REVIEW add step to read facts store so that facts are available to the next skill invoked -->
-
 Call the `Skill` tool with `skill = <target-skill-name>` (from Step 5's Action Registry) and `args = <resolved args string>` (the same string a user would type after the slash command, e.g. `northwind/hb-014-execution-state/step-3-hb-flow-skill`). This runs the target skill within the current session per the `Skill` tool's own contract — its own commit / prompt-user / state-record steps run as part of that invocation. `hb-flow` performs no separate commit or `hb-sdk state record` call of its own.
 
 ## Output

@@ -6,7 +6,7 @@
 | --------------- | ---------- |
 | STEP-3-REVIEW-1 | ✅ Addressed — added "Create a new task" → `hb-task-create` row to Action Registry |
 | STEP-3-REVIEW-2 | ✅ Addressed — added `--flavor` to args shape + Step 6 derivation guidance |
-| STEP-3-REVIEW-3 |            |
+| STEP-3-REVIEW-3 | ✅ Assessed — kept as-is, no channel exists to pass facts through the `Skill` tool call and target skills already read facts themselves |
 
 ---
 
@@ -35,6 +35,7 @@
 - **file(s):** `skills/hb-flow.md` (Step 8, Invoke)
 - Step 8 (Invoke) currently calls the `Skill` tool directly without first reading `.hb/facts.md`. Add a step to read the facts store so relevant facts are available/passed along to the invoked skill.
 - **source:** `TODO REVIEW` in commit `580febe85456354e3b9d610d224d0641dbb9378c` — delete comment from source file after addressing
+- **Resolution:** No change made. The `Skill` tool only takes a skill name and an args string (the same string a user would type after the slash command) — there's no channel for `hb-flow` to hand facts content to the invoked skill through that call. Per `facts-write-subflow.md`, the facts store is already read as Part A by the four skills that consume it (`hb-task-step-plan`, `hb-task-plan`, `hb-task-step-execute`, `hb-task-step-review-address`) as their own first step, run within the same session right after `hb-flow` invokes them. Having `hb-flow` read `.hb/facts.md` itself first would be a no-op duplication of logic already owned by the target skill, which conflicts with `hb-flow`'s stated design ("never re-deriving or duplicating the target skill's own logic"). Disposition: **Assessed**.
 
 ---
 
