@@ -56,13 +56,13 @@ If the initial invocation already carried a freeform request (the text after any
 
 ### 5. Resolve intent
 
-<!-- TODO REVIEW add task-create skill to registry -->
 <!-- TODO REVIEW update step-add and task-create to always derive flavor from user's provided natural language; user can always drop this or update it during the confirmation step -->
 
 Match the reply against the Action Registry below using semantic match, not exact keywords:
 
 | Action                | Target skill                                                                                                                       | Args shape                    | Example phrasings                                                   |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| Create a new task     | `hb-task-create`                                                                                                                   | `<author/task-id>`            | "create a new task", "start a task for X"                           |
 | Plan task into steps  | `hb-task-plan`                                                                                                                     | `<task_ref>`                  | "plan this task", "break it into steps"                             |
 | Add a step            | `hb-task-step-add`                                                                                                                 | `<task_ref>`                  | "add a step", "add another step"                                    |
 | Plan a step           | `hb-task-step-plan`                                                                                                                | `<task_ref>/<step_n>`         | "plan the next step", "let's plan it", "go back and re-plan step 2" |

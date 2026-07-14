@@ -4,7 +4,7 @@
 
 | ID              | Resolution |
 | --------------- | ---------- |
-| STEP-3-REVIEW-1 |            |
+| STEP-3-REVIEW-1 | ✅ Addressed — added "Create a new task" → `hb-task-create` row to Action Registry |
 | STEP-3-REVIEW-2 |            |
 | STEP-3-REVIEW-3 |            |
 
@@ -17,6 +17,7 @@
 - **file(s):** `skills/hb-flow.md` (Step 5, Action Registry)
 - The Action Registry table in Step 5 lists actions like "Plan task into steps", "Add a step", etc. but does not include an entry routing to `hb-task-create` (creating a brand-new task). Add a row for it so `/hb-flow` can route "create a task" style requests.
 - **source:** `TODO REVIEW` in commit `580febe85456354e3b9d610d224d0641dbb9378c` — delete comment from source file after addressing
+- **Resolution:** Added a "Create a new task" row to the Action Registry table, routing to `hb-task-create` with args shape `<author/task-id> [--flavor <slug>]` and example phrasings "create a new task", "start a task for X". Disposition: **Addressed**.
 
 ---
 
