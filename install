@@ -62,6 +62,8 @@ HB_FLOW_HOOK_COMMAND = (
     '[ -d .hb ] && echo \'{"systemMessage": "hashbuild: run /hb-flow to see what to do next."}\'; true'
 )
 
+# TODO REVIEW for hooks: need to maintain install/reinstall/uninstall idempotency through changes to system message
+
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
