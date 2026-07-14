@@ -69,6 +69,8 @@ HB_FLOW_HOOK_COMMAND = (
     '[ -d .hb ] && echo \'{"systemMessage": "hashbuild: run /hb-flow to see what to do next."}\'; true'
 )
 
+# TODO REVIEW update hook marker to something simpler, such as `[hashbuild]`, so it can be placed in more hooks in the future
+
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
