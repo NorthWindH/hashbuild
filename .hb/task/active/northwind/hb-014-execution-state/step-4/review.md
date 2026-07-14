@@ -5,6 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — hook now emits `systemMessage` JSON so the message renders to the user |
+| STEP-4-REVIEW-2 |            |
 
 ---
 
@@ -19,6 +20,14 @@
 **Resolution:** Confirmed via the Claude Code hooks docs: for a `SessionStart` hook, plain stdout on exit 0 is added as *context for Claude* only — it is never rendered to the user in the transcript. Making a message user-visible requires JSON output with a top-level `systemMessage` field. Changed `HB_FLOW_HOOK_COMMAND` in `install` from a plain `echo 'hashbuild: ...'` to `echo '{"systemMessage": "hashbuild: run /hb-flow to see what to do next."}'`, verified the shell command emits valid JSON and that `ruff check`/`ruff format --check` pass. Existing installs will pick up the new command on their next `install` run (the hook is matched by exact command string, so this is a superseding re-install, not an in-place settings.json patch).
 
 Disposition: **Addressed**
+
+---
+
+### STEP-4-REVIEW-2: Hook install/reinstall/uninstall idempotency broken by system-message change
+
+- **file(s):** `install` (`HookPatcher`, `_find_hook_entry`, `HB_FLOW_HOOK_COMMAND`, around lines 61-63, 341-393)
+- `_find_hook_entry` matches an existing hook entry by exact equality against the current `HB_FLOW_HOOK_COMMAND` string. STEP-4-REVIEW-1 changed that constant's content (plain `echo` → `echo` of `systemMessage` JSON). Any user who already has the old-format command installed in their `settings.json` will, on the next `install` run, fail to match it as "already present" and get a second, duplicate `SessionStart` hook entry added alongside the stale old-format one — rather than a clean upgrade. `uninstall` has the same problem in reverse: it only removes entries matching the *current* `HB_FLOW_HOOK_COMMAND`, so it can't clean up an old-format entry left behind after a partial/failed upgrade.
+- **source:** `TODO REVIEW` in commit `aaad330bab7c7638be185f47f761a1f4b0a410ef` — delete comment from source file after addressing
 
 ---
 
