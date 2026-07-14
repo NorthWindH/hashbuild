@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — hook now emits `systemMessage` JSON so the message renders to the user |
-| STEP-4-REVIEW-2 |            |
+| STEP-4-REVIEW-2 | ✅ Addressed — hook entries now matched by stable marker, upgraded/removed in place regardless of command-text changes |
 
 ---
 
@@ -28,6 +28,12 @@ Disposition: **Addressed**
 - **file(s):** `install` (`HookPatcher`, `_find_hook_entry`, `HB_FLOW_HOOK_COMMAND`, around lines 61-63, 341-393)
 - `_find_hook_entry` matches an existing hook entry by exact equality against the current `HB_FLOW_HOOK_COMMAND` string. STEP-4-REVIEW-1 changed that constant's content (plain `echo` → `echo` of `systemMessage` JSON). Any user who already has the old-format command installed in their `settings.json` will, on the next `install` run, fail to match it as "already present" and get a second, duplicate `SessionStart` hook entry added alongside the stale old-format one — rather than a clean upgrade. `uninstall` has the same problem in reverse: it only removes entries matching the *current* `HB_FLOW_HOOK_COMMAND`, so it can't clean up an old-format entry left behind after a partial/failed upgrade.
 - **source:** `TODO REVIEW` in commit `aaad330bab7c7638be185f47f761a1f4b0a410ef` — delete comment from source file after addressing
+
+**Resolution:** Confirmed the bug: `HookPatcher._find_hook_entry` matched an existing entry by exact equality against `HB_FLOW_HOOK_COMMAND`. Changing that constant (as STEP-4-REVIEW-1 just did) meant `install()` would fail to recognize an already-installed old-format entry, appending a duplicate rather than upgrading it, and `uninstall()` would only ever remove entries matching the *current* command text, leaving old-format entries orphaned forever. Fixed by introducing `HB_FLOW_HOOK_MARKER` (a stable substring present in every command variant) and matching on that instead of exact command equality: `_find_hook_entry` now identifies the hb-flow hook by marker regardless of its exact command text. `install()` now upgrades an existing entry's `command` field in place when the marker matches but the text differs (new `hook_updated` result flag), instead of adding a duplicate; a no-op when already current. `uninstall()` now cleanly removes any hb-flow hook entry regardless of which command-text version it's running, since it reuses the same marker-based lookup. Verified with a standalone script covering: (1) an old-format entry upgraded in place by `install()`, (2) a second `install()` run being a true no-op, (3) `uninstall()` removing the entry cleanly while preserving unrelated `settings.json` content. Also updated the CLI messaging (`install` mode) to say "will be updated" vs "will be added" so the confirmation prompt reflects what's actually happening.
+
+While verifying, found an unrelated pre-existing bug: `HookUpdateResult.flush()` calls `die()` whenever `updated_settings` is falsy, which incorrectly fires when `uninstall()` legitimately empties the settings dict down to `{}` (e.g. a `settings.json` containing only the hb-flow hook). Left a `TODO REVIEW` comment at the `flush()` definition (`install`, near line 316) for a follow-up pass rather than fixing here — it's out of scope for the systemMessage/idempotency concern this item covers.
+
+Disposition: **Addressed**
 
 ---
 

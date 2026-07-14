@@ -58,11 +58,16 @@ HARNESSES: dict[HarnessKey, HarnessConfig] = {
 }
 
 HB_FLOW_HOOK_MATCHER = "startup|clear"
+HB_FLOW_HOOK_MARKER = "run /hb-flow to see what to do next."
+"""Substring identifying an hb-flow SessionStart hook entry regardless of command formatting.
+
+Entries are matched on this marker rather than exact command equality so that
+changes to HB_FLOW_HOOK_COMMAND upgrade an existing entry in place instead of
+adding a duplicate (install) or leaving a stale entry behind (uninstall).
+"""
 HB_FLOW_HOOK_COMMAND = (
     '[ -d .hb ] && echo \'{"systemMessage": "hashbuild: run /hb-flow to see what to do next."}\'; true'
 )
-
-# TODO REVIEW for hooks: need to maintain install/reinstall/uninstall idempotency through changes to system message
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -301,12 +306,17 @@ class SettingsPatcher:
 class HookUpdateResult:
     path_settings: Path = field(default_factory=Path)
     hook_added: bool = False
+    hook_updated: bool = False
     hook_removed: bool = False
     updated_settings: dict[str, Any] = field(default_factory=dict[str, Any])
 
     def __bool__(self) -> bool:
-        return bool(self.hook_added or self.hook_removed)
+        return bool(self.hook_added or self.hook_updated or self.hook_removed)
 
+    # TODO REVIEW flush() dies on a legitimately empty settings dict (e.g. uninstall leaves nothing
+    # behind because the hb-flow hook was the only content). This guard predates this step and is
+    # unrelated to the systemMessage/idempotency fix here — out of scope for this item, flagging for
+    # a follow-up review pass.
     def flush(self) -> None:
         """Write results to disk"""
 
@@ -341,7 +351,7 @@ class HookPatcher:
 
     def _find_hook_entry(self, group: dict[str, Any]) -> dict[str, Any] | None:
         for entry in group.get("hooks", []):
-            if entry.get("type") == "command" and entry.get("command") == HB_FLOW_HOOK_COMMAND:
+            if entry.get("type") == "command" and HB_FLOW_HOOK_MARKER in entry.get("command", ""):
                 return entry
 
         return None
@@ -352,7 +362,13 @@ class HookPatcher:
 
         group = self._find_matcher_group(data)
         if group is not None:
-            if self._find_hook_entry(group) is not None:
+            entry = self._find_hook_entry(group)
+            if entry is not None:
+                if entry.get("command") == HB_FLOW_HOOK_COMMAND:
+                    return result
+
+                entry["command"] = HB_FLOW_HOOK_COMMAND
+                result.hook_updated = True
                 return result
 
             group.setdefault("hooks", []).append({"type": "command", "command": HB_FLOW_HOOK_COMMAND})
@@ -499,7 +515,8 @@ def run_install(picks: ValidHarnesses) -> None:
             if not hook_result:
                 info(f"  [skip] /hb-flow session-start hook already present in {settings_path}")
             else:
-                info(f"\n  The following hook will be added to {settings_path}:")
+                verb = "updated" if hook_result.hook_updated else "added"
+                info(f"\n  The following hook will be {verb} in {settings_path}:")
                 info(f"    SessionStart ({HB_FLOW_HOOK_MATCHER}): {HB_FLOW_HOOK_COMMAND}")
                 if _confirm("  Apply? [Y/n] "):
                     hook_result.flush()
