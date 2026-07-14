@@ -25,6 +25,12 @@
     user-facing output (its "Prompt user" step or final report), not the
     facts store. The facts store is read by future *skill invocations*, not
     relayed to a person as a to-do.
+  - **Incidental observations with no future action** ("X has a pre-existing
+    quirk", "Y behaves oddly but it's out of scope") — true and worth noting
+    in an execution summary's "Honest notes", but only earns a facts-store
+    slot if a *specific* future step will need to work around, avoid
+    disturbing, or eventually fix it. If nothing is currently planned to touch
+    that code again, the fact has no reader and should be dropped.
 
   Size guidance (not programmatically enforced — apply judgement):
   - Target size: <= 100 lines.
