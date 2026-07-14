@@ -5,7 +5,7 @@
 | ID              | Resolution |
 | --------------- | ---------- |
 | STEP-2-REVIEW-1 | ✅ Addressed — `next_action.py`'s "Move to the next step" choice now carries the `/clear` reminder when the target stage's own message includes one |
-| STEP-2-REVIEW-2 |            |
+| STEP-2-REVIEW-2 | ✅ Addressed — `review_or_next` now always recommends `/hb-task-step-review-address`, never `/hb-task-step-review-init`, since `review-address` already creates `review.md` when missing |
 
 ---
 
@@ -35,11 +35,24 @@ Verified: `uv run pytest tests/skills/scripts/hb_sdk/test_hb_sdk_next_action.py 
 
 ---
 
-### STEP-2-REVIEW-2: Prefer `review-address` over `review-init` in docs/guidance
+### STEP-2-REVIEW-2: Prefer `review-address` over `review-init` in docs/guidance — ADDRESSED
 
 - **file(s):** `skills/scripts/hb_sdk/next_action.py` (module-level comment above `_resolve`)
 - Prefer `/hb-task-step-review-address` to `/hb-task-step-review-init`; `init` is only used in specialty scenarios when the user needs a plain skeleton-only `review.md` file.
 - **source:** `TODO REVIEW` in commit `5d942071e385059cf23e515195fa3f829f1fa23e` — delete comment from source file after addressing
+
+**Resolution:** This was a real bug, not just docs. In `_resolve`'s `review_or_next` branch, `review_inv` was previously computed as `/hb-task-step-review-init` whenever `has_review` was false, and only fell back to `/hb-task-step-review-address` once a `review.md` already existed. But `hb-task-step-review-address.md` step 3 already creates `review.md` from scratch (via the shared `review-init-subflow.md`) when it's missing — so `review-address` is a strict superset: it creates the skeleton *and* scans for `TODO REVIEW` comments *and* walks unresolved items, where `review-init` only creates the skeleton. This lines up with `hb-task-step-execute.md:97`, which already presents `review-address` as the primary path and `review-init` only for the manual-fill-in case.
+
+Fixed `next_action.py` (`_resolve`) to always recommend `review-address` for the `review_or_next` stage, regardless of `has_review`:
+
+```python
+if not s["has_review"] or s["status"] == "review-open":
+    review_inv = f"/hb-task-step-review-address {ref}/{s['name']}"
+```
+
+Updated `test_next_action_stage_review_or_next_no_review_file` (previously asserted `/hb-task-step-review-init` in the no-review-file case) to assert `/hb-task-step-review-address` instead. `has_review` is still read (to decide whether the `review_or_next` branch is entered at all) — only the invocation choice changed. No remaining references to `/hb-task-step-review-init` in `skills/scripts/hb_sdk/` or its tests (`review-init` stays reachable only by the user running it directly, per its own skill file, for the plain-skeleton scenario).
+
+Verified: `uv run pytest tests/skills/scripts/hb_sdk/test_hb_sdk_next_action.py -q` → 18 passed. `uv run ruff check` / `uv run ruff format --check` on both changed files → clean.
 
 ---
 

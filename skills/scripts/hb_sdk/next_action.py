@@ -18,7 +18,6 @@ class NextAction:
     choices: list[Choice] | None = None
 
 
-# TODO REVIEW prefer /hb-task-step-review-address to /hb-task-step-review-init; init is only used in specialty scenarios when user needs a plain skeleton-only review.md file
 def _resolve(steps: list[dict[str, Any]], ref: str, on_exhausted: str) -> NextAction:
     for i, s in enumerate(steps):
         if not s["has_ticket"]:
@@ -41,11 +40,7 @@ def _resolve(steps: list[dict[str, Any]], ref: str, on_exhausted: str) -> NextAc
                 invocation=inv,
             )
         if not s["has_review"] or s["status"] == "review-open":
-            review_inv = (
-                f"/hb-task-step-review-init {ref}/{s['name']}"
-                if not s["has_review"]
-                else f"/hb-task-step-review-address {ref}/{s['name']}"
-            )
+            review_inv = f"/hb-task-step-review-address {ref}/{s['name']}"
             review_choice = Choice("Review this step", review_inv)
             move_on = _resolve(steps[i + 1 :], ref, on_exhausted="steps_complete")
             if move_on.invocation is not None:

@@ -149,7 +149,7 @@ def test_next_action_stage_review_or_next_no_review_file(tmp_path: Path) -> None
     choices = entries[0]["choices"]
     assert len(choices) == 4
     assert choices[0]["label"] == "Review this step"
-    assert "/hb-task-step-review-init" in choices[0]["invocation"]
+    assert "/hb-task-step-review-address" in choices[0]["invocation"]
     labels = [c["label"] for c in choices]
     assert "Add more steps" in labels
     assert "Update the plan" in labels
