@@ -6,6 +6,8 @@
 | --------------- | ---------- |
 | STEP-4-REVIEW-1 | ✅ Addressed — hook now emits `systemMessage` JSON so the message renders to the user |
 | STEP-4-REVIEW-2 | ✅ Addressed — hook entries now matched by stable marker, upgraded/removed in place regardless of command-text changes |
+| STEP-4-REVIEW-3 |            |
+| STEP-4-REVIEW-4 |            |
 
 ---
 
@@ -34,6 +36,22 @@ Disposition: **Addressed**
 While verifying, found an unrelated pre-existing bug: `HookUpdateResult.flush()` calls `die()` whenever `updated_settings` is falsy, which incorrectly fires when `uninstall()` legitimately empties the settings dict down to `{}` (e.g. a `settings.json` containing only the hb-flow hook). Left a `TODO REVIEW` comment at the `flush()` definition (`install`, near line 316) for a follow-up pass rather than fixing here — it's out of scope for the systemMessage/idempotency concern this item covers.
 
 Disposition: **Addressed**
+
+---
+
+### STEP-4-REVIEW-3: Simplify hook marker for reuse across more hooks
+
+- **file(s):** `install` (around `HB_FLOW_HOOK_MARKER` definition, line ~72)
+- The current hook marker string is more complex than it needs to be. Reviewer suggests simplifying it to something like `[hashbuild]` so the same marker convention can be reused across more hook types in the future, not just the SessionStart hook.
+- **source:** `TODO REVIEW` in commit `1f57291f3da9e2abd5059ac053d6f9d315522425` — delete comment from source file after addressing
+
+---
+
+### STEP-4-REVIEW-4: `HookUpdateResult.flush()` dies on a legitimately empty settings dict
+
+- **file(s):** `install` (`HookUpdateResult.flush()`, around line 318)
+- `flush()` calls `die()` whenever `updated_settings` is falsy. This incorrectly fires when `uninstall()` legitimately empties the settings dict down to `{}` — e.g. a `settings.json` that contained only the hb-flow hook entry. This guard predates the systemMessage/idempotency fix from STEP-4-REVIEW-1/2 and is unrelated to it; it was flagged there as a follow-up rather than fixed in place.
+- **source:** `TODO REVIEW` in commit `cc992cf46a9d2ed0b8d87e5c04a1c1368d428756` — delete comment from source file after addressing
 
 ---
 
