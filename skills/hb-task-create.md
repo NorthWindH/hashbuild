@@ -88,7 +88,7 @@ ${CLAUDE_SKILL_DIR}/scripts/hb-sdk task create [--ticket <ticket_path>] <name>
 
 **All other modes (skeleton-only or `--ticket` supplied):**
 
-> Task created. `/clear` this conversation, then: if you have a task `ticket.md`, run `/hb-flow` to see what to do next. If not, write a `ticket.md` first (Background, Acceptance Criteria, Out of scope), then run `/hb-flow`.
+> Task created. If the task has `ticket.md`, `present ticket` to see the ticket then discuss/update it, or `/clear` this conversation, then run `/hb-flow` to see what to do next. If not, write a `ticket.md` first (Background, Acceptance Criteria, Out of scope), then re-run task create with `--ticket` flag to place it in the right folder, then `/clear` and run `/hb-flow`.
 
 ### 6. Record execution state
 

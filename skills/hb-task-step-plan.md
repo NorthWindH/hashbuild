@@ -15,10 +15,10 @@ Generate or update the `plan.md` for one task step. Reads `ticket.md` from the s
 
 ## Inputs
 
-| Parameter              | Required | Description                                                                                                                                          |
-| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Parameter              | Required | Description                                                                                                                                                                |
+| ---------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `step_ref`             | yes\*    | Step reference in `author/task_id/step_n` format. `task_id` flavor is optional. `step_n` accepts: bare integer (`0`), `step-<n>`, or full step name (`step-<n>-<flavor>`). |
-| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                          |
+| `help`, `--help`, `-h` | no       | Print help and exit. \*Not required when help is requested.                                                                                                                |
 
 ## Reference Files
 
@@ -80,7 +80,7 @@ Follow [${CLAUDE_SKILL_DIR}/references/facts-write-subflow.md](references/facts-
 
 Tell the user:
 
-> Plan ready. `/clear` this conversation, then run `/hb-flow` to see what to do next.
+> Plan ready, `present plan` to present the created plan and discuss/update it, or `/clear` this conversation, then run `/hb-flow` to see what to do next.
 
 ### 9. Record execution state
 
