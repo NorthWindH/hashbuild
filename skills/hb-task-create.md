@@ -15,6 +15,8 @@ Atomic: call `${CLAUDE_SKILL_DIR}/scripts/hb-sdk` to create or verify the task s
 
 ## Inputs
 
+<!-- TODO REVIEW add a --flavor flag, similar to hb-task-step-add to support usage through hb-flow -->
+
 | Parameter              | Required | Description                                                                                                                                       |
 | ---------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`                 | yes\*    | Fully-qualified task name in `author/abc-123-optional-flavor` format. See [${CLAUDE_SKILL_DIR}/references/structure.md](references/structure.md). |
