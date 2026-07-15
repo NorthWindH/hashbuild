@@ -65,6 +65,25 @@ Let a user create, plan, execute, and review a small task in one guided pass via
     11. Prompt: archive the task, or leave it as-is (still resumable via the normal per-task actions: add a step, more review, archive later, etc).
 11. Stopping at any checkpoint leaves the task in a valid state consumable by the existing (non-oneshot) `hb-task-*` skills — the subflow does not leave partial/inconsistent state behind.
 
+## D. Prefix management skills
+
+12. New skills expose the prefix-sequence functionality from Section A, following the same thin-wrapper convention as other `hb-*` skills: each skill parses its own args and hands execution off to a corresponding `hb-sdk prefix` subcommand. Whether args are passed through verbatim or need some reshaping is left as an implementation decision.
+13. `hb-prefix-create <scope> <name>`:
+    1. `scope` is `author` or `repo`.
+    2. When `scope` is `author`, `name` must be of the form `author/prefix` (`prefix` following the standard prefix-name rules).
+    3. When `scope` is `repo`, `name` must be just `prefix` (same prefix-name rules, no author segment).
+    4. `--next-value <n>`: sets the initial next value to hand out; defaults to `0` when omitted.
+    5. Creation is handed off to `hb-sdk`, which enforces the collision rules from AC 4.
+14. `hb-prefix-list`:
+    1. Prints prefix names only by default.
+    2. `--long`: also prints each prefix's attributes (e.g. next value).
+    3. `--scope <author|repo>`: filters to prefixes of the given scope.
+    4. `--author <name>`: filters to prefixes belonging to the given author; implies `scope=author`; errors if combined with `--scope repo`.
+    5. `--prefix <name>`: filters to one exact prefix.
+    6. `--format <md|json>`: selects markdown or JSON output.
+15. `hb-prefix-drop <scope> <name>`: drops an existing prefix; takes the same positional args as `hb-prefix-create`.
+16. `hb-prefix-update <scope> <name>`: updates an existing prefix; takes the same positional args as `hb-prefix-create`, plus `--next-value <n>` to set the next value.
+
 ---
 
 # Out of scope
