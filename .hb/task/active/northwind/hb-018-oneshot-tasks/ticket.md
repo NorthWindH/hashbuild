@@ -89,4 +89,4 @@ Let a user create, plan, execute, and review a small task in one guided pass via
 # Out of scope
 
 - Renaming or otherwise migrating existing `hb-NNN`-numbered tasks onto the new sequence mechanism.
-- A UI/command for listing, editing, or deleting prefix sequences — only creation and consumption are covered here.
+- Renaming a prefix's name or changing its scope after creation — `hb-prefix-update` only adjusts `--next-value`; renaming/rescoping would require drop + recreate.
