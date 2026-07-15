@@ -10,7 +10,7 @@
     1. Covers the parenthetical form, e.g. `(run \`/clear\` first)`.
     2. Covers the prefix form, e.g. `Run \`/clear\`, then \`/hb-task-plan ...\``, which should be reduced to just the underlying action (e.g. `\`/hb-task-plan ...\` to plan ... into steps`).
 2. The resolved invocation `hb-flow` ultimately confirms and invokes (Steps 6-8) is unaffected by this change — it only concerns the human-readable report in Step 3, not the underlying action resolution or the `Skill` tool call.
-3. `hb-sdk state next-action`'s own raw output (for callers other than `hb-flow`) is unchanged — the tag is dropped only in `hb-flow`'s presentation layer, not in the SDK itself.
+3. Where the tag is dropped (in `hb-sdk state next-action`'s raw output itself, vs. only in `hb-flow`'s presentation of it) is an implementation decision, not fixed by this ticket — change the SDK's raw output if that turns out to be the sensible place to fix it, rather than forcing a `hb-flow`-only patch.
 
 ---
 
