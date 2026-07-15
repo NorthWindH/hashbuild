@@ -26,8 +26,9 @@ Give the SDK a way to define, resolve, list, drop, and update named prefix seque
 5. The SDK supports listing existing sequences with their scope, owning author (if any), prefix, and next-value — this is the primitive `hb-prefix-list` (step-3) will call.
     1. Listing accepts optional filters — `scope` (`author`/`repo`), `author` (implies `scope=author`; errors if combined with `scope=repo`), and `prefix` (exact match) — applied server-side so step-3's skill can hand these through verbatim rather than re-filtering client-side.
     2. Listing accepts an optional `long`/detail flag: when unset, entries carry only their name; when set, entries also carry scope, owning author, prefix, and next-value — this backs `hb-prefix-list`'s `--long` flag.
+    3. Listing accepts an `hb-sdk`-level `--format <md|json>` flag selecting markdown or JSON output — this flag is SDK-level only; `hb-prefix-list` (step-3) is not required to expose it and simply calls `hb-sdk` with a format of its own choosing.
 6. The SDK supports dropping and updating (next-value only) an existing sequence by scope + name — these are the primitives `hb-prefix-drop`/`hb-prefix-update` (step-3) will call.
-7. Tests cover: fresh sequence creation, the default per-author `oneshot` sequence, each collision-rejection case in AC 4, drop/update round-trips, and each listing filter/detail combination in AC 5.1–5.2. Existing SDK test suites pass unchanged.
+7. Tests cover: fresh sequence creation, the default per-author `oneshot` sequence, each collision-rejection case in AC 4, drop/update round-trips, each listing filter/detail combination in AC 5.1–5.2, and both `--format` outputs in AC 5.3. Existing SDK test suites pass unchanged.
 
 # Out of scope
 
