@@ -80,7 +80,7 @@ Let a user create, plan, execute, and review a small task in one guided pass via
     3. `--scope <author|repo>`: filters to prefixes of the given scope.
     4. `--author <name>`: filters to prefixes belonging to the given author; implies `scope=author`; errors if combined with `--scope repo`.
     5. `--prefix <name>`: filters to one exact prefix.
-    6. `--format <md|json>`: selects markdown or JSON output.
+    6. `--format <md|json>`: an `hb-sdk`-level flag selecting markdown or JSON output; not exposed as a flag on the `hb-prefix-list` skill itself — the skill calls `hb-sdk` with a format of its own choosing.
 15. `hb-prefix-drop <scope> <name>`: drops an existing prefix; takes the same positional args as `hb-prefix-create`.
 16. `hb-prefix-update <scope> <name>`: updates an existing prefix; takes the same positional args as `hb-prefix-create`, plus `--next-value <n>` to set the next value.
 
