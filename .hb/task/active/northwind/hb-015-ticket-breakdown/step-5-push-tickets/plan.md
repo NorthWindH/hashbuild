@@ -41,17 +41,19 @@
 - That logic was recovered from `git show 7bd2c42:skills/hb-ticket-discuss.md` (old Steps 3-8).
 - `7bd2c42` is the commit right before `c74ec90` deleted them.
 
-> **Design decision — fix the `allowed-tools` gap now, since AC7 requires it, even though it predates this task.**
-> - The `allowed-tools` block has never listed `createJiraIssue`, `editJiraIssue`, or `createIssueLink`.
-> - Verified across every commit touching `hb-ticket-discuss.md`'s frontmatter (`738235c`–`cb86e9b`).
-> - True even in `7bd2c42` (pre-restructuring), whose Steps 5-6 already called all three.
-> - This is a pre-existing oversight from `hb-012`, not something steps 1-4 introduced.
-> - AC7 requires `allowed-tools` to list "exactly the Jira MCP tools this procedure calls."
-> - The procedure this step reintroduces calls those three tools.
-> - They must be added now to satisfy that wording.
-> - AC7's "unchanged from today" refers to the *set of external systems* (still just Jira).
-> - It does not mean leaving the frontmatter untouched line-for-line.
-> - §3 below adds all three; see §7 (AC7 traceability).
+> **Design decision — exclude the 3 mutating Jira tools from `allowed-tools`.**
+> - `allowed-tools` entries are auto-approved: the user is never prompted before that tool runs.
+> - Every Jira mutation (create, edit, link) must instead trigger a runtime permission prompt.
+> - That prompt lets the user expressly accept each individual write.
+> - Adding these 3 tools to `allowed-tools` would silently pre-approve every future call.
+> - That would remove the user's per-call consent.
+> - The user can already loosen their own permissions to skip the prompt, if they choose.
+> - This skill file should not make that choice for them.
+> - This deviates from AC7's literal text: "lists exactly the Jira MCP tools this procedure calls."
+> - That wording assumed the pre-restructuring precedent of blanket-listing every called tool.
+> - Resolution: `allowed-tools` keeps its current 5 read-only Jira tools (safe to pre-approve).
+> - The 3 mutating tools stay unlisted on purpose.
+> - See §1 (Alternatives rejected) and §7 (AC7 traceability) for how this reading is applied.
 
 ---
 
@@ -119,10 +121,10 @@
 | User says "stop" mid-batch | N/A | §C breaks; untouched targets stay in context, reported as not-attempted |
 | Ticket's context membership after a push | N/A | Unchanged — Push never adds/removes/reactivates (AC5) |
 | Load, Describe, Breakdown, Clear, Exit | Unchanged | Unchanged |
-| `allowed-tools` | 5 Jira tools | 8 Jira tools (+3) — see Design decision |
+| `allowed-tools` | 5 Jira tools (read-only) | Unchanged — 5 Jira tools; mutating tools intentionally excluded so each Jira write prompts the user (see Design decision) |
 
 - Kind of change: **additive only**.
-- New Action Registry row, subflow file, TOC row, 3 tool grants (fixing a pre-existing gap), and a prose tweak.
+- New Action Registry row, subflow file, TOC row, and a prose tweak — no `allowed-tools` change.
 - No existing behavior changes.
 
 ### 0.2 Non-regression proof
@@ -207,8 +209,8 @@ precedence:  "all" request  >  named reference(s) (one or more)  >
   - The per-ticket AC2 confirmation already is the gate.
 - *Free-floating mid-ticket "stop" instead of a between-ticket checkpoint* — ambiguous scope.
   - The explicit checkpoint matches AC3's wording precisely.
-- *Leave `allowed-tools` at 5 tools, reading "unchanged from today" literally* — see Design decision.
-  - The procedure this step ships calls 3 ungranted tools, so AC7 requires adding them.
+- *Add the 3 mutating tools to `allowed-tools`, satisfying AC7's literal wording* — see Design decision.
+  - Auto-approving every mutating Jira call removes the user's per-call consent; rejected on security grounds.
 
 ---
 
@@ -312,9 +314,8 @@ precedence:  "all" request  >  named reference(s) (one or more)  >
 
   Sections A, C, D, E are not touched, per that file's own contract.
 - **`hb-ticket-discuss.md`**:
-  - `allowed-tools` gains 3 lines: `createJiraIssue`, `editJiraIssue`, `createIssueLink`.
-  - See Design decision above.
-  - The 6 `/tmp` grants are untouched — Push writes no file.
+  - `allowed-tools` is unchanged — still the same 5 Jira read tools + 6 `/tmp` grants.
+  - The 3 mutating Jira tools this procedure calls are deliberately NOT added — see Design decision above.
   - `description:` and body prose: "(e.g. describe, load, breakdown, clear, exit)" → "(..., push, exit)."
   - `Steps` section untouched — Push is reachable purely through the Action Registry, like the others.
 - **`references-toc.md`** — one new row for `push-ticket-subflow.md`, between Clear's and Exit's rows.
@@ -328,7 +329,7 @@ precedence:  "all" request  >  named reference(s) (one or more)  >
 |---|---|
 | `skills/references/push-ticket-subflow.md` | **new** — full Push action subflow (§A-D per §2) |
 | `skills/references/ticket-loop-subflow.md` | **edit** — one new Action Registry row; A/C/D/E untouched |
-| `skills/hb-ticket-discuss.md` | **edit** — `allowed-tools` +3 Jira tools; description/prose +"push" |
+| `skills/hb-ticket-discuss.md` | **edit** — description/prose +"push"; `allowed-tools` unchanged (see Design decision) |
 | `skills/references/references-toc.md` | **edit** — one new row for `push-ticket-subflow.md` |
 | `.hb/facts.md` | **edit** — prune the now-redundant "re-author Jira push logic deleted" fact |
 
@@ -345,7 +346,10 @@ No dependency manifest or lockfile in this repo's skill layer.
 - `grep -n "Push ticket(s)" ticket-loop-subflow.md` → exactly one row, between Clear and Exit.
 - `grep -c "^####" push-ticket-subflow.md` → 4 (§A-D).
 - `git diff --stat` on the five other subflow files + `breakdown-subflow.md` → no output (untouched).
-- `grep -n "mcp__claude_ai_Atlassian_Rovo__" hb-ticket-discuss.md | wc -l` → 8 (5 existing + 3 new).
+- `grep -n "mcp__claude_ai_Atlassian_Rovo__" hb-ticket-discuss.md | wc -l` → 5 (unchanged — no new grants).
+- `grep -n "createJiraIssue\|editJiraIssue\|createIssueLink" hb-ticket-discuss.md` → no matches.
+  - Mutating tools are intentionally excluded from `allowed-tools`.
+  - They still appear as MCP calls inside `push-ticket-subflow.md`'s prose.
 - `grep -n "clear, push, exit" hb-ticket-discuss.md` → 2 matches (frontmatter + body prose).
 - `grep -n "push-ticket-subflow" references-toc.md` → exactly one row, correctly positioned.
 - **No-file-write guard**: `grep -n "Write(\|Edit(\|^Bash" push-ticket-subflow.md` → no matches.
@@ -372,8 +376,8 @@ No dependency manifest or lockfile in this repo's skill layer.
 3. `ticket-loop-subflow.md` §B has exactly 6 rows in order; A/C/D/E byte-unchanged.
 4. `push-ticket-subflow.md` opens with blockquote + "Caller contract.", has 4 `####` sections.
    - It ends with a "Failure/degradation contract" line.
-5. `git diff -- hb-ticket-discuss.md` shows one hunk adding 3 Jira tool lines (no removals).
-   - Plus two wording hunks.
+5. `git diff -- hb-ticket-discuss.md` shows only the two wording hunks (description + body prose).
+   - `allowed-tools` block is byte-unchanged — no new tool lines added.
 6. Read `push-ticket-subflow.md` end-to-end; confirm every AC is textually satisfied (§7 below).
 7. `git diff --stat` on the five untouched sibling subflows + `breakdown-subflow.md` shows no changes.
 8. `references-toc.md` has exactly one new row, correctly positioned between Clear and Exit.
@@ -396,7 +400,7 @@ No dependency manifest or lockfile in this repo's skill layer.
 | 4 — per-ticket outcome tracked and summarized | §2 §B step 6, §D | |
 | 5 — ticket stays in context after push | §1 (design note); §2 §B step 6 | Clearing is Clear's job |
 | 6 — logic in its own subflow file(s); TOC updated | §2 (new file); §3 (TOC row) | |
-| 7 — `allowed-tools` lists exactly the tools this procedure calls | §3 (3 new tool lines) | See Design decision |
+| 7 — `allowed-tools` lists exactly the tools this procedure calls | §3 (unchanged — 5 read tools) | Deliberate deviation: mutating tools excluded on purpose so each Jira write prompts the user; see Design decision |
 
 ---
 
