@@ -143,6 +143,10 @@ def facts_read(cwd: Path, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     return run(["facts", "read"], cwd, ok=kwargs.get("ok", True))
 
 
+def plan_lint(cwd: Path, path: str, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+    return run(["plan", "lint", path], cwd, ok=kwargs.get("ok", True))
+
+
 def hb(cwd: Path) -> Path:
     return cwd / ".hb"
 

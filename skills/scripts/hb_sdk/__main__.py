@@ -6,6 +6,7 @@ from .commit import def_cli_commit
 from .facts import def_cli_facts
 from .idea import def_cli_idea
 from .init_cmd import def_cli_init
+from .plan import def_cli_plan
 from .state import def_cli_state
 from .summarize import def_cli_summarize
 from .task import def_cli_task
@@ -23,6 +24,7 @@ def main() -> None:
     def_cli_idea(subs)
     def_cli_state(subs)
     def_cli_facts(subs)
+    def_cli_plan(subs)
 
     args = parser.parse_args()
     args.func(args)

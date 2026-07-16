@@ -16,6 +16,10 @@
   3. Explicit boundaries. Say what does NOT change as clearly as what does.
   4. Traceable. Every acceptance criterion maps to a section, a test, and a
      verification step.
+  5. Concise prose. Favor bullets over paragraphs. Outside diagrams (fenced code
+     blocks), cap every paragraph at 3 sentences, cap every bullet at one sentence,
+     and every sentence at 120 characters. Tables and headings are exempt. Check with
+     `hb-sdk plan lint <path-to-plan.md>` before treating the plan as done.
 
   Fill every section. If a section genuinely doesn't apply, keep the heading and
   write "N/A — <reason>" rather than deleting it silently. Use tables wherever the
