@@ -37,6 +37,7 @@ below):
 | Describe ticket | "describe a ticket", "create a new one", "let's write a ticket for X" | `describe-ticket-subflow.md` |
 | Breakdown ticket | "break this down", "break down the login epic", "decompose this ticket into smaller ones" | `breakdown-ticket-subflow.md` |
 | Clear ticket(s) | "clear the active ticket", "remove PROJ-123 and PROJ-124", "clear all tickets" | `clear-ticket-subflow.md` |
+| Push ticket(s) | "push this", "push PROJ-123 and PROJ-124", "push all tickets" | `push-ticket-subflow.md` |
 | Exit | "exit", "I'm done", "end the session" | `exit-ticket-loop-subflow.md` |
 
 #### C. Present state
