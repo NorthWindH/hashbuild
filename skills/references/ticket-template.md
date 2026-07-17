@@ -20,6 +20,12 @@
   and checkable. "Handles X correctly" is not a criterion; "input A produces output
   B; malformed input is skipped without error" is.
 
+  Verbosity limits, every section (a lettered sub-heading — `## A.`, `## B.`, … —
+  counts as its own section for this cap): prefer bullets/numbered items over prose
+  paragraphs. Cap paragraphs at 3 sentences, bullets/list items at 1 sentence each,
+  sentences at 120 characters, and bullets per section at 5 — split or summarize
+  rather than exceed these.
+
   Keep the three top-level headings (`# Background`, `# Acceptance Criteria`,
   `# Out of scope`). Add `# Goal` when a one-line statement of intent helps. Adapt
   any toolchain references to this project.
