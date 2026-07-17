@@ -38,6 +38,8 @@ below):
 | Breakdown ticket | "break this down", "break down the login epic", "decompose this ticket into smaller ones" | `breakdown-ticket-subflow.md` |
 | Clear ticket(s) | "clear the active ticket", "remove PROJ-123 and PROJ-124", "clear all tickets" | `clear-ticket-subflow.md` |
 | Push ticket(s) | "push this", "push PROJ-123 and PROJ-124", "push all tickets" | `push-ticket-subflow.md` |
+| Set active ticket | "set ticket 2 as active", "make CSS-2664 active" | `set-active-ticket-subflow.md` |
+| Other | (fallback — see §D) | `other-action-subflow.md` |
 | Exit | "exit", "I'm done", "end the session" | `exit-ticket-loop-subflow.md` |
 
 #### C. Present state
@@ -55,11 +57,16 @@ At the start of every iteration, present:
 #### D. Dispatch
 
 Match the user's freeform reply against §B's action names and example
-phrasings using semantic match, not exact keyword match. On an ambiguous or
-unmatched reply: ask a clarifying question and re-prompt, without re-running
-all of §C. On a confident match: invoke the matched action's dispatch
-subflow, passing `$TICKET_CONTEXT` by reference (the callee mutates it in
-place).
+phrasings using semantic match, not exact keyword match.
+
+- Confident match against exactly one row → invoke that action's dispatch
+  subflow, passing `$TICKET_CONTEXT` by reference (the callee mutates it in
+  place).
+- Ambiguous among two or more rows → ask a clarifying question and re-prompt,
+  without re-running all of §C.
+- Confident zero-row match — the reply matches none of §B's rows, including
+  Other's own escape-hatch phrasing — invoke `other-action-subflow.md`,
+  passing `$TICKET_CONTEXT` by reference.
 
 #### E. Log + loop continue
 
