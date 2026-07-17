@@ -1,8 +1,9 @@
 > **Subflow — Load ticket action.** Invoked only via
 > `ticket-loop-subflow.md`'s Action Registry (§B). Loads an *existing* ticket
 > from a file, a connected Jira MCP, or a fetchable URL and adds it to the
-> loop's in-conversation context as the active entry. Never creates or
-> updates anything outside `$TICKET_CONTEXT`.
+> loop's in-conversation context as the active entry. For a Jira-sourced
+> ticket, also offers to load its direct child issues (§E step 7). Never
+> creates or updates anything outside `$TICKET_CONTEXT`.
 
 **Caller contract.** Before invoking this subflow, the caller must have resolved:
 
@@ -90,11 +91,33 @@ Shared by all three sources:
    source: { type: $SOURCE, ref: <path | issue key | url> } }`. `source` is
    an additive, optional field per `ticket-loop-subflow.md` §A's
    extensibility note — Describe and Exit ignore it safely.
-7. Return to the caller with outcome string `"Loaded ticket: $id_or_summary
-   (from $SOURCE)"`.
+7. **Offer to load children (Jira source only).** Only when `$SOURCE = jira`:
+   1. Query the JQL search tool with `parent = $ISSUE_KEY` (Atlassian Rovo
+      example: `mcp__claude_ai_Atlassian_Rovo__searchJiraIssuesUsingJql`).
+      - Tool error → surface the error verbatim, treat as zero children
+        found, continue to step 8.
+      - 0 matches → no children; continue to step 8.
+   2. ≥1 match → present the matches (key + summary) and ask: "This ticket
+      has N child issue(s). Load them into context as well?"
+      - Decline → continue to step 8; the already-appended parent entry is
+        unaffected.
+      - Accept → for each matched child, in order: resolve it via §C step 2
+        (explicit key, using this child's key) then run this section's
+        steps 1–6 for it — deriving its own `$id_or_summary`, appending its
+        own `$TICKET_CONTEXT` entry, unsetting `active` on every prior entry
+        (including the parent just loaded). **Do not repeat this step 7 for
+        a child** — children are loaded one level deep only, never
+        recursively expanded into their own children.
+8. Return to the caller with outcome string `"Loaded ticket: $id_or_summary
+   (from $SOURCE)"`, appending `"; loaded N child ticket(s): <label1>,
+   <label2>, ..."` when step 7 loaded any.
 
 **Failure/degradation contract:** every §B/§C/§D failure branch returns to
 the loop menu without mutating `$TICKET_CONTEXT` and without
 raising an error — the returned outcome string instead describes the failure
 (e.g. `"Load ticket failed: <reason>"`) so `ticket-loop-subflow.md` §E still
-logs the attempt. No partial or malformed entry is ever appended.
+logs the attempt. No partial or malformed entry is ever appended. Step 7's
+child-loading offer never blocks or fails the parent load: a JQL error, zero
+matches, or a decline all fall through to step 8 with the parent already
+appended; only an accepted offer adds further entries, one fully-appended
+entry per confirmed child, never partial.
