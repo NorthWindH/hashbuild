@@ -15,3 +15,4 @@
 - `load-ticket-subflow.md` never `Follow`s `interactive-ticket-subflow.md` — it only borrows specific sections (§A.1, §C, §D) inline, since it must not trigger that subflow's own guard/prompt. `describe-ticket-subflow.md` does `Follow` it fully.
 - hb-015/step-2's plan.md is stale: describes `$TICKET_SEQ` + a Read/WebFetch/Bash(find) widening that never shipped — for this task, trust live files over old step plan.md text.
 - breakdown-subflow.md's `$MATERIALIZE_CHILD` ("invoke hb-task-step-add ...") means invoke the skill via the Skill tool, not call `hb-sdk task step add` directly — direct SDK calls skip hb-task-step-add's own facts-read/commit/state-record steps.
+- Draft plan.md sentences short from the start: `hb-sdk plan lint` caps 3/paragraph, 1/bullet, 120 chars/sentence.
