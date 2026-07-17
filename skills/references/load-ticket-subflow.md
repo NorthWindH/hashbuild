@@ -56,8 +56,10 @@ flow — read-only, no create branch:
 4. Any tool error → surface the error verbatim, return to the loop menu (no
    entry added).
 5. Set `$RAW_CONTENT` = the resolved issue's `description` field (fallback:
-   summary/title if the description is empty). Capture `$ISSUE_KEY` and
-   `$ISSUE_TITLE`. Continue to §E.
+   summary/title if the description is empty). Capture `$ISSUE_KEY`,
+   `$ISSUE_TITLE`, and `$ISSUE_STATUS_CATEGORY` (the issue's
+   `fields.status.statusCategory.key`, e.g. `"done"`, `"indeterminate"`,
+   `"new"`). Continue to §E.
 
 #### D. Web source
 
@@ -88,9 +90,14 @@ Shared by all three sources:
      sentence, truncated to roughly 8 words.
 6. Unset `active` on every existing `$TICKET_CONTEXT` entry, then append
    `{ id_or_summary: $id_or_summary, content: $content, active: true,
-   source: { type: $SOURCE, ref: <path | issue key | url> } }`. `source` is
-   an additive, optional field per `ticket-loop-subflow.md` §A's
-   extensibility note — Describe and Exit ignore it safely.
+   source: { type: $SOURCE, ref: <path | issue key | url> },
+   syncedContent: $content, jiraStatusCategory: $ISSUE_STATUS_CATEGORY
+   (Jira source only) }`. `source`, `syncedContent`, and
+   `jiraStatusCategory` are all additive, optional fields per
+   `ticket-loop-subflow.md` §A's extensibility note — Describe and Exit
+   ignore them safely. `syncedContent`/`jiraStatusCategory` exist so
+   `push-ticket-subflow.md` §A.1 can later offer to skip a ticket that's
+   unchanged since this load or already Done, without re-querying Jira.
 7. **Offer to load children (Jira source only).** Only when `$SOURCE = jira`:
    1. Query the JQL search tool with `parent = $ISSUE_KEY` (Atlassian Rovo
       example: `mcp__claude_ai_Atlassian_Rovo__searchJiraIssuesUsingJql`).
@@ -101,13 +108,19 @@ Shared by all three sources:
       has N child issue(s). Load them into context as well?"
       - Decline → continue to step 8; the already-appended parent entry is
         unaffected.
-      - Accept → for each matched child, in order: resolve it via §C step 2
-        (explicit key, using this child's key) then run this section's
-        steps 1–6 for it — deriving its own `$id_or_summary`, appending its
-        own `$TICKET_CONTEXT` entry, unsetting `active` on every prior entry
-        (including the parent just loaded). **Do not repeat this step 7 for
-        a child** — children are loaded one level deep only, never
-        recursively expanded into their own children.
+      - Accept → set `$PARENT_LABEL` = the just-loaded parent's own
+        `$id_or_summary` (from step 5). For each matched child, in order:
+        resolve it via §C step 2 (explicit key, using this child's key)
+        then run this section's steps 1–6 for it — deriving its own
+        `$id_or_summary`, appending its own `$TICKET_CONTEXT` entry with an
+        additional `parent: $PARENT_LABEL` field, and unsetting `active` on
+        every prior entry (including the parent just loaded). `parent` is
+        an additive, optional field, the same one
+        `breakdown-ticket-subflow.md` §C attaches to its own materialized
+        children — actions that don't know about it ignore it safely.
+        **Do not repeat this step 7 for a child** — children are loaded one
+        level deep only, never recursively expanded into their own
+        children.
 8. Return to the caller with outcome string `"Loaded ticket: $id_or_summary
    (from $SOURCE)"`, appending `"; loaded N child ticket(s): <label1>,
    <label2>, ..."` when step 7 loaded any.

@@ -1,7 +1,10 @@
 > **Subflow — Push ticket(s) action.** Invoked only via
 > `ticket-loop-subflow.md`'s Action Registry (§B). Sends one, several named, or
 > all in-context tickets to Jira, one at a time, reusing the pre-restructuring
-> push procedure unchanged in substance. Never adds, removes, or reactivates a
+> push procedure unchanged in substance. For a bulk push, offers to
+> auto-skip unchanged/Done tickets first (§A.1), then moves through the rest
+> automatically, presenting each ticket before pushing it (§C) — no
+> per-ticket "continue?" prompt. Never adds, removes, or reactivates a
 > `$TICKET_CONTEXT` entry — a pushed ticket stays in context.
 
 **Caller contract.** Before invoking this subflow, the caller must have resolved:
@@ -17,7 +20,7 @@
    return outcome `"Push: no tickets in context."` (no calls, no mutation).
 2. Utterance requests the whole context ("push all," "push everything," or an
    equivalent) → `$TARGETS` = every entry in `$TICKET_CONTEXT`, in order.
-   Continue to §C.
+   Continue to §A.1.
 3. Utterance names one or more tickets (by id/summary):
    1. Split the utterance into its distinct named references (one or several
       — e.g. "PROJ-123 and PROJ-124" is two).
@@ -32,7 +35,7 @@
         never auto-select.
       - One match → include it in the resolving set.
    3. `$TARGETS` = the deduplicated union of every entry resolved across all
-      named references. Continue to §C.
+      named references. Continue to §A.1.
 4. Utterance is a bare push request ("push this," "push it," "push this
    ticket," with no name and no "all"):
    1. Exactly one entry in `$TICKET_CONTEXT` → `$TARGETS` = `[that entry]`.
@@ -40,7 +43,31 @@
       entry]`.
    3. Else → ask the user "Which ticket(s) would you like to push?" and
       re-run this §A against the reply.
-   Continue to §C once `$TARGETS` is set.
+   Continue to §A.1 once `$TARGETS` is set.
+
+#### A.1 Skip offer (bulk only)
+
+Runs once `$TARGETS` is set, before any push begins. Skipped entirely when
+`|$TARGETS|` = 1 — a single explicitly-requested target is never auto-skipped.
+
+1. Identify skip candidates within `$TARGETS`. Set `$CANDIDATES` = every
+   `$TARGETS` entry matching either:
+   - **Unchanged** — `$TARGET.syncedContent` is set and equals
+     `$TARGET.content` (no edits since the ticket was last loaded from or
+     pushed to Jira).
+   - **Done** — `$TARGET.jiraStatusCategory` = `"done"` (only ever set on
+     Jira-sourced entries — see `load-ticket-subflow.md` §E and §B step 3
+     below; file/web-sourced or not-yet-pushed entries never match this
+     criterion).
+2. `$CANDIDATES` empty → continue to §C unchanged, no offer made.
+3. `$CANDIDATES` non-empty → present them (label + reason: unchanged / done)
+   and ask: "Skip these N automatically?"
+   - **Yes** → remove `$CANDIDATES` from `$TARGETS` (in place); they are not
+     pushed this run, gain no `pushResult`, and stay in `$TICKET_CONTEXT`
+     exactly as they were.
+   - **No** → leave `$TARGETS` as resolved; every entry, candidates included,
+     proceeds through §C.
+4. Continue to §C with the (possibly reduced) `$TARGETS`.
 
 #### B. Per-ticket push procedure
 
@@ -155,7 +182,13 @@ membership or `active`.
      `$JIRA_FIELDS.issueKey` — for the create path this is the key
      `createJiraIssue` returned; for the update path this is simply
      `$JIRA_FIELDS.issueIdOrKey` (no new call, just an alias so step 4 has
-     one uniform field to read regardless of path).
+     one uniform field to read regardless of path). Additionally set
+     `$TARGET.syncedContent = $TARGET.content` and
+     `$TARGET.jiraStatusCategory` = the pushed issue's returned
+     `fields.status.statusCategory.key` — both additive, optional fields
+     (per `ticket-loop-subflow.md` §A's extensibility note) that let a later
+     bulk push in the same session recognize this ticket as unchanged/done
+     via §A.1, without re-querying Jira.
    - **On failure** (auth, permission, invalid field, etc.): surface the
      error verbatim, then **fall through to step 5** so the user still gets
      the copy-paste ticket — this procedure never dead-ends.
@@ -209,13 +242,17 @@ membership or `active`.
 1. `|$TARGETS|` > 1 → announce the set (every target's `id_or_summary`)
    before starting. Else skip the announcement.
 2. For each `$TARGET`, in order, never concurrent:
-   1. Run §B; append `{label: $TARGET.id_or_summary, result}` to
+   1. `|$TARGETS|` > 1 and this is not the first target processed →
+      present the upcoming ticket by its `id_or_summary` (e.g. "Next:
+      <id_or_summary>") before running §B on it.
+   2. Run §B; append `{label: $TARGET.id_or_summary, result}` to
       `$PUSH_RESULTS`.
-   2. Not the last target and `|$TARGETS|` > 1 → ask "Continue to the next
-      ticket?"
-      - Stop/decline → break the loop. Untouched targets stay in
-        `$TICKET_CONTEXT` exactly as they were, with no `pushResult`.
-3. Continue to §D once the loop ends (exhausted or stopped early).
+   3. Move automatically to the next target — no confirmation prompt. A
+      per-ticket decline inside §B (e.g. declining to describe a Jira
+      target, or aborting the field-confirmation loop) only affects that
+      one ticket, falling through to its own copy-paste fallback; it never
+      halts the loop.
+3. Continue to §D once every target has been processed.
 
 #### D. Compose return outcome
 
@@ -224,18 +261,18 @@ membership or `active`.
      plus `", linked to Idea <ideaLinked>"` when set.
    - `status: "copy-paste"` → `"<label>: emitted for copy-paste (no Jira
      push)"`.
-2. On an early stop (§C step 2.2), also list the `id_or_summary` of every
-   target not yet attempted.
-3. Present the per-target breakdown to the user.
-4. Return `"Push: N of M ticket(s) processed (<breakdown>)."` (N =
+2. Present the per-target breakdown to the user.
+3. Return `"Push: N of M ticket(s) processed (<breakdown>)."` (N =
    `|$PUSH_RESULTS|`, M = `|$TARGETS|`) for `ticket-loop-subflow.md` §E to
    log.
 
 **Failure/degradation contract:** §A's empty-context and default-ambiguous
-cases return without invoking §B — no calls, no mutation. Every §B branch
+cases return without invoking §B — no calls, no mutation. §A.1's skip offer
+only ever removes entries from `$TARGETS` for this run — a skipped entry is
+untouched in `$TICKET_CONTEXT` and gains no `pushResult`. Every §B branch
 mirrors the recovered pre-restructuring flow's contract exactly: no MCP,
 decline, query error, push error, and idea-link error all fall through
-without dead-ending. §C's stop path leaves `$TICKET_CONTEXT` exactly as it
-was for every untouched target. A target only gains `pushResult` once its
-own §B run fully completes — no partial or malformed `pushResult` is ever
+without dead-ending, and §C always proceeds to the next target regardless of
+how the current one resolved. A target only gains `pushResult` once its own
+§B run fully completes — no partial or malformed `pushResult` is ever
 attached.
