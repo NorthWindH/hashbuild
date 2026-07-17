@@ -2,10 +2,14 @@
 > `ticket-loop-subflow.md`'s Action Registry (§B). Sends one, several named, or
 > all in-context tickets to Jira, one at a time, reusing the pre-restructuring
 > push procedure unchanged in substance. For a bulk push, offers to
-> auto-skip unchanged/Done tickets first (§A.1), then moves through the rest
+> auto-skip unchanged/Done tickets first (§A.1), reorders so any in-target
+> parent pushes before its children (§A.2), then moves through the rest
 > automatically, presenting each ticket before pushing it (§C) — no
-> per-ticket "continue?" prompt. Never adds, removes, or reactivates a
-> `$TICKET_CONTEXT` entry — a pushed ticket stays in context.
+> per-ticket "continue?" prompt. When a ticket's `parent` field resolves to a
+> known Jira issue key (just-pushed this run, or already tracked), that key
+> is set as the Jira parent on create/update by default (§B). Never adds,
+> removes, or reactivates a `$TICKET_CONTEXT` entry — a pushed ticket stays
+> in context.
 
 **Caller contract.** Before invoking this subflow, the caller must have resolved:
 
@@ -56,7 +60,7 @@ Runs once `$TARGETS` is set, before any push begins. Skipped entirely when
      `$TARGET.content` (no edits since the ticket was last loaded from or
      pushed to Jira).
    - **Done** — `$TARGET.jiraStatusCategory` = `"done"` (only ever set on
-     Jira-sourced entries — see `load-ticket-subflow.md` §E and §B step 3
+     Jira-sourced entries — see `load-ticket-subflow.md` §E and §B step 4
      below; file/web-sourced or not-yet-pushed entries never match this
      criterion).
 2. `$CANDIDATES` empty → continue to §C unchanged, no offer made.
@@ -67,7 +71,31 @@ Runs once `$TARGETS` is set, before any push begins. Skipped entirely when
      exactly as they were.
    - **No** → leave `$TARGETS` as resolved; every entry, candidates included,
      proceeds through §C.
-4. Continue to §C with the (possibly reduced) `$TARGETS`.
+4. Continue to §A.2 with the (possibly reduced) `$TARGETS`.
+
+#### A.2 Order for parent-first push
+
+Runs once §A.1 has settled `$TARGETS` (whether or not anything was skipped),
+before §C begins.
+
+1. For each `$TARGET` in `$TARGETS` with an optional `parent` field (set by
+   `breakdown-ticket-subflow.md` §C or `load-ticket-subflow.md` §E step 7):
+   check whether some other entry in `$TARGETS` has an `id_or_summary`
+   matching that `parent` value.
+2. If so, that matching parent entry must be processed before this one.
+   Reorder `$TARGETS` into a stable order satisfying every such constraint —
+   hoist each in-target parent to just before the earliest of its children,
+   preserving relative order otherwise. Breakdown/load-children never nest
+   more than one level deep, so this single hoist pass is sufficient; no
+   general cycle handling is needed.
+3. A `parent` value that names no entry in `$TARGETS` (parent not targeted
+   this run, or not in context at all) imposes no ordering constraint — that
+   entry's position is unchanged.
+
+Continue to §C with the reordered `$TARGETS`. This ordering exists so that
+when a child's own push runs (§B step 3), its parent's `pushResult.issueKey`
+— recorded when the parent's push completed earlier in this same loop — is
+already available to resolve.
 
 #### B. Per-ticket push procedure
 
@@ -82,7 +110,7 @@ membership or `active`.
      tool is `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`; the exact name
      may differ on other platforms.
    - If **no such tool is found**: set `$JIRA` = `unavailable` and skip to
-     step 5, additionally telling the user that no Jira-capable MCP was
+     step 6, additionally telling the user that no Jira-capable MCP was
      detected and they can connect one (e.g. the Atlassian Rovo MCP on
      Claude Code) and re-run if they want to push. This is the graceful
      path — absence of the MCP must never raise an error.
@@ -92,7 +120,7 @@ membership or `active`.
      details will be shown for confirmation before anything is created or
      updated. Examples: "create a Task in the MOBILE project for the auth
      refactor", "update MOBILE-412", "update the login epic in BACKEND".
-     - "no" → set `$JIRA` = `declined`, go to step 5.
+     - "no" → set `$JIRA` = `declined`, go to step 6.
      - Otherwise: store the description as `$NL_DESC` and continue to step 2.
 2. **NL resolution & confirmation loop.** Loop until the user accepts the
    resolved field set or aborts.
@@ -164,24 +192,52 @@ membership or `active`.
    - **Refine description** → update `$NL_DESC`, return to A.
    - **Supply exact values** → accept the values the user provides as
      `$JIRA_FIELDS`, present for final confirmation, on accept break loop.
-   - **Abort** → set `$JIRA` = `"declined"`, skip to step 5.
-3. **Push to Jira.** Only when `$JIRA` ∈ {`create`, `update`}. Uses
-   `$JIRA_FIELDS` set by step 2 — no field resolution in this step.
+   - **Abort** → set `$JIRA` = `"declined"`, skip to step 6.
+3. **Resolve parent linkage.** Runs regardless of `$JIRA`'s create/update
+   path, before the push call. Never blocks or dead-ends — an unresolved
+   parent just means the push proceeds without one.
+   - `$TARGET.parent` unset → no parent linkage; continue to step 4 with no
+     parent key.
+   - `$TARGET.parent` set → look up the `$TICKET_CONTEXT` entry (not just
+     `$TARGETS` — a parent pushed or loaded in an earlier run still counts)
+     whose `id_or_summary` equals `$TARGET.parent`; call it `$PARENT_ENTRY`.
+     Not found → no parent linkage; continue.
+   - `$PARENT_ENTRY` found → resolve `$PARENT_ISSUE_KEY`:
+     - Prefer `$PARENT_ENTRY.pushResult.issueKey` if set (pushed earlier in
+       this same loop, per §A.2's ordering, or in a prior push this
+       session).
+     - Else, if `$PARENT_ENTRY.source.type` = `"jira"`, use
+       `$PARENT_ENTRY.source.ref` (the parent's own Jira key, from
+       `load-ticket-subflow.md`).
+     - Neither set → the parent has no known Jira key yet (e.g. not
+       targeted this run and never pushed/loaded); no parent linkage,
+       continue — not an error.
+   - `$PARENT_ISSUE_KEY` resolved → carry it into step 4 to attach as the
+     Jira parent. This is default behavior, not separately offered or
+     confirmed — it rides along with the ticket's own create/update.
+4. **Push to Jira.** Only when `$JIRA` ∈ {`create`, `update`}. Uses
+   `$JIRA_FIELDS` set by step 2 and `$PARENT_ISSUE_KEY` set by step 3 (may be
+   unresolved) — no field resolution in this step.
    - **If `$JIRA_FIELDS.path` = `create`:**
      - Call the MCP's create-issue tool with `cloudId`, `projectKey`,
        `issueTypeName`, `summary`, `description` = `$TARGET.content`
        (in place of `$WRITTEN_TICKET`), and `contentFormat: "markdown"`.
-       (Atlassian Rovo example: `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`.)
+       When `$PARENT_ISSUE_KEY` is resolved, additionally set it as the
+       issue's parent (e.g. `additional_fields: { parent: { key:
+       $PARENT_ISSUE_KEY } }`). (Atlassian Rovo example:
+       `mcp__claude_ai_Atlassian_Rovo__createJiraIssue`.)
    - **If `$JIRA_FIELDS.path` = `update`:**
      - Call the MCP's edit-issue tool with `cloudId`, `issueIdOrKey`,
        `fields: { description: $TARGET.content }`, and `contentFormat:
-       "markdown"`. (Atlassian Rovo example:
+       "markdown"`. When `$PARENT_ISSUE_KEY` is resolved, additionally
+       include it in `fields` (e.g. `fields: { description: ..., parent: {
+       key: $PARENT_ISSUE_KEY } }`). (Atlassian Rovo example:
        `mcp__claude_ai_Atlassian_Rovo__editJiraIssue`.)
    - **On success:** set `$JIRA` = `pushed` and report the resulting issue
      **key and browse URL** to the user. Also store the issue key as
      `$JIRA_FIELDS.issueKey` — for the create path this is the key
      `createJiraIssue` returned; for the update path this is simply
-     `$JIRA_FIELDS.issueIdOrKey` (no new call, just an alias so step 4 has
+     `$JIRA_FIELDS.issueIdOrKey` (no new call, just an alias so step 5 has
      one uniform field to read regardless of path). Additionally set
      `$TARGET.syncedContent = $TARGET.content` and
      `$TARGET.jiraStatusCategory` = the pushed issue's returned
@@ -190,15 +246,15 @@ membership or `active`.
      bulk push in the same session recognize this ticket as unchanged/done
      via §A.1, without re-querying Jira.
    - **On failure** (auth, permission, invalid field, etc.): surface the
-     error verbatim, then **fall through to step 5** so the user still gets
+     error verbatim, then **fall through to step 6** so the user still gets
      the copy-paste ticket — this procedure never dead-ends.
-4. **Offer Jira Idea link (Epic only).**
+5. **Offer Jira Idea link (Epic only).**
    - **Guard**: only run when `$JIRA` = `pushed` **and**
      `$JIRA_FIELDS.issueTypeName` exactly equals `"Epic"`. Otherwise: no
-     prompt, no step — proceed directly to step 6.
+     prompt, no step — proceed directly to step 7.
    - **Offer**: ask the user: "This is a Jira Epic. Would you like to link
      it to an existing Jira Idea?"
-     - **No** → skip linking entirely; proceed to step 6 — the
+     - **No** → skip linking entirely; proceed to step 7 — the
        already-pushed ticket is unaffected.
      - **Yes** → prompt: "Provide the Idea's issue key (e.g. `PROJ-123`) or
        its bare number (e.g. `123`)." Capture as `$IDEA_REF`.
@@ -220,16 +276,16 @@ membership or `active`.
    - **Failure / degradation contract**: if `createIssueLink` errors
      (invalid Idea reference, permission, API error) → surface the error
      verbatim; explicitly state that the already-created/updated ticket/
-     issue is unaffected — no retry, no rollback. Proceed to step 5.
-5. **Emit ticket fallback.** Reached when `$JIRA` ∈ {`unavailable`,
-   `declined`} or after a step 3 failure. **Skipped** when `$JIRA` =
+     issue is unaffected — no retry, no rollback. Proceed to step 6.
+6. **Emit ticket fallback.** Reached when `$JIRA` ∈ {`unavailable`,
+   `declined`} or after a step 4 failure. **Skipped** when `$JIRA` =
    `pushed`.
    - Print `$TARGET.content` in full inside a fenced block so the user can
      copy-paste it, naming the ticket by `$TARGET.id_or_summary`.
    - When `$JIRA` = `unavailable`, additionally state that no Jira MCP was
      available, so this ticket is emitted for copy-paste.
    - No `.hb/` write — this action never touches `.hb/`.
-6. **Compose result.**
+7. **Compose result.**
    - `$JIRA` = `pushed` → `{status: "pushed", issueKey: $JIRA_FIELDS.issueKey,
      browseUrl, ideaLinked: $IDEA_LINKED?}`.
    - Otherwise → `{status: "copy-paste"}`.
@@ -269,10 +325,14 @@ membership or `active`.
 **Failure/degradation contract:** §A's empty-context and default-ambiguous
 cases return without invoking §B — no calls, no mutation. §A.1's skip offer
 only ever removes entries from `$TARGETS` for this run — a skipped entry is
-untouched in `$TICKET_CONTEXT` and gains no `pushResult`. Every §B branch
-mirrors the recovered pre-restructuring flow's contract exactly: no MCP,
-decline, query error, push error, and idea-link error all fall through
-without dead-ending, and §C always proceeds to the next target regardless of
-how the current one resolved. A target only gains `pushResult` once its own
-§B run fully completes — no partial or malformed `pushResult` is ever
-attached.
+untouched in `$TICKET_CONTEXT` and gains no `pushResult`. §A.2's reordering
+only ever changes processing order within `$TARGETS` for this run — it never
+adds, removes, or skips an entry. §B step 3's parent-linkage resolution never
+blocks or errors: an unresolved parent (not in context, or with no known
+Jira key yet) simply means the push proceeds with no parent field set, same
+as before this behavior existed. Every §B branch mirrors the recovered
+pre-restructuring flow's contract exactly: no MCP, decline, query error, push
+error, and idea-link error all fall through without dead-ending, and §C
+always proceeds to the next target regardless of how the current one
+resolved. A target only gains `pushResult` once its own §B run fully
+completes — no partial or malformed `pushResult` is ever attached.
