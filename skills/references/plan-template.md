@@ -18,8 +18,23 @@
      verification step.
   5. Concise prose. Favor bullets over paragraphs. Outside diagrams (fenced code
      blocks), cap every paragraph at 3 sentences, cap every bullet at one sentence,
-     and every sentence at 120 characters. Tables and headings are exempt. Check with
-     `hb-sdk plan lint <path-to-plan.md>` before treating the plan as done.
+     and every sentence at 120 characters. Tables and headings are exempt.
+
+     Write to these caps from the first draft — don't rely on `hb-sdk plan lint`
+     to find violations for you to fix after the fact:
+     - One clause per bullet. If a bullet needs a second independent clause
+       (joined by "and", ";", or a second "→"), give it its own bullet instead.
+     - Target ~90 characters per sentence, not 120 — backticks, bold markers, and
+       §-references eat into the budget without reading any longer to the eye.
+     - The linter only splits a sentence at `. `/`! `/`? ` followed by a capital
+       letter, digit, backtick, quote, `*`, or `_` — so two phrasings silently
+       merge into one over-long "sentence" instead of splitting as intended:
+       a closing quote/backtick/`**` right after the period (`word."`, `word.**`),
+       and a period followed by `§` or a lowercase word. Start each new intended
+       sentence with a capital word, and keep quote/emphasis markers around the
+       whole clause rather than trailing the period.
+     - Run `hb-sdk plan lint <path-to-plan.md>` once, after drafting the full
+       file — writing to the rules above should make it pass on the first try.
 
   Fill every section. If a section genuinely doesn't apply, keep the heading and
   write "N/A — <reason>" rather than deleting it silently. Use tables wherever the
