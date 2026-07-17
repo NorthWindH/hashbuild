@@ -17,13 +17,15 @@ This step adds two actions. The first is explicit active-ticket selection
 with no content mutation. The second is a bounded escape hatch for
 unregistered requests.
 
-Scope: additive, in-memory context mutation only. No file I/O and no new
-tool grant — this mirrors Clear's own scope boundary exactly.
+Scope: Set-active stays additive, in-memory-only — no file I/O, no new
+tool grant, mirroring Clear's own boundary. Other has no such self-imposed
+scope; see the second Design decision below.
 
 Externally observable effect: saying "set ticket 2 as active" flips one
 entry's `active` flag, no content change. A reply matching none of the
-first six actions now routes through `other-action-subflow.md` instead of a
-bare re-prompt.
+first six actions now routes through `other-action-subflow.md` instead of
+a bare re-prompt. It attempts the request as asked, tool calls included,
+gated only by the harness.
 
 Source ticket: `./ticket.md`. This plan builds on the shipped loop skeleton
 and five actions, read in full during planning:
@@ -63,6 +65,24 @@ untouched here.
 > against Other's own escape-hatch phrasing, dispatches
 > `other-action-subflow.md`. See §1 and the AC-traceability table (§7,
 > AC2).
+
+> **Design decision — Other's tool boundary lives in the harness, not this
+> subflow.** This step's own `ticket.md` AC2.2 literally scopes Other to
+> "data already in `$TICKET_CONTEXT`," reporting "not supported" for
+> anything else.
+>
+> Per explicit user direction during this step's planning (2026-07-17),
+> that self-imposed scope check is dropped. Other attempts whatever the
+> user asks, including tool calls, without pre-deciding what's in bounds.
+>
+> `allowed-tools` in `hb-ticket-discuss.md`'s frontmatter is a
+> harness-level constraint above this subflow's own prose. It stays
+> unchanged (§3); any live permission prompt still applies on top of it.
+> The subflow itself duplicates neither gate.
+>
+> This supersedes AC2.2's literal "not supported" framing with a report of
+> whatever the harness actually allowed or blocked. See §1, §2.2, and the
+> AC-traceability table (§7, AC2.2).
 
 ---
 
@@ -113,6 +133,7 @@ untouched here.
   - Both must resolve via §A below.
   - AC2.2 scopes Other to data already in `$TICKET_CONTEXT`, with a
     not-supported report otherwise.
+  - Superseded this planning pass — see the second Design decision above.
 - No automated test harness exists; this is a markdown-procedure repo.
   - Every prior execution summary in this task (steps 0-5) confirms this.
   - Verification here is structural grep plus dry-run trace, matching that
@@ -126,8 +147,8 @@ untouched here.
 | "make CSS-2664 active" (unambiguous) | Not recognized | Entry resolved by `id_or_summary`, becomes `active` |
 | Named/positional reference ambiguous or out of range | Not recognized | User asked to clarify — never auto-selected |
 | No ticket named ("make it active") | Not recognized | User asked "Which ticket would you like to set active?" |
-| "reformat PROJ-123 to use bullet points" (in-context) | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; content reformatted, reported |
-| Request needing new data/external calls | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; works with the user toward an in-scope version, "not supported" only if nothing fits |
+| "reformat PROJ-123 to use bullet points" (no new tool needed) | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; attempted directly, content reformatted, reported |
+| "look up related PRs for CSS-2664" (needs a tool call) | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; attempted as asked — harness `allowed-tools`/permission prompt decide feasibility, either way reported |
 | Reply ambiguous between two known actions (e.g. Clear vs. Push) | Generic re-prompt | Still a direct clarifying question — not routed to Other |
 | Load, Describe, Breakdown, Clear, Push, Exit | Unchanged | Unchanged — subflow files and §B rows untouched |
 | `hb-ticket-discuss.md` wording/tools | 6 `/tmp` grants + 5 Jira tools; 5-action wording | Unchanged — no new grant needed; wording deliberately not extended |
@@ -175,24 +196,26 @@ other-action-subflow.md:
      too vague to act on, ask "what would you like to do?" and re-capture)
        │
        ▼
-  §B Evaluate scope (lightweight, well-scoped op on data already in
-     $TICKET_CONTEXT → perform it directly; else → negotiate toward an
-     in-scope version with the user; still nothing fits → not supported)
+  §B Perform (attempt $OTHER_REQUEST as asked, tool calls included;
+     harness allowed-tools + live permission prompts decide feasibility,
+     not this subflow; report whatever happens)
        │
        ▼
   §C Compose outcome
 ```
 
-**Other's out-of-scope handling.** A flat "not supported" reply leaves
-the user no path forward on the first ask.
+**Other's tool boundary lives one layer up.** This subflow does not ask
+"is this in scope" before attempting a request.
 
-§B.2 now explains the specific constraint. It asks for a narrower,
-in-scope version of the same request before falling back to "not
-supported."
+`allowed-tools` and the permission-prompt system already gate every tool
+call the model makes, everywhere. That's independent of this subflow's
+own prose. Duplicating the check here would be a second source of truth,
+one this subflow could drift out of sync with.
 
-This never widens `allowed-tools` or fetches new data. It only checks
-whether the user's need can be met with what's already in
-`$TICKET_CONTEXT`.
+So §B.2 (below) attempts the request outright. A blocked tool call
+surfaces through the normal permission/allowed-tools mechanism.
+
+The outcome — success or block — is reported plainly in §C.
 
 **Positional vs. named resolution.** Clear and Push both resolve by name or
 summary, or by an "active"/"all" keyword. Neither resolves by list
@@ -224,10 +247,10 @@ precedence inside §D:  confident single-row match (existing)  >
   is cheaper than Other's generic prompt.
 - Resolve "ticket N" against the raw array index — rejected: §C's numbered
   list already is that order.
-- Let Other attempt anything, including new data or MCP calls — rejected:
-  AC2.2 scopes it to data already in context.
-- Decline out-of-scope requests immediately, no negotiation — rejected:
-  an in-scope version is often nearby.
+- Self-gate which tools Other may attempt — rejected: duplicates the
+  harness's own tool enforcement.
+- Widen `hb-ticket-discuss.md`'s `allowed-tools` this step — rejected:
+  that constraint already governs, no edit needed.
 - Auto-select the last entry when Set-active gets no reference — rejected:
   AC1.2 allows no such carve-out.
 
@@ -285,8 +308,12 @@ compose outcome.
 - `$TICKET_CONTEXT` — mutable list of ticket entries, in and out.
 - Mutated only when §B edits an existing entry's `content` or
   `id_or_summary`, on explicit request.
+  - Unmutated when the request needs no ticket-data change (e.g. a lookup).
 - (implicit) the triggering utterance, matching none of the six other
   registered actions.
+- (implicit) whatever tools the harness's `allowed-tools` and live
+  permission prompts make available.
+  - This subflow neither expands nor restricts that set.
 
 **§A Establish request:**
 1. Treat the triggering utterance itself as the candidate request,
@@ -298,35 +325,30 @@ compose outcome.
 4. Repeat step 3 until specific, or the user aborts → return "no action
    taken", no mutation.
 
-**§B Evaluate scope:**
-1. `$OTHER_REQUEST` is lightweight, well-scoped work on data already in
-   `$TICKET_CONTEXT` (e.g. reformat content).
-   - If it names a target entry, resolve it the same way as
-     `set-active-ticket-subflow.md` §A step 3, never guessing.
-   - Perform the requested edit directly, mutating only the named field on
-     the resolved entry, then continue to §C.
-2. Otherwise (`$OTHER_REQUEST` needs new data, an external call, or is
-   out of scope for this subflow's tools):
-   - Name the specific constraint: no new tool grant, no data beyond
-     `$TICKET_CONTEXT`.
-   - Ask for a narrower, in-scope version of the same request.
-   - User offers a narrower ask that fits `$TICKET_CONTEXT` → treat it as
-     the new `$OTHER_REQUEST`, re-run step 1.
-   - User has none, or repeats the same out-of-scope ask → tell them it
-     isn't supported yet, no mutation, continue to §C.
-   - Never widens `allowed-tools` or fetches new data to satisfy the
-     original ask.
-   - The negotiation stays within `$TICKET_CONTEXT` at all times.
+**§B Perform:**
+1. If `$OTHER_REQUEST` names a target entry, resolve it the same way as
+   `set-active-ticket-subflow.md` §A step 3.
+   - Never guess on ambiguous or zero matches.
+2. Attempt `$OTHER_REQUEST` as asked, tool calls included.
+   - This subflow makes no in-scope/out-of-scope judgment of its own —
+     see the Design decision in §1.
+   - Whether a given tool call proceeds is decided entirely by the
+     harness's `allowed-tools` and any live permission prompt.
+3. Attempt succeeds → mutate only what the request specifies (or nothing,
+   for a pure lookup), continue to §C.
+4. Attempt is blocked by the harness, or otherwise fails → no mutation,
+   continue to §C with that outcome to report.
 
 **§C Compose outcome:**
-- Handled by §B.1 → an outcome naming what changed.
-- Not supported by §B.2 → an outcome naming why, briefly.
+- Succeeded in §B.3 → an outcome naming what changed (or what was found,
+  for a lookup).
+- Blocked/failed in §B.4 → an outcome naming what happened, briefly.
 - Aborted in §A → the "no action taken" outcome.
 - Return control to `ticket-loop-subflow.md` §E.
 
-**Failure/degradation contract:** every path — abort, unsupported, handled —
-returns a composed outcome string. Unsupported requests are always
-reported, never silently dropped or turned into an error.
+**Failure/degradation contract:** every path — abort, blocked, failed,
+handled — returns a composed outcome string. A blocked tool call is
+always reported, never silently dropped or retried around.
 
 ---
 
@@ -368,8 +390,10 @@ before `exit-ticket-loop-subflow.md`. This mirrors §B's own new row order.
 Unlike steps 2-5, this step's ticket names no change here.
 
 "Other" is an internal escape hatch, not a primary action worth the
-top-line wording. `allowed-tools` needs no change either, since neither new
-action calls any tool.
+top-line wording. Its `allowed-tools` frontmatter needs no change either.
+
+That constraint is harness-level. It already applies to whatever Other
+attempts, independent of this subflow's own prose (Design decision, §1).
 
 No configuration, build wiring, or dependency-manifest changes apply — this
 repo's skill layer has none of those.
@@ -432,14 +456,16 @@ dry-run trace, matching that convention.
   only `active` flags change.
 - Other, in-context request: "reformat PROJ-123" → entry resolved, content
   reformatted, change reported.
-- Other, out-of-scope request, no narrower ask offered: needs an external
-  call or new data.
-  - Constraint explained, narrower ask requested, user declines/repeats
-    → told not supported, `$TICKET_CONTEXT` unchanged.
-- Other, out-of-scope request, negotiated down: initial ask needs an
-  external call.
-  - User's follow-up fits `$TICKET_CONTEXT` → performed directly, change
-    reported.
+- Other, request needing a tool call the harness permits: asked, tool
+  call proceeds.
+  - Result reported; mutation only if the request specifies one.
+- Other, request needing a tool call the harness blocks: asked, tool call
+  is blocked by `allowed-tools`/permission prompt.
+  - That outcome reported, `$TICKET_CONTEXT` unchanged.
+- Other never pre-judges scope itself: same request, run twice under
+  different `allowed-tools` configs.
+  - Only the harness's decision differs; this subflow's own logic is
+    unchanged either way.
 - Other, vague trigger: utterance too vague to act on → asked what the
   user would like to do, reply re-evaluated.
 - §D ambiguous-among-known-rows still asks directly: could mean Clear or
@@ -467,8 +493,10 @@ dry-run trace, matching that convention.
      `other-action-subflow.md` has 3.
 6. **`hb-ticket-discuss.md` unchanged** — `git diff` shows no hunks there
    at all.
-7. **Per-AC checks** — read both new files end-to-end and confirm AC1.2,
-   AC1.3, and AC2.2 each hold as specified.
+7. **Per-AC checks** — read both new files end-to-end and confirm AC1.2 and
+   AC1.3 hold as specified.
+   - Confirm AC2.2 holds per its superseded framing (Design decision, §1):
+     no self-imposed scope check, harness decides.
 8. **Non-regression** — `git diff --stat` for the seven files in §5's
    first structural check shows no changes.
 9. **TOC rows** — `references-toc.md` has 2 new rows, positioned between
@@ -486,7 +514,7 @@ dry-run trace, matching that convention.
 | 1.3 — mutates only `active`, never `content` | §2.1 §B steps 1-3 | |
 | 2 — Other action added, dispatching to `other-action-subflow.md` | §3 (row + §D rewrite); §2.2 (file) | See Design decision |
 | 2.1 — prompts the user for what they'd like to do | §2.2 §A | |
-| 2.2 — handles lightweight in-context requests; otherwise reports unsupported | §2.2 §B | Negotiates toward an in-scope version before falling back to unsupported |
+| 2.2 — handles lightweight in-context requests; otherwise reports unsupported | §2.2 §B | Superseded — attempts any request, harness `allowed-tools`/permissions decide feasibility; see Design decision (§1) |
 | 3 — both subflows follow existing shape; no edits to the six existing action files | §2.1, §2.2 shape; §0.2 / §5 non-regression | |
 | 4 — `ticket-loop-subflow.md` §C lists both new actions | §3 (no-edit rationale) | Verified in §6 check 3 |
 
@@ -497,7 +525,9 @@ dry-run trace, matching that convention.
 - Editing any of the six existing action subflow files — excluded by AC3.
 - Updating `hb-ticket-discuss.md`'s wording to list the two new actions —
   not required by this step's ACs; see §3.
-- Any external or tool-backed operation inside `other-action-subflow.md` —
-  AC2.2 scopes it to in-context data.
 - Auto-selecting a target for Set-active with no reference — AC1.2 allows
   no single-entry carve-out.
+- Widening `hb-ticket-discuss.md`'s `allowed-tools` — that constraint
+  already applies on its own; no edit is needed here.
+- Other's own scope-gating logic — dropped per the Design decision in §1;
+  the harness is the only gate now.

@@ -2,6 +2,7 @@
 
 - `skills/hb-*.md` is the canonical skill source; `~/.claude/skills/hb-*/` is just the installed copy.
 - `hb-ticket-discuss.md` allowed-tools omits Read/WebFetch on purpose; don't re-add (rejected in hb-015/step-2).
+- New hb-ticket-discuss actions shouldn't self-gate tool scope in prose — allowed-tools/permission prompts are the only gate (hb-015/step-7).
 - Subflows invoked at 2+ points in one skill use caller-contract+prose-follow (like breakdown-subflow), not `!cat`.
 - lint/format gates: use `uv run ruff check`/`uv run ruff format --check` (plain `ruff` binary isn't on PATH).
 - hb-014/step-3: archive guard dropped entirely (unarchive is trivial) — not implemented in hb-flow or hb-task-archive.
