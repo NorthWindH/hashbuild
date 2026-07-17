@@ -127,7 +127,7 @@ untouched here.
 | Named/positional reference ambiguous or out of range | Not recognized | User asked to clarify — never auto-selected |
 | No ticket named ("make it active") | Not recognized | User asked "Which ticket would you like to set active?" |
 | "reformat PROJ-123 to use bullet points" (in-context) | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; content reformatted, reported |
-| Request needing new data/external calls | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; told not supported yet |
+| Request needing new data/external calls | Not recognized, generic re-prompt | Routed to `other-action-subflow.md`; works with the user toward an in-scope version, "not supported" only if nothing fits |
 | Reply ambiguous between two known actions (e.g. Clear vs. Push) | Generic re-prompt | Still a direct clarifying question — not routed to Other |
 | Load, Describe, Breakdown, Clear, Push, Exit | Unchanged | Unchanged — subflow files and §B rows untouched |
 | `hb-ticket-discuss.md` wording/tools | 6 `/tmp` grants + 5 Jira tools; 5-action wording | Unchanged — no new grant needed; wording deliberately not extended |
@@ -176,12 +176,23 @@ other-action-subflow.md:
        │
        ▼
   §B Evaluate scope (lightweight, well-scoped op on data already in
-     $TICKET_CONTEXT → perform it directly; else → tell the user it's not
-     supported yet)
+     $TICKET_CONTEXT → perform it directly; else → negotiate toward an
+     in-scope version with the user; still nothing fits → not supported)
        │
        ▼
   §C Compose outcome
 ```
+
+**Other's out-of-scope handling.** A flat "not supported" reply leaves
+the user no path forward on the first ask.
+
+§B.2 now explains the specific constraint. It asks for a narrower,
+in-scope version of the same request before falling back to "not
+supported."
+
+This never widens `allowed-tools` or fetches new data. It only checks
+whether the user's need can be met with what's already in
+`$TICKET_CONTEXT`.
 
 **Positional vs. named resolution.** Clear and Push both resolve by name or
 summary, or by an "active"/"all" keyword. Neither resolves by list
@@ -215,6 +226,8 @@ precedence inside §D:  confident single-row match (existing)  >
   list already is that order.
 - Let Other attempt anything, including new data or MCP calls — rejected:
   AC2.2 scopes it to data already in context.
+- Decline out-of-scope requests immediately, no negotiation — rejected:
+  an in-scope version is often nearby.
 - Auto-select the last entry when Set-active gets no reference — rejected:
   AC1.2 allows no such carve-out.
 
@@ -292,8 +305,18 @@ compose outcome.
      `set-active-ticket-subflow.md` §A step 3, never guessing.
    - Perform the requested edit directly, mutating only the named field on
      the resolved entry, then continue to §C.
-2. Otherwise (new data, external calls, out of scope) → tell the user it's
-   not supported yet, no mutation, continue to §C.
+2. Otherwise (`$OTHER_REQUEST` needs new data, an external call, or is
+   out of scope for this subflow's tools):
+   - Name the specific constraint: no new tool grant, no data beyond
+     `$TICKET_CONTEXT`.
+   - Ask for a narrower, in-scope version of the same request.
+   - User offers a narrower ask that fits `$TICKET_CONTEXT` → treat it as
+     the new `$OTHER_REQUEST`, re-run step 1.
+   - User has none, or repeats the same out-of-scope ask → tell them it
+     isn't supported yet, no mutation, continue to §C.
+   - Never widens `allowed-tools` or fetches new data to satisfy the
+     original ask.
+   - The negotiation stays within `$TICKET_CONTEXT` at all times.
 
 **§C Compose outcome:**
 - Handled by §B.1 → an outcome naming what changed.
@@ -409,8 +432,14 @@ dry-run trace, matching that convention.
   only `active` flags change.
 - Other, in-context request: "reformat PROJ-123" → entry resolved, content
   reformatted, change reported.
-- Other, out-of-scope request: needs an external call or new data → told
-  not supported yet, `$TICKET_CONTEXT` unchanged.
+- Other, out-of-scope request, no narrower ask offered: needs an external
+  call or new data.
+  - Constraint explained, narrower ask requested, user declines/repeats
+    → told not supported, `$TICKET_CONTEXT` unchanged.
+- Other, out-of-scope request, negotiated down: initial ask needs an
+  external call.
+  - User's follow-up fits `$TICKET_CONTEXT` → performed directly, change
+    reported.
 - Other, vague trigger: utterance too vague to act on → asked what the
   user would like to do, reply re-evaluated.
 - §D ambiguous-among-known-rows still asks directly: could mean Clear or
@@ -457,7 +486,7 @@ dry-run trace, matching that convention.
 | 1.3 — mutates only `active`, never `content` | §2.1 §B steps 1-3 | |
 | 2 — Other action added, dispatching to `other-action-subflow.md` | §3 (row + §D rewrite); §2.2 (file) | See Design decision |
 | 2.1 — prompts the user for what they'd like to do | §2.2 §A | |
-| 2.2 — handles lightweight in-context requests; otherwise reports unsupported | §2.2 §B | |
+| 2.2 — handles lightweight in-context requests; otherwise reports unsupported | §2.2 §B | Negotiates toward an in-scope version before falling back to unsupported |
 | 3 — both subflows follow existing shape; no edits to the six existing action files | §2.1, §2.2 shape; §0.2 / §5 non-regression | |
 | 4 — `ticket-loop-subflow.md` §C lists both new actions | §3 (no-edit rationale) | Verified in §6 check 3 |
 
